@@ -9,7 +9,7 @@ extern FILE* yyin;
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-            std::cerr << "INPUT ERROR :: No source file have been provided." << std::endl;
+            std::cerr << "INPUT ERROR :: No source file has been provided." << std::endl;
             return -1;
         }
 
