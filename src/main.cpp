@@ -8,8 +8,7 @@ extern "C" {
 extern FILE* yyin;
 
 int main(int argc, char** argv) {
-
-    const char* filepath = "input.e\0";
+    const char* filepath = argv[1];
     yyin = fopen(filepath, "r");
 
     if (yyin != NULL) {

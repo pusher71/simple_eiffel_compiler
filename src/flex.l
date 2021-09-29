@@ -17,6 +17,7 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
 %{
     #include <ctype.h>
     #include <limits.h>
+    #include <string.h>
 
     #include "utilities/char_utilities.h"
     #include "utilities/string_utilities.h"
