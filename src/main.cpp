@@ -8,8 +8,12 @@ extern "C" {
 extern FILE* yyin;
 
 int main(int argc, char** argv) {
+    if (argc != 2) {
+            std::cerr << "INPUT ERROR :: No source file have been provided." << std::endl;
+            return -1;
+        }
 
-    const char* filepath = "input.e\0";
+    const char* filepath = argv[1];
     yyin = fopen(filepath, "r");
 
     if (yyin != NULL) {
