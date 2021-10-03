@@ -1057,7 +1057,7 @@ char *yytext;
     #include <string.h>
 
     #include "utilities/char_utilities.h"
-    #include "utilities/string_utilities.h"
+    #include "utilities/chararray_utilities.h"
 
     enum LexerErrorCode {
         NO_ERROR,
@@ -1283,7 +1283,7 @@ YY_DECL
     int oldCursorColumnIndex 	= 0;
 
     // Read buffers
-    char read_string[1024];
+    CharArray* read_charArray;
 
     // Constraints
     unsigned int minCharCode = 0;
@@ -1409,7 +1409,7 @@ case 8:
 YY_RULE_SETUP
 #line 78 "./src/flex.l"
 {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(CHAR);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -1421,7 +1421,7 @@ case 9:
 YY_RULE_SETUP
 #line 87 "./src/flex.l"
 {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(STRING);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -1434,7 +1434,7 @@ case 10:
 YY_RULE_SETUP
 #line 96 "./src/flex.l"
 {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(VERBATIM_STRING);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -1447,7 +1447,7 @@ case 11:
 YY_RULE_SETUP
 #line 105 "./src/flex.l"
 {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(STRIPSOFF_STRING);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -1459,7 +1459,7 @@ case 12:
 YY_RULE_SETUP
 #line 114 "./src/flex.l"
 {
-                                                                    strcat(read_string, yytext);
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
                                                                     debug_moveCursorToNextCharacter(yyleng);
                                                                 }
 	YY_BREAK
@@ -1468,7 +1468,7 @@ case 13:
 YY_RULE_SETUP
 #line 119 "./src/flex.l"
 {
-                                                                    strcat(read_string, yytext);
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
 
                                                                     for (int i=0; i<strlen(yytext); i++) {
                                                                         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -1479,19 +1479,25 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 128 "./src/flex.l"
-{ strcat(read_string, yytext); debug_moveCursorToNextCharacter(yyleng); }
+{
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
+                                                                    debug_moveCursorToNextCharacter(yyleng);
+                                                                }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 129 "./src/flex.l"
-{ strcat(read_string, yytext); debug_moveCursorToNextCharacter(yyleng); }
+#line 133 "./src/flex.l"
+{
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
+                                                                    debug_moveCursorToNextCharacter(yyleng);
+                                                                }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 131 "./src/flex.l"
+#line 138 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "@");
+        chaarcat_str(read_charArray, "@", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1503,10 +1509,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 143 "./src/flex.l"
+#line 150 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\10");
+        chaarcat_str(read_charArray, "\10", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1518,10 +1524,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 155 "./src/flex.l"
+#line 162 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "^");
+        chaarcat_str(read_charArray, "^", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1533,10 +1539,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 167 "./src/flex.l"
+#line 174 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "$");
+        chaarcat_str(read_charArray, "$", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1548,10 +1554,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 179 "./src/flex.l"
+#line 186 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\14");
+        chaarcat_str(read_charArray, "\14", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1563,10 +1569,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 191 "./src/flex.l"
+#line 198 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\\");
+        chaarcat_str(read_charArray, "\10", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1578,10 +1584,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 203 "./src/flex.l"
+#line 210 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "~");
+        chaarcat_str(read_charArray, "~", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1593,10 +1599,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 215 "./src/flex.l"
+#line 222 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\n");
+        chaarcat_str(read_charArray, "\n", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1608,10 +1614,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 227 "./src/flex.l"
+#line 234 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "`");
+        chaarcat_str(read_charArray, "`", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1623,10 +1629,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 239 "./src/flex.l"
+#line 246 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\15");
+        chaarcat_str(read_charArray, "\15", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1638,10 +1644,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 251 "./src/flex.l"
+#line 258 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "#");
+        chaarcat_str(read_charArray, "#", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1653,10 +1659,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 263 "./src/flex.l"
+#line 270 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\t");
+        chaarcat_str(read_charArray, "\t", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1668,10 +1674,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 275 "./src/flex.l"
+#line 282 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\0");
+        chaarcat_str(read_charArray, "\0", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1683,10 +1689,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 287 "./src/flex.l"
+#line 294 "./src/flex.l"
 {
     if (isupper(yytext[1])) {
-        strcat(read_string, "|");
+        chaarcat_str(read_charArray, "|", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -1698,42 +1704,42 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 299 "./src/flex.l"
-{ strcat(read_string, "%"); debug_moveCursorToNextCharacter(yyleng); }
+#line 306 "./src/flex.l"
+{ chaarcat_str(read_charArray, "%", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 300 "./src/flex.l"
-{ strcat(read_string, "\'"); debug_moveCursorToNextCharacter(yyleng); }
+#line 307 "./src/flex.l"
+{ chaarcat_str(read_charArray, "\'", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 301 "./src/flex.l"
-{ strcat(read_string, "\""); debug_moveCursorToNextCharacter(yyleng); }
+#line 308 "./src/flex.l"
+{ chaarcat_str(read_charArray, "\"", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 302 "./src/flex.l"
-{ strcat(read_string, "["); debug_moveCursorToNextCharacter(yyleng); }
+#line 309 "./src/flex.l"
+{ chaarcat_str(read_charArray, "[", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 303 "./src/flex.l"
-{ strcat(read_string, "]"); debug_moveCursorToNextCharacter(yyleng); }
+#line 310 "./src/flex.l"
+{ chaarcat_str(read_charArray, "]", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 304 "./src/flex.l"
-{ strcat(read_string, "{"); debug_moveCursorToNextCharacter(yyleng); }
+#line 311 "./src/flex.l"
+{ chaarcat_str(read_charArray, "{", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 305 "./src/flex.l"
-{ strcat(read_string, "}"); debug_moveCursorToNextCharacter(yyleng); }
+#line 312 "./src/flex.l"
+{ chaarcat_str(read_charArray, "}", 1); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 307 "./src/flex.l"
+#line 314 "./src/flex.l"
 {
     char buffer[1024];
     strcpy(buffer, yytext+2);
@@ -1741,7 +1747,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithDecInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1749,7 +1755,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 320 "./src/flex.l"
+#line 327 "./src/flex.l"
 {
     char buffer[1024];
     strcpy(buffer, yytext+2);
@@ -1757,7 +1763,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithBinInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1765,7 +1771,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 333 "./src/flex.l"
+#line 340 "./src/flex.l"
 {
     char buffer[1024];
     strcpy(buffer, yytext+2);
@@ -1773,7 +1779,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithOctInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1781,7 +1787,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 346 "./src/flex.l"
+#line 353 "./src/flex.l"
 {
     char buffer[1024];
     strcpy(buffer, yytext+2);
@@ -1789,7 +1795,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithHexInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1797,7 +1803,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 359 "./src/flex.l"
+#line 366 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
     lexerErrorCode = GENERAL_ERROR;
@@ -1807,7 +1813,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 366 "./src/flex.l"
+#line 373 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
     lexerErrorCode = GENERAL_ERROR;
@@ -1818,36 +1824,47 @@ YY_RULE_SETUP
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 373 "./src/flex.l"
+#line 380 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching \' bracket for bracket at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
     lexerErrorCode = NO_ERROR;
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
+
     debug_moveCursorToNextLine();
 }
 	YY_BREAK
 case YY_STATE_EOF(CHAR):
-#line 381 "./src/flex.l"
+#line 390 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching \' bracket for bracket at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
     lexerErrorCode = NO_ERROR;
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 388 "./src/flex.l"
+#line 398 "./src/flex.l"
 {
     if (lexerErrorCode == NO_ERROR) {
-        if (strlen(read_string) == 1) {
-            printf("<CHAR LITERAL: value = \'%c\'; char code = %d>\n", read_string[0], (int)read_string[0]);
+        if (chaarlen(read_charArray) == 1) {
+            printf("<CHAR LITERAL: value = \'");
+            chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+
+            printf("\'; char code = ");
+            chaarprint(read_charArray, CHAAR__HEX_CODES_PRINT);
+
+            printf(">\n");
         }
-        else if (strlen(read_string) > 1) {
-            printf("[ LEXICAL ERROR :: More than one character are placed in single brackets \'%s\' at (line: %d, column = %d) ]\n", read_string, error_cursorLineIndex+1, error_cursorColumnIndex+1);
+        else if (chaarlen(read_charArray) > 1) {
+            printf("[ LEXICAL ERROR :: More than one character are placed in single brackets \'");
+            chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+            printf("\' at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
         }
-        else if (strlen(read_string) == 0) {
+        else if (chaarlen(read_charArray) == 0) {
             printf("[ LEXICAL ERROR :: Empty character \'\' at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
         }
     }
@@ -1860,6 +1877,7 @@ YY_RULE_SETUP
     }
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng);
 }
@@ -1867,7 +1885,7 @@ YY_RULE_SETUP
 case 45:
 /* rule 45 can match eol */
 YY_RULE_SETUP
-#line 413 "./src/flex.l"
+#line 432 "./src/flex.l"
 {
     for (int i=0; i<strlen(yytext); i++) {
         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -1877,7 +1895,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 420 "./src/flex.l"
+#line 439 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' in string at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
     lexerErrorCode = GENERAL_ERROR;
@@ -1887,7 +1905,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 427 "./src/flex.l"
+#line 446 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' in string at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
     lexerErrorCode = GENERAL_ERROR;
@@ -1897,7 +1915,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 434 "./src/flex.l"
+#line 453 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Unknown character \"%s\" in string at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
     lexerErrorCode = GENERAL_ERROR;
@@ -1908,58 +1926,71 @@ YY_RULE_SETUP
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
-#line 441 "./src/flex.l"
+#line 460 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching \" bracket at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextLine();
 }
 	YY_BREAK
 case YY_STATE_EOF(STRING):
-#line 448 "./src/flex.l"
+#line 469 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching \" bracket at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 453 "./src/flex.l"
+#line 476 "./src/flex.l"
 {
     if (lexerErrorCode == NO_ERROR) {
-        printf("<STRING LITERAL: value = \"%s\">\n", read_string);
+        printf("<STRING LITERAL: value = \"");
+        chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+        printf("\">\n");
     }
     else {
         lexerErrorCode = NO_ERROR;
     }
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng);
 }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 466 "./src/flex.l"
+#line 492 "./src/flex.l"
 {
-    int readString_length = strlen(read_string);
-    if (read_string[readString_length-1] == '\n') {
-        read_string[readString_length-1] = 0;
+    int lastCharPos = chaarlen(read_charArray) - 1;
+    if (chaargetchr(read_charArray, lastCharPos) == '\n') {
+        chaardel(read_charArray, lastCharPos, 1);
     }
 
-    printf("<STRING LITERAL: value = \"%s\">\n", read_string);
+    printf("<STRING LITERAL: value = \"");
+    chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+    printf("\">\n");
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng-1);
 }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 478 "./src/flex.l"
+#line 508 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching <}\"> bracket for verbatim string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -1968,15 +1999,17 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(VERBATIM_STRING):
-#line 488 "./src/flex.l"
+#line 520 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching <}\"> bracket for verbatim string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 493 "./src/flex.l"
+#line 527 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Invalid closing bracket <}\"> for verbatim string at (line: %d, column = %d) ]\n", debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
 
@@ -1985,60 +2018,84 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 499 "./src/flex.l"
+#line 533 "./src/flex.l"
 {
-    char buffer_word[1024];
-
-    int readString_length = strlen(read_string);
-    if (read_string[readString_length-1] == '\n') {
-        read_string[readString_length-1] = 0;
+    int lastCharPos = chaarlen(read_charArray) - 1;
+    if (chaargetchr(read_charArray, lastCharPos) == '\n') {
+        chaardel(read_charArray, lastCharPos, 1);
     }
 
-    // Define number of first space characters to delete in strings in each line
-    int spaceChrsCountToDelete = (read_string[strlen(read_string)-1] != '\n' ? INT_MAX : 0);
-    int curr_spaceChrsCountToDelete = 0;
+    // Define number of first space characters to delete in each line of stripsoff string
+    unsigned int firstChrsToDeleteCount = (chaargetchr(read_charArray, chaarlen(read_charArray)-1) != '\n' ? UINT_MAX : 0);
 
-    int currShift = 0;
+    int currIndex = 0;
     do {
-        currShift += getFirstWordFromStr(read_string + currShift, buffer_word, "\n");
+        // Get each line of char array beginning from the first line
+        CharArray* currLine = chaarcreate();
 
-        curr_spaceChrsCountToDelete = 0;
-        for (int i=0; i<strlen(buffer_word) && buffer_word[i] == ' '; i++) {
-            curr_spaceChrsCountToDelete++;
+        for (;currIndex < chaarlen(read_charArray) && chaargetchr(read_charArray, currIndex) != '\n'; currIndex++) {
+            chaaraddchr(currLine, chaargetchr(read_charArray, currIndex));
+        }
+        currIndex++;
+
+        // Check if gotten line is empty
+        int isLineEmpty = 1;
+        for (int i=0; i<chaarlen(currLine) && isLineEmpty; i++) {
+            char currChar = chaargetchr(currLine, i);
+            if (currChar != ' ' && currChar != '\t') { isLineEmpty = 0; }
         }
 
-        if (buffer_word[0] == '\0') {
-            printf("GOT HERE\n");
-            curr_spaceChrsCountToDelete = -1;
-            spaceChrsCountToDelete = 0;
-        }
-        else if (spaceChrsCountToDelete > curr_spaceChrsCountToDelete) {
-            spaceChrsCountToDelete = curr_spaceChrsCountToDelete;
-        }
+        // Count number of spaces placed in the beginning of gotten line
+        unsigned int firstNonSpaceIndex = 0;
+        for (;firstNonSpaceIndex < chaarlen(currLine) && chaargetchr(currLine, firstNonSpaceIndex) == ' '; firstNonSpaceIndex++);
 
-    } while(read_string[currShift] != '\0' && curr_spaceChrsCountToDelete != -1);
+        // Redefine current number of first spaces to delete
+        if (isLineEmpty) 										{ firstChrsToDeleteCount = 0; }
+        else if (firstChrsToDeleteCount > firstNonSpaceIndex) 	{ firstChrsToDeleteCount = firstNonSpaceIndex; }
 
-    // Delete defined first space characters in strings in each line
-    char buffer_result[1024] = "\0";
+        chaardestroy(currLine);
 
-    currShift = 0;
+    } while(currIndex < chaarlen(read_charArray) && firstChrsToDeleteCount != 0);
+
+    // Get result stripsoff string without defined first space characters in each line
+    CharArray* result = chaarcreate();
+
+    currIndex = 0;
     do {
-        currShift += getFirstWordFromStr(read_string + currShift, buffer_word, "\n");
-        strcat(buffer_result, buffer_word + spaceChrsCountToDelete);
-    } while(read_string[currShift] != '\0');
+        CharArray* currLine = chaarcreate();
 
-    printf("<STRING LITERAL: value = \"%s\">\n", buffer_result);
+        for (;currIndex < chaarlen(read_charArray) && chaargetchr(read_charArray, currIndex) != '\n'; currIndex++) {
+            chaaraddchr(currLine, chaargetchr(read_charArray, currIndex));
+        }
+
+        if (chaargetchr(read_charArray, currIndex) == '\n') { chaaraddchr(currLine, '\n'); }
+        currIndex++;
+
+        chaardel(currLine, 0, firstChrsToDeleteCount);
+        chaarcat(result, currLine);
+    } while(currIndex < chaarlen(read_charArray));
+
+    // Print result
+    printf("<STRING LITERAL: value = \"");
+    chaarprint(result, CHAAR__STANDARD_PRINT);
+    printf("\">\n");
+
+    chaardestroy(result);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng-1);
 }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 546 "./src/flex.l"
+#line 602 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching <]\"> bracket for strips-off string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -2047,15 +2104,17 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(STRIPSOFF_STRING):
-#line 556 "./src/flex.l"
+#line 614 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: No matching <]\"> bracket for strips-off string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 561 "./src/flex.l"
+#line 621 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Invalid closing bracket <]\"> for strips-off string at (line: %d, column = %d) ]\n", debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
 
@@ -2064,373 +2123,373 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 567 "./src/flex.l"
+#line 627 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 568 "./src/flex.l"
+#line 628 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 569 "./src/flex.l"
+#line 629 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 570 "./src/flex.l"
+#line 630 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 571 "./src/flex.l"
+#line 631 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 572 "./src/flex.l"
+#line 632 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 573 "./src/flex.l"
+#line 633 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 574 "./src/flex.l"
+#line 634 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 575 "./src/flex.l"
+#line 635 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 577 "./src/flex.l"
+#line 637 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 578 "./src/flex.l"
+#line 638 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 579 "./src/flex.l"
+#line 639 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 580 "./src/flex.l"
+#line 640 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 581 "./src/flex.l"
+#line 641 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 582 "./src/flex.l"
+#line 642 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 583 "./src/flex.l"
+#line 643 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 584 "./src/flex.l"
+#line 644 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 585 "./src/flex.l"
+#line 645 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 586 "./src/flex.l"
+#line 646 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 587 "./src/flex.l"
+#line 647 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 588 "./src/flex.l"
+#line 648 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 589 "./src/flex.l"
+#line 649 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 590 "./src/flex.l"
+#line 650 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 591 "./src/flex.l"
+#line 651 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 592 "./src/flex.l"
+#line 652 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 593 "./src/flex.l"
+#line 653 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 594 "./src/flex.l"
+#line 654 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 595 "./src/flex.l"
+#line 655 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 596 "./src/flex.l"
+#line 656 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 598 "./src/flex.l"
+#line 658 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 599 "./src/flex.l"
+#line 659 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 600 "./src/flex.l"
+#line 660 "./src/flex.l"
 { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 602 "./src/flex.l"
+#line 662 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 603 "./src/flex.l"
+#line 663 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 604 "./src/flex.l"
+#line 664 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 605 "./src/flex.l"
+#line 665 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 606 "./src/flex.l"
+#line 666 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 607 "./src/flex.l"
+#line 667 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 608 "./src/flex.l"
+#line 668 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 609 "./src/flex.l"
+#line 669 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 610 "./src/flex.l"
+#line 670 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 611 "./src/flex.l"
+#line 671 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 612 "./src/flex.l"
+#line 672 "./src/flex.l"
 { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 614 "./src/flex.l"
+#line 674 "./src/flex.l"
 { printf("<OPERATOR: PLUS>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 615 "./src/flex.l"
+#line 675 "./src/flex.l"
 { printf("<OPERATOR: MINUS>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 616 "./src/flex.l"
+#line 676 "./src/flex.l"
 { printf("<OPERATOR: MULT>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 617 "./src/flex.l"
+#line 677 "./src/flex.l"
 { printf("<OPERATOR: INTEGER DIVISION>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 618 "./src/flex.l"
+#line 678 "./src/flex.l"
 { printf("<OPERATOR: FRACTIONAL DIVISION>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 620 "./src/flex.l"
+#line 680 "./src/flex.l"
 { printf("<OPERATOR: EQUALITY>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 621 "./src/flex.l"
+#line 681 "./src/flex.l"
 { printf("<OPERATOR: INEQUALITY>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 622 "./src/flex.l"
+#line 682 "./src/flex.l"
 { printf("<OPERATOR: MORE>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 623 "./src/flex.l"
+#line 683 "./src/flex.l"
 { printf("<OPERATOR: LESS>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 624 "./src/flex.l"
+#line 684 "./src/flex.l"
 { printf("<OPERATOR: MORE OR EQUAL>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 625 "./src/flex.l"
+#line 685 "./src/flex.l"
 { printf("<OPERATOR: LESS OR EQUAL>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 627 "./src/flex.l"
+#line 687 "./src/flex.l"
 { printf("<OPERATOR: ASSIGN>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 629 "./src/flex.l"
+#line 689 "./src/flex.l"
 { printf("<OPERATOR: AND>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 630 "./src/flex.l"
+#line 690 "./src/flex.l"
 { printf("<OPERATOR: OR>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 631 "./src/flex.l"
+#line 691 "./src/flex.l"
 { printf("<OPERATOR: NOT>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 632 "./src/flex.l"
+#line 692 "./src/flex.l"
 { printf("<OPERATOR: XOR>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 634 "./src/flex.l"
+#line 694 "./src/flex.l"
 { printf("<OPERATOR: DOT>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 635 "./src/flex.l"
+#line 695 "./src/flex.l"
 { printf("<OPERATOR: SEMICOLON>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 636 "./src/flex.l"
+#line 696 "./src/flex.l"
 { printf("<OPERATOR: LEFT SQUARE BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 637 "./src/flex.l"
+#line 697 "./src/flex.l"
 { printf("<OPERATOR: RIGHT SQUARE BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
-#line 639 "./src/flex.l"
+#line 699 "./src/flex.l"
 { printf("<IDENTIFIER: \"%s\">\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 641 "./src/flex.l"
+#line 701 "./src/flex.l"
 { printf("<SYNTAX SIGN: COMMA>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 642 "./src/flex.l"
+#line 702 "./src/flex.l"
 { printf("<SYNTAX SIGN: COLON>\n"); }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 643 "./src/flex.l"
+#line 703 "./src/flex.l"
 { printf("<SYNTAX SIGN: LEFT ROUND BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 644 "./src/flex.l"
+#line 704 "./src/flex.l"
 { printf("<SYNTAX SIGN: RIGHT ROUND BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
-#line 645 "./src/flex.l"
+#line 705 "./src/flex.l"
 { printf("<SYNTAX SIGN: LEFT CURLY BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
-#line 646 "./src/flex.l"
+#line 706 "./src/flex.l"
 { printf("<SYNTAX SIGN: RIGHT CURLY BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 127:
 /* rule 127 can match eol */
 YY_RULE_SETUP
-#line 648 "./src/flex.l"
+#line 708 "./src/flex.l"
 { debug_moveCursorToNextLine(); }
 	YY_BREAK
 case 128:
 YY_RULE_SETUP
-#line 650 "./src/flex.l"
+#line 710 "./src/flex.l"
 { debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
-#line 651 "./src/flex.l"
+#line 711 "./src/flex.l"
 { debug_moveCursorToNextCharacter(yyleng); }
 	YY_BREAK
 case 130:
 YY_RULE_SETUP
-#line 653 "./src/flex.l"
+#line 713 "./src/flex.l"
 {
     printf("[ LEXICAL ERROR :: Unknown token \"%s\" at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
     debug_moveCursorToNextCharacter(yyleng);
@@ -2438,10 +2497,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
-#line 658 "./src/flex.l"
+#line 718 "./src/flex.l"
 ECHO;
 	YY_BREAK
-#line 2445 "/Users/love/Documents/GitHub/simple_eiffel_compiler/./src/flex.c"
+#line 2504 "/Users/love/Documents/GitHub/simple_eiffel_compiler/./src/flex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -3438,7 +3497,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 658 "./src/flex.l"
+#line 718 "./src/flex.l"
 
 
 

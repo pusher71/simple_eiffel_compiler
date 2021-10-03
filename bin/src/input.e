@@ -1,10 +1,10 @@
-class
-    BASIC_PROG
-create
-    make
-feature
-    make
-    do
-        io.put_string("[ Hello, }  ]")
-    end
-end
+"Hello, world!"
+
+"Hello, % %world!"
+"Hello, % 		 %world!"
+"Hello, % a		 %world!"
+
+"Hello, % a	rb	 %world!"
+
+"Hello, %
+        % world!"

@@ -23,7 +23,7 @@ set(SOURCE_FILES
     src/flex.c
 
     src/utilities/char_utilities.c
-    src/utilities/string_utilities.c
+	src/utilities/chararray_utilities.c
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})

@@ -20,7 +20,7 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
     #include <string.h>
 
     #include "utilities/char_utilities.h"
-    #include "utilities/string_utilities.h"
+    #include "utilities/chararray_utilities.h"
 
     enum LexerErrorCode {
         NO_ERROR,
@@ -58,7 +58,7 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
     int oldCursorColumnIndex 	= 0;
 
     // Read buffers
-    char read_string[1024];
+    CharArray* read_charArray;
 
     // Constraints
     unsigned int minCharCode = 0;
@@ -76,7 +76,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 {INVALID_VALUE_TOKEN} { printf("[ LEXICAL ERROR :: Invalid value token \"%s\" in line: %d ]\n", yytext, debug_cursorLineIndex+1); debug_moveCursorToNextCharacter(yyleng); }
 
 \' {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(CHAR);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -85,7 +85,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 }
 
 \" {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(STRING);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -94,7 +94,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 }
 
 \"\{[ \t]*\n {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(VERBATIM_STRING);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -103,7 +103,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 }
 
 \"\[[ \t]*\n {
-    read_string[0] = 0;
+    read_charArray = chaarcreate();
     BEGIN(STRIPSOFF_STRING);
 
     error_cursorLineIndex = debug_cursorLineIndex;
@@ -112,12 +112,12 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 }
 
 <VERBATIM_STRING,STRIPSOFF_STRING,STRING,CHAR>[^\'\"\%\n']+     {
-                                                                    strcat(read_string, yytext);
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
                                                                     debug_moveCursorToNextCharacter(yyleng);
                                                                 }
 
 <VERBATIM_STRING,STRIPSOFF_STRING>[\"\'\%\n]+                   {
-                                                                    strcat(read_string, yytext);
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
 
                                                                     for (int i=0; i<strlen(yytext); i++) {
                                                                         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -125,12 +125,19 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
                                                                     }
                                                                 }
 
-<STRING>\'+                                                     { strcat(read_string, yytext); debug_moveCursorToNextCharacter(yyleng); }
-<CHAR>\"+                                                       { strcat(read_string, yytext); debug_moveCursorToNextCharacter(yyleng); }
+<STRING>\'+                                                     {
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
+                                                                    debug_moveCursorToNextCharacter(yyleng);
+                                                                }
+
+<CHAR>\"+                                                       {
+                                                                    chaarcat_str(read_charArray, yytext, strlen(yytext));
+                                                                    debug_moveCursorToNextCharacter(yyleng);
+                                                                }
 
 <STRING,CHAR>\%A {
     if (isupper(yytext[1])) {
-        strcat(read_string, "@");
+        chaarcat_str(read_charArray, "@", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -142,7 +149,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%B {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\10");
+        chaarcat_str(read_charArray, "\10", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -154,7 +161,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%C {
     if (isupper(yytext[1])) {
-        strcat(read_string, "^");
+        chaarcat_str(read_charArray, "^", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -166,7 +173,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%D {
     if (isupper(yytext[1])) {
-        strcat(read_string, "$");
+        chaarcat_str(read_charArray, "$", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -178,7 +185,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%F {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\14");
+        chaarcat_str(read_charArray, "\14", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -190,7 +197,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%H {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\\");
+        chaarcat_str(read_charArray, "\10", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -202,7 +209,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%L {
     if (isupper(yytext[1])) {
-        strcat(read_string, "~");
+        chaarcat_str(read_charArray, "~", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -214,7 +221,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%N {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\n");
+        chaarcat_str(read_charArray, "\n", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -226,7 +233,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%Q {
     if (isupper(yytext[1])) {
-        strcat(read_string, "`");
+        chaarcat_str(read_charArray, "`", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -238,7 +245,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%R {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\15");
+        chaarcat_str(read_charArray, "\15", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -250,7 +257,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%S {
     if (isupper(yytext[1])) {
-        strcat(read_string, "#");
+        chaarcat_str(read_charArray, "#", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -262,7 +269,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%T {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\t");
+        chaarcat_str(read_charArray, "\t", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -274,7 +281,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%U {
     if (isupper(yytext[1])) {
-        strcat(read_string, "\0");
+        chaarcat_str(read_charArray, "\0", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -286,7 +293,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING,CHAR>\%V {
     if (isupper(yytext[1])) {
-        strcat(read_string, "|");
+        chaarcat_str(read_charArray, "|", 1);
     }
     else {
         printf("[ LEXICAL ERROR :: Unknown escape sequence \'%s\' at (line: %d, column = %d) ]\n", yytext, debug_cursorLineIndex+1, debug_cursorColumnIndex+1);
@@ -296,13 +303,13 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     debug_moveCursorToNextCharacter(yyleng);
 }
 
-<STRING,CHAR>\%% { strcat(read_string, "%"); debug_moveCursorToNextCharacter(yyleng); }
-<STRING,CHAR>\%\' { strcat(read_string, "\'"); debug_moveCursorToNextCharacter(yyleng); }
-<STRING,CHAR>\%\" { strcat(read_string, "\""); debug_moveCursorToNextCharacter(yyleng); }
-<STRING,CHAR>\%\( { strcat(read_string, "["); debug_moveCursorToNextCharacter(yyleng); }
-<STRING,CHAR>\%\) { strcat(read_string, "]"); debug_moveCursorToNextCharacter(yyleng); }
-<STRING,CHAR>\%\< { strcat(read_string, "{"); debug_moveCursorToNextCharacter(yyleng); }
-<STRING,CHAR>\%\> { strcat(read_string, "}"); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%%  { chaarcat_str(read_charArray, "%", 1); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%\' { chaarcat_str(read_charArray, "\'", 1); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%\" { chaarcat_str(read_charArray, "\"", 1); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%\( { chaarcat_str(read_charArray, "[", 1); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%\) { chaarcat_str(read_charArray, "]", 1); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%\< { chaarcat_str(read_charArray, "{", 1); debug_moveCursorToNextCharacter(yyleng); }
+<STRING,CHAR>\%\> { chaarcat_str(read_charArray, "}", 1); debug_moveCursorToNextCharacter(yyleng); }
 
 <STRING,CHAR>\%\/{DEC_INT_PTTRN}\/ {
     char buffer[1024];
@@ -311,7 +318,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithDecInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -324,7 +331,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithBinInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -337,7 +344,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithOctInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -350,7 +357,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithHexInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ appendCharToStr(read_string, read_string, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
     else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -375,6 +382,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     lexerErrorCode = NO_ERROR;
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
+
     debug_moveCursorToNextLine();
 }
 
@@ -383,17 +392,26 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     lexerErrorCode = NO_ERROR;
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 
 <CHAR>\' {
     if (lexerErrorCode == NO_ERROR) {
-        if (strlen(read_string) == 1) {
-            printf("<CHAR LITERAL: value = \'%c\'; char code = %d>\n", read_string[0], (int)read_string[0]);
+        if (chaarlen(read_charArray) == 1) {
+            printf("<CHAR LITERAL: value = \'");
+            chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+
+            printf("\'; char code = ");
+            chaarprint(read_charArray, CHAAR__HEX_CODES_PRINT);
+
+            printf(">\n");
         }
-        else if (strlen(read_string) > 1) {
-            printf("[ LEXICAL ERROR :: More than one character are placed in single brackets \'%s\' at (line: %d, column = %d) ]\n", read_string, error_cursorLineIndex+1, error_cursorColumnIndex+1);
+        else if (chaarlen(read_charArray) > 1) {
+            printf("[ LEXICAL ERROR :: More than one character are placed in single brackets \'");
+            chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+            printf("\' at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
         }
-        else if (strlen(read_string) == 0) {
+        else if (chaarlen(read_charArray) == 0) {
             printf("[ LEXICAL ERROR :: Empty character \'\' at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
         }
     }
@@ -406,6 +424,7 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     }
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng);
 }
@@ -440,44 +459,57 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING>\n {
     printf("[ LEXICAL ERROR :: No matching \" bracket at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextLine();
 }
 
 <STRING><<EOF>> {
     printf("[ LEXICAL ERROR :: No matching \" bracket at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 
 <STRING>\" {
     if (lexerErrorCode == NO_ERROR) {
-        printf("<STRING LITERAL: value = \"%s\">\n", read_string);
+        printf("<STRING LITERAL: value = \"");
+        chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+        printf("\">\n");
     }
     else {
         lexerErrorCode = NO_ERROR;
     }
 
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng);
 }
 
 <VERBATIM_STRING>^[ \t]*\}\" {
-    int readString_length = strlen(read_string);
-    if (read_string[readString_length-1] == '\n') {
-        read_string[readString_length-1] = 0;
+    int lastCharPos = chaarlen(read_charArray) - 1;
+    if (chaargetchr(read_charArray, lastCharPos) == '\n') {
+        chaardel(read_charArray, lastCharPos, 1);
     }
 
-    printf("<STRING LITERAL: value = \"%s\">\n", read_string);
+    printf("<STRING LITERAL: value = \"");
+    chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+    printf("\">\n");
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng-1);
 }
 
 <VERBATIM_STRING>^[ \t]*[^ \t\n]+[ \t]*\}\" {
     printf("[ LEXICAL ERROR :: No matching <}\"> bracket for verbatim string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -487,7 +519,9 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <VERBATIM_STRING><<EOF>> {
     printf("[ LEXICAL ERROR :: No matching <}\"> bracket for verbatim string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 
 \}\" {
@@ -497,55 +531,79 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 }
 
 <STRIPSOFF_STRING>^[ \t]*\]\" {
-    char buffer_word[1024];
-
-    int readString_length = strlen(read_string);
-    if (read_string[readString_length-1] == '\n') {
-        read_string[readString_length-1] = 0;
+    int lastCharPos = chaarlen(read_charArray) - 1;
+    if (chaargetchr(read_charArray, lastCharPos) == '\n') {
+        chaardel(read_charArray, lastCharPos, 1);
     }
 
-    // Define number of first space characters to delete in strings in each line
-    int spaceChrsCountToDelete = (read_string[strlen(read_string)-1] != '\n' ? INT_MAX : 0);
-    int curr_spaceChrsCountToDelete = 0;
+    // Define number of first space characters to delete in each line of stripsoff string
+    unsigned int firstChrsToDeleteCount = (chaargetchr(read_charArray, chaarlen(read_charArray)-1) != '\n' ? UINT_MAX : 0);
 
-    int currShift = 0;
+    int currIndex = 0;
     do {
-        currShift += getFirstWordFromStr(read_string + currShift, buffer_word, "\n");
+        // Get each line of char array beginning from the first line
+        CharArray* currLine = chaarcreate();
 
-        curr_spaceChrsCountToDelete = 0;
-        for (int i=0; i<strlen(buffer_word) && buffer_word[i] == ' '; i++) {
-            curr_spaceChrsCountToDelete++;
+        for (;currIndex < chaarlen(read_charArray) && chaargetchr(read_charArray, currIndex) != '\n'; currIndex++) {
+            chaaraddchr(currLine, chaargetchr(read_charArray, currIndex));
+        }
+        currIndex++;
+
+        // Check if gotten line is empty
+        int isLineEmpty = 1;
+        for (int i=0; i<chaarlen(currLine) && isLineEmpty; i++) {
+            char currChar = chaargetchr(currLine, i);
+            if (currChar != ' ' && currChar != '\t') { isLineEmpty = 0; }
         }
 
-        if (buffer_word[0] == '\0') {
-            printf("GOT HERE\n");
-            curr_spaceChrsCountToDelete = -1;
-            spaceChrsCountToDelete = 0;
-        }
-        else if (spaceChrsCountToDelete > curr_spaceChrsCountToDelete) {
-            spaceChrsCountToDelete = curr_spaceChrsCountToDelete;
-        }
+        // Count number of spaces placed in the beginning of gotten line
+        unsigned int firstNonSpaceIndex = 0;
+        for (;firstNonSpaceIndex < chaarlen(currLine) && chaargetchr(currLine, firstNonSpaceIndex) == ' '; firstNonSpaceIndex++);
 
-    } while(read_string[currShift] != '\0' && curr_spaceChrsCountToDelete != -1);
+        // Redefine current number of first spaces to delete
+        if (isLineEmpty) 										{ firstChrsToDeleteCount = 0; }
+        else if (firstChrsToDeleteCount > firstNonSpaceIndex) 	{ firstChrsToDeleteCount = firstNonSpaceIndex; }
 
-    // Delete defined first space characters in strings in each line
-    char buffer_result[1024] = "\0";
+        chaardestroy(currLine);
 
-    currShift = 0;
+    } while(currIndex < chaarlen(read_charArray) && firstChrsToDeleteCount != 0);
+
+    // Get result stripsoff string without defined first space characters in each line
+    CharArray* result = chaarcreate();
+
+    currIndex = 0;
     do {
-        currShift += getFirstWordFromStr(read_string + currShift, buffer_word, "\n");
-        strcat(buffer_result, buffer_word + spaceChrsCountToDelete);
-    } while(read_string[currShift] != '\0');
+        CharArray* currLine = chaarcreate();
 
-    printf("<STRING LITERAL: value = \"%s\">\n", buffer_result);
+        for (;currIndex < chaarlen(read_charArray) && chaargetchr(read_charArray, currIndex) != '\n'; currIndex++) {
+            chaaraddchr(currLine, chaargetchr(read_charArray, currIndex));
+        }
+
+        if (chaargetchr(read_charArray, currIndex) == '\n') { chaaraddchr(currLine, '\n'); }
+        currIndex++;
+
+        chaardel(currLine, 0, firstChrsToDeleteCount);
+        chaarcat(result, currLine);
+    } while(currIndex < chaarlen(read_charArray));
+
+    // Print result
+    printf("<STRING LITERAL: value = \"");
+    chaarprint(result, CHAAR__STANDARD_PRINT);
+    printf("\">\n");
+
+    chaardestroy(result);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng-1);
 }
 
 <STRIPSOFF_STRING>^[ \t]*[^ \t\n]+[ \t]*\]\" {
     printf("[ LEXICAL ERROR :: No matching <]\"> bracket for strips-off string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
         if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
@@ -555,7 +613,9 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRIPSOFF_STRING><<EOF>> {
     printf("[ LEXICAL ERROR :: No matching <]\"> bracket for strips-off string at (line: %d, column = %d) ]\n", error_cursorLineIndex+1, error_cursorColumnIndex+1);
+
     BEGIN(INITIAL);
+    chaardestroy(read_charArray);
 }
 
 \]\" {
