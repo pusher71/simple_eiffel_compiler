@@ -4,6 +4,16 @@ project(sec)
 
 set(CMAKE_CXX_STANDARD 17)
 
+message("START CMAKE")
+
+# Add BISON functionality
+find_package(BISON)
+if (BISON_FOUND)
+    BISON_TARGET(MyParser src/bison/bison.y ${CMAKE_CURRENT_SOURCE_DIR}/src/bison/parser.c DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/flex/parser.h)
+else()
+    message("Failed to load BISON")
+endif()
+
 # Add FLEX functionality
 find_package(FLEX)
 if (FLEX_FOUND)
@@ -12,7 +22,7 @@ if (FLEX_FOUND)
         FIND_LIBRARY(FL_LIBRARY NAMES libfl fl DOC "path to the fl library")
     endif()
 
-    FLEX_TARGET(${CMAKE_PROJECT_NAME} ./src/flex.l ./src/flex.c)
+    FLEX_TARGET(MyLexer src/flex/flex.l ${CMAKE_CURRENT_SOURCE_DIR}/src/flex/lexer.c)
 else()
     message("Failed to load FLEX")
 endif()
@@ -20,10 +30,14 @@ endif()
 # Add source files
 set(SOURCE_FILES
     src/main.cpp
-    src/flex.c
 
-    src/utilities/char_utilities.c
-	src/utilities/chararray_utilities.c
+    src/flex/lexer.c
+    src/flex/utilities/char_utilities.c
+    src/flex/utilities/chararray_utilities.c
+
+    src/bison/parser.c
+    src/bison/tree_creators.c
+    src/bison/print_tree_nodes.c
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})

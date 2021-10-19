@@ -22,6 +22,8 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
     #include "utilities/char_utilities.h"
     #include "utilities/chararray_utilities.h"
 
+    #include "parser.h"
+
     enum LexerErrorCode {
         NO_ERROR,
         GENERAL_ERROR,
@@ -29,8 +31,8 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
         INVALID_CHAR_CODE
     };
 
-    unsigned int debug_cursorLineIndex 		= 0;
-    unsigned int debug_cursorColumnIndex 	= 0;
+    unsigned int debug_cursorLineIndex       = 0;
+    unsigned int debug_cursorColumnIndex     = 0;
 
     void debug_moveCursorToNextLine() {
         debug_cursorLineIndex++;
@@ -54,8 +56,8 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
 
     int lexerErrorValue;
 
-    int oldCursorLineIndex 		= 0;
-    int oldCursorColumnIndex 	= 0;
+    int oldCursorLineIndex         = 0;
+    int oldCursorColumnIndex     = 0;
 
     // Read buffers
     CharArray* read_charArray;
@@ -65,13 +67,13 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
     unsigned int maxCharCode = 127;
 %}
 
-true   { printf("<BOOLEAN: %d>\n", 1); debug_moveCursorToNextCharacter(yyleng); }
-false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); }
+true   { debug_moveCursorToNextCharacter(yyleng); yylval.liter_boolean_field = 1; return LITER_BOOLEAN; }
+false  { debug_moveCursorToNextCharacter(yyleng); yylval.liter_boolean_field = 0; return LITER_BOOLEAN; }
 
-{DEC_INT_PTTRN} { printf("<DECIMAL INTEGER LITERAL: value = %ld; matched string = \"%s\">\n", getDecIntFromStringWithDecInt_eiffel(yytext), yytext); debug_moveCursorToNextCharacter(yyleng); }
-{BIN_INT_PTTRN} { printf("<BINARY INTEGER LITERAL: value = %ld; matched string = \"%s\">\n", getDecIntFromStringWithBinInt_eiffel(yytext), yytext); debug_moveCursorToNextCharacter(yyleng); }
-{OCT_INT_PTTRN} { printf("<OCTAL INTEGER LITERAL: value = %ld; matched string = \"%s\">\n", getDecIntFromStringWithOctInt_eiffel(yytext), yytext); debug_moveCursorToNextCharacter(yyleng); }
-{HEX_INT_PTTRN} { printf("<HEXADECIMAL INTEGER LITERAL: value = %ld; matched string = \"%s\">\n", getDecIntFromStringWithHexInt_eiffel(yytext), yytext); debug_moveCursorToNextCharacter(yyleng); }
+{DEC_INT_PTTRN} { debug_moveCursorToNextCharacter(yyleng); yylval.liter_integer_field = getDecIntFromStringWithDecInt_eiffel(yytext); return LITER_INTEGER; }
+{BIN_INT_PTTRN} { debug_moveCursorToNextCharacter(yyleng); yylval.liter_integer_field = getDecIntFromStringWithBinInt_eiffel(yytext); return LITER_INTEGER; }
+{OCT_INT_PTTRN} { debug_moveCursorToNextCharacter(yyleng); yylval.liter_integer_field = getDecIntFromStringWithOctInt_eiffel(yytext); return LITER_INTEGER; }
+{HEX_INT_PTTRN} { debug_moveCursorToNextCharacter(yyleng); yylval.liter_integer_field = getDecIntFromStringWithHexInt_eiffel(yytext); return LITER_INTEGER; }
 
 {INVALID_VALUE_TOKEN} { printf("[ LEXICAL ERROR :: Invalid value token \"%s\" in line: %d ]\n", yytext, debug_cursorLineIndex+1); debug_moveCursorToNextCharacter(yyleng); }
 
@@ -120,8 +122,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
                                                                     chaarcat_str(read_charArray, yytext, strlen(yytext));
 
                                                                     for (int i=0; i<strlen(yytext); i++) {
-                                                                        if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
-                                                                        else 					{ debug_moveCursorToNextCharacter(1); }
+                                                                        if (yytext[i] == '\n')     { debug_moveCursorToNextLine(); }
+                                                                        else                     { debug_moveCursorToNextCharacter(1); }
                                                                     }
                                                                 }
 
@@ -318,8 +320,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithDecInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
-    else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
+    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
 }
@@ -331,8 +333,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithBinInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
-    else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
+    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
 }
@@ -344,8 +346,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithOctInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
-    else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
+    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
 }
@@ -357,8 +359,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
     short charCode = getDecIntFromStringWithHexInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)   	{ chaaraddchr(read_charArray, charCode); }
-    else                                    					{ lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
+    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
 }
@@ -398,13 +400,13 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 <CHAR>\' {
     if (lexerErrorCode == NO_ERROR) {
         if (chaarlen(read_charArray) == 1) {
-            printf("<CHAR LITERAL: value = \'");
-            chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
+            yylval.liter_char_field = chaargetchr(read_charArray, 0);
+            chaardestroy(read_charArray);
 
-            printf("\'; char code = ");
-            chaarprint(read_charArray, CHAAR__HEX_CODES_PRINT);
+            debug_moveCursorToNextCharacter(yyleng);
+            BEGIN(INITIAL);
 
-            printf(">\n");
+            return LITER_CHAR;
         }
         else if (chaarlen(read_charArray) > 1) {
             printf("[ LEXICAL ERROR :: More than one character are placed in single brackets \'");
@@ -423,16 +425,16 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
         lexerErrorCode = NO_ERROR;
     }
 
-    BEGIN(INITIAL);
     chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng);
+    BEGIN(INITIAL);
 }
 
 <STRING>%[ \t\n]+% {
     for (int i=0; i<strlen(yytext); i++) {
-        if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
-        else 					{ debug_moveCursorToNextCharacter(1); }
+        if (yytext[i] == '\n')     { debug_moveCursorToNextLine(); }
+        else                     { debug_moveCursorToNextCharacter(1); }
     }
 }
 
@@ -475,18 +477,21 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
 
 <STRING>\" {
     if (lexerErrorCode == NO_ERROR) {
-        printf("<STRING LITERAL: value = \"");
-        chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
-        printf("\">\n");
+        yylval.liter_string_field = read_charArray;
+
+        debug_moveCursorToNextCharacter(yyleng-1);
+        BEGIN(INITIAL);
+
+        return LITER_STRING;
     }
     else {
         lexerErrorCode = NO_ERROR;
     }
 
-    BEGIN(INITIAL);
     chaardestroy(read_charArray);
 
     debug_moveCursorToNextCharacter(yyleng);
+    BEGIN(INITIAL);
 }
 
 <VERBATIM_STRING>^[ \t]*\}\" {
@@ -495,14 +500,11 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
         chaardel(read_charArray, lastCharPos, 1);
     }
 
-    printf("<STRING LITERAL: value = \"");
-    chaarprint(read_charArray, CHAAR__STANDARD_PRINT);
-    printf("\">\n");
-
-    BEGIN(INITIAL);
-    chaardestroy(read_charArray);
+    yylval.liter_string_field = read_charArray;
+    return LITER_STRING;
 
     debug_moveCursorToNextCharacter(yyleng-1);
+    BEGIN(INITIAL);
 }
 
 <VERBATIM_STRING>^[ \t]*[^ \t\n]+[ \t]*\}\" {
@@ -512,8 +514,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
-        if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
-        else 					{ debug_moveCursorToNextCharacter(1); }
+        if (yytext[i] == '\n')     { debug_moveCursorToNextLine(); }
+        else                     { debug_moveCursorToNextCharacter(1); }
     }
 }
 
@@ -561,8 +563,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
         for (;firstNonSpaceIndex < chaarlen(currLine) && chaargetchr(currLine, firstNonSpaceIndex) == ' '; firstNonSpaceIndex++);
 
         // Redefine current number of first spaces to delete
-        if (isLineEmpty) 										{ firstChrsToDeleteCount = 0; }
-        else if (firstChrsToDeleteCount > firstNonSpaceIndex) 	{ firstChrsToDeleteCount = firstNonSpaceIndex; }
+        if (isLineEmpty)                                         { firstChrsToDeleteCount = 0; }
+        else if (firstChrsToDeleteCount > firstNonSpaceIndex)     { firstChrsToDeleteCount = firstNonSpaceIndex; }
 
         chaardestroy(currLine);
 
@@ -587,16 +589,13 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     } while(currIndex < chaarlen(read_charArray));
 
     // Print result
-    printf("<STRING LITERAL: value = \"");
-    chaarprint(result, CHAAR__STANDARD_PRINT);
-    printf("\">\n");
-
-    chaardestroy(result);
-
-    BEGIN(INITIAL);
+    yylval.liter_string_field = result;
     chaardestroy(read_charArray);
 
+    return LITER_STRING;
+
     debug_moveCursorToNextCharacter(yyleng-1);
+    BEGIN(INITIAL);
 }
 
 <STRIPSOFF_STRING>^[ \t]*[^ \t\n]+[ \t]*\]\" {
@@ -606,8 +605,8 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
-        if (yytext[i] == '\n') 	{ debug_moveCursorToNextLine(); }
-        else 					{ debug_moveCursorToNextCharacter(1); }
+        if (yytext[i] == '\n')     { debug_moveCursorToNextLine(); }
+        else                     { debug_moveCursorToNextCharacter(1); }
     }
 }
 
@@ -624,52 +623,44 @@ false  { printf("<BOOLEAN: %d>\n", 0); debug_moveCursorToNextCharacter(yyleng); 
     debug_moveCursorToNextCharacter(yyleng);
 }
 
+class           { debug_moveCursorToNextCharacter(yyleng); return CLASS; }
+create          { debug_moveCursorToNextCharacter(yyleng); return CREATE; }
+do              { debug_moveCursorToNextCharacter(yyleng); return DO; }
+end             { debug_moveCursorToNextCharacter(yyleng); return END; }
+feature         { debug_moveCursorToNextCharacter(yyleng); return FEATURE; }
+inherit         { debug_moveCursorToNextCharacter(yyleng); return INHERIT; }
+rename          { debug_moveCursorToNextCharacter(yyleng); return RENAME; }
+as              { debug_moveCursorToNextCharacter(yyleng); return AS; }
+undefine        { debug_moveCursorToNextCharacter(yyleng); return UNDEFINE; }
+redefine        { debug_moveCursorToNextCharacter(yyleng); return REDEFINE; }
+select          { debug_moveCursorToNextCharacter(yyleng); return SELECT; }
+local           { debug_moveCursorToNextCharacter(yyleng); return LOCAL; }
+result          { debug_moveCursorToNextCharacter(yyleng); return RESULT; }
+current         { debug_moveCursorToNextCharacter(yyleng); return CURRENT; }
+void            { debug_moveCursorToNextCharacter(yyleng); }
+
 if              { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 then            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 else            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-elseif	        { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+elseif          { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 inspect         { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-when		    { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+when            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 loop            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 from            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-until		    { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+until           { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+variant         { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
 
-alias			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-attribute	    { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-class			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-create			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-deferred		{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-do				{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-end		    	{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-ensure			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-expanded		{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-export			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-feature	    	{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-inherit		    { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-invariant		{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-local			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-note			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-require	    	{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-result			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-retry			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-variant	    	{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-void			{ printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-
-detachable          { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-separate            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-comparable          { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-
-boolean             { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-character           { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-integer_8           { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-integer_16          { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-integer_32          { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-integer_64          { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-natural_8           { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-natural_16          { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-natural_32          { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-natural_64          { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-string              { printf("<DATA TYPE: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+boolean         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_BOOLEAN; }
+character       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_CHARACTER; }
+integer_8       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_8; }
+integer_16      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_16; }
+integer_32      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_32; }
+integer_64      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_64; }
+natural_8       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_8; }
+natural_16      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_16; }
+natural_32      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_32; }
+natural_64      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_64; }
+string          { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_STRING; }
 
 "+"     { printf("<OPERATOR: PLUS>\n"); debug_moveCursorToNextCharacter(yyleng); }
 "-"     { printf("<OPERATOR: MINUS>\n"); debug_moveCursorToNextCharacter(yyleng); }
@@ -691,19 +682,27 @@ or      { printf("<OPERATOR: OR>\n"); debug_moveCursorToNextCharacter(yyleng); }
 not     { printf("<OPERATOR: NOT>\n"); debug_moveCursorToNextCharacter(yyleng); }
 xor     { printf("<OPERATOR: XOR>\n"); debug_moveCursorToNextCharacter(yyleng); }
 
-"." { printf("<OPERATOR: DOT>\n"); debug_moveCursorToNextCharacter(yyleng); }
-";" { printf("<OPERATOR: SEMICOLON>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"[" { printf("<OPERATOR: LEFT SQUARE BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"]" { printf("<OPERATOR: RIGHT SQUARE BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
+"." { debug_moveCursorToNextCharacter(yyleng); return '.'; }
+";" { debug_moveCursorToNextCharacter(yyleng); return ';'; }
+"[" { debug_moveCursorToNextCharacter(yyleng); return '['; }
+"]" { debug_moveCursorToNextCharacter(yyleng); return ']'; }
 
-[_a-zA-Z]+\w* { printf("<IDENTIFIER: \"%s\">\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+[_a-zA-Z]+[_a-zA-Z0-9]* {
+    char* id_name = (char*)malloc(yyleng+1);
+    strcpy(id_name, yytext);
 
-"," { printf("<SYNTAX SIGN: COMMA>\n"); debug_moveCursorToNextCharacter(yyleng); }
-":" { printf("<SYNTAX SIGN: COLON>\n"); }
-"(" { printf("<SYNTAX SIGN: LEFT ROUND BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
-")" { printf("<SYNTAX SIGN: RIGHT ROUND BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"{" { printf("<SYNTAX SIGN: LEFT CURLY BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"}" { printf("<SYNTAX SIGN: RIGHT CURLY BRACKET>\n"); debug_moveCursorToNextCharacter(yyleng); }
+    yylval.id_field = id_name;
+
+    debug_moveCursorToNextCharacter(yyleng);
+    return ID;
+}
+
+"," { debug_moveCursorToNextCharacter(yyleng); return ','; }
+":" { debug_moveCursorToNextCharacter(yyleng); return ':'; }
+"(" { debug_moveCursorToNextCharacter(yyleng); return '('; }
+")" { debug_moveCursorToNextCharacter(yyleng); return ')'; }
+"{" { debug_moveCursorToNextCharacter(yyleng); return '{'; }
+"}" { debug_moveCursorToNextCharacter(yyleng); return '}'; }
 
 \n { debug_moveCursorToNextLine(); }
 
