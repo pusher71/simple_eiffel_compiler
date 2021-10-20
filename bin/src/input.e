@@ -28,8 +28,8 @@ class MAIN
             Create x.method(2, 3, ((15)));
             ID;
 
-            ID(ID(ID())).ID.ID((23)).ID.ID(False, "Hello %
-            % Hello", What);;;
+            ID(ID(34, "He%Ull%Uo", ID())).ID.ID((23)).ID.ID(False, "Hello %
+            %He%Ullo", What);;;
         end;;;
 
     feature

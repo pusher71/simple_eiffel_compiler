@@ -1,4 +1,5 @@
 #include "print_tree_nodes.h"
+#include "../flex/utilities/chararray_utilities.h"
 
 void print_identifiers_comma_seq(FILE* dot_file, struct identifiers_comma_seq_strct* identifiers_comma_seq) {
     fprintf(dot_file, "%u[label=\"id <%s>\"];\n", identifiers_comma_seq->_node_index, identifiers_comma_seq->value);
@@ -535,7 +536,7 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             break;
 
         case expr_liter_str:
-            fprintf(dot_file, "%u[label=\"expr :: str <%s>\"];\n", expr->_node_index, "CHAAR");
+            fprintf(dot_file, "%u[label=\"expr :: str <%s>\"];\n", expr->_node_index, chaartostr(expr->liter_str));
             break;
 
         case expr_call:

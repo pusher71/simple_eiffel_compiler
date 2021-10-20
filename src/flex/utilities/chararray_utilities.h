@@ -47,6 +47,13 @@ unsigned int chaarlen(const CharArray* char_array);
  */
 char chaargetchr(const CharArray* char_array, unsigned int char_index);
 
+/**
+ * @brief Convert char array to char* ('0' chars representing as "<NUL>" string)
+ * @param char_array                    input char array
+ * @return string representation of char array
+ */
+char* chaartostr(const CharArray* char_array);
+
 // ==================================================
 // # ... CONTRACT
 // ==================================================

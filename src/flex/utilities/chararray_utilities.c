@@ -1,6 +1,7 @@
 #include "chararray_utilities.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct CharArray {
     short isInitialized;	/*! Sign indicating that char array is initialized for work */
@@ -54,6 +55,43 @@ char chaargetchr(const CharArray* char_array, unsigned int char_index) {
     // Get character of char array at given position
     if (char_index >= 0 && char_index <= char_array->length-1) 	{ return char_array->beginPtr[char_index]; }
     else 														{ return -1; }
+}
+
+char* chaartostr(const CharArray* char_array) {
+    // Set error if char array isn't initialized
+    if (!char_array->isInitialized) {
+        printf("[ CHAR ARRAY ERROR :: Get character of char array that isn\'t initialized ]\n");
+        return NULL;
+    }
+
+    // Convert char array to string ...
+    // ... Allocate memory for string
+    int zeroCharsCount = 0;
+    for (int i=0; i<chaarlen(char_array); i++) {
+        if (chaargetchr(char_array, i) == '\0') { zeroCharsCount++; }
+    }
+
+    const char* zeroCharRepresent = "<NUL>";
+    int strCharsCount = chaarlen(char_array) + zeroCharsCount * (strlen(zeroCharRepresent) - 1) + 1;
+    char* str = (char*)malloc(strCharsCount);
+
+    // ... Copy content of char array to allocated string
+    int currStrIndex = 0;
+    for (int i=0; i<chaarlen(char_array); i++) {
+        char currChar = chaargetchr(char_array, i);
+
+        if (currChar != '\0') {
+            str[currStrIndex++] = currChar;
+        }
+        else {
+            strcat(str, zeroCharRepresent);
+            currStrIndex += strlen(zeroCharRepresent);
+        }
+    }
+
+    str[strCharsCount-1] = 0;
+
+    return str;
 }
 
 int chaarclr(CharArray* char_array) {
