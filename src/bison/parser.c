@@ -207,9 +207,20 @@ typedef union YYSTYPE
     struct ids_with_type_seq_strct*             ids_with_type_seq_field;
     struct nonempty_ids_with_type_seq_strct*    nonempty_ids_with_type_seq_field;
     struct ids_with_type_strct*                 ids_with_type_field;
-    struct type_strct* type_field;
+    struct type_strct*                          type_field;
 
     struct routine_decl_body_strct* routine_decl_body_field;
+
+    // ... Instruction
+    struct instruction_seq_strct*   instruction_seq_field;
+    struct instruction_strct*       instruction_field;
+
+    struct call_strct*                      call_field;
+    struct call_sub_seq_strct*              call_sub_seq_field;
+    struct argument_seq_strct*              argument_seq_field;
+    struct nonempty_argument_seq_strct*     nonempty_argument_seq_field;
+
+    struct expr_strct* expr_field;
 
     /* Constants */
     short				liter_boolean_field;
@@ -220,7 +231,7 @@ typedef union YYSTYPE
     char*  				id_field;
 }
 /* Line 193 of yacc.c.  */
-#line 224 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/bison/parser.c"
+#line 235 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/bison/parser.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -233,7 +244,7 @@ typedef union YYSTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 237 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/bison/parser.c"
+#line 248 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/bison/parser.c"
 
 #ifdef short
 # undef short
@@ -448,16 +459,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  6
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   200
+#define YYLAST   203
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  42
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  33
+#define YYNNTS  32
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  108
+#define YYNRULES  110
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  190
+#define YYNSTATES  194
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
@@ -506,16 +517,17 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint16 yyprhs[] =
 {
        0,     0,     3,     5,     7,    10,    12,    16,    17,    19,
-      20,    22,    24,    27,    34,    35,    38,    41,    45,    47,
-      51,    60,    67,    74,    79,    86,    91,    96,    99,   106,
-     111,   116,   119,   124,   127,   130,   134,   140,   141,   143,
-     146,   150,   151,   153,   156,   160,   161,   163,   166,   170,
-     174,   179,   182,   190,   196,   197,   199,   202,   206,   210,
-     216,   221,   222,   225,   228,   232,   235,   243,   245,   247,
-     252,   256,   263,   267,   271,   277,   279,   284,   289,   297,
-     301,   308,   315,   325,   327,   332,   336,   343,   344,   346,
-     348,   352,   354,   358,   360,   362,   364,   366,   368,   370,
-     372,   374,   376,   378,   380,   382,   384,   386,   388
+      20,    22,    24,    27,    34,    35,    37,    40,    43,    47,
+      49,    53,    62,    69,    76,    81,    88,    93,    98,   101,
+     108,   113,   118,   121,   126,   129,   132,   136,   142,   143,
+     145,   148,   152,   153,   155,   158,   162,   163,   165,   168,
+     172,   176,   181,   184,   192,   198,   199,   201,   204,   208,
+     212,   217,   221,   228,   234,   237,   241,   244,   249,   257,
+     259,   261,   266,   270,   277,   281,   285,   291,   293,   298,
+     302,   309,   314,   322,   329,   339,   341,   346,   350,   357,
+     358,   360,   362,   366,   370,   372,   374,   376,   378,   380,
+     382,   384,   386,   388,   390,   392,   394,   396,   398,   400,
+     402
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
@@ -524,58 +536,61 @@ static const yytype_int8 yyrhs[] =
       43,     0,    -1,    44,    -1,    49,    -1,    44,    49,    -1,
        3,    -1,    45,    34,     3,    -1,    -1,    35,    -1,    -1,
       48,    -1,    35,    -1,    48,    35,    -1,     4,     3,    50,
-      55,    57,     5,    -1,    -1,    21,    51,    -1,    52,    46,
-      -1,    51,    52,    46,    -1,     3,    -1,     3,    53,     5,
-      -1,    22,    54,    23,    45,    24,    45,    25,    45,    -1,
-      23,    45,    24,    45,    25,    45,    -1,    22,    54,    24,
-      45,    25,    45,    -1,    24,    45,    25,    45,    -1,    22,
-      54,    23,    45,    25,    45,    -1,    23,    45,    25,    45,
-      -1,    22,    54,    25,    45,    -1,    25,    45,    -1,    22,
-      54,    23,    45,    24,    45,    -1,    23,    45,    24,    45,
-      -1,    22,    54,    24,    45,    -1,    24,    45,    -1,    22,
-      54,    23,    45,    -1,    23,    45,    -1,    22,    54,    -1,
-       3,    26,     3,    -1,    54,    34,     3,    26,     3,    -1,
-      -1,    56,    -1,    27,    45,    -1,    56,    27,    45,    -1,
-      -1,    58,    -1,    28,    59,    -1,    58,    28,    59,    -1,
-      -1,    60,    -1,    61,    47,    -1,    60,    61,    47,    -1,
-      45,    36,    74,    -1,    45,    36,    74,    65,    -1,    45,
-      65,    -1,    45,    37,    62,    38,    36,    74,    65,    -1,
-      45,    37,    62,    38,    65,    -1,    -1,    63,    -1,    64,
-      46,    -1,    63,    64,    46,    -1,    45,    36,    74,    -1,
-      66,    30,    47,    67,     5,    -1,    66,    30,    47,     5,
-      -1,    -1,    29,    62,    -1,    68,    47,    -1,    67,    68,
-      47,    -1,    27,     3,    -1,    27,     3,    39,     3,    37,
-      71,    38,    -1,    69,    -1,     3,    -1,     3,    37,    71,
-      38,    -1,     3,    39,    70,    -1,     3,    37,    71,    38,
-      39,    70,    -1,    31,    39,    70,    -1,    32,    39,    70,
-      -1,    37,    73,    38,    39,    70,    -1,    33,    -1,    33,
-      37,    71,    38,    -1,    33,    40,     3,    41,    -1,    33,
-      40,     3,    41,    37,    71,    38,    -1,    33,    39,    70,
-      -1,    33,    37,    71,    38,    39,    70,    -1,    33,    40,
-       3,    41,    39,    70,    -1,    33,    40,     3,    41,    37,
-      71,    38,    39,    70,    -1,     3,    -1,     3,    37,    71,
-      38,    -1,    70,    39,     3,    -1,    70,    39,     3,    37,
-      71,    38,    -1,    -1,    72,    -1,    73,    -1,    72,    34,
-      73,    -1,    69,    -1,    37,    73,    38,    -1,    17,    -1,
-      18,    -1,    19,    -1,    20,    -1,     3,    -1,     6,    -1,
-       7,    -1,     8,    -1,     9,    -1,    10,    -1,    11,    -1,
-      12,    -1,    13,    -1,    14,    -1,    15,    -1,    16,    -1
+      55,    57,     5,    -1,    -1,    21,    -1,    21,    51,    -1,
+      52,    46,    -1,    51,    52,    46,    -1,     3,    -1,     3,
+      53,     5,    -1,    22,    54,    23,    45,    24,    45,    25,
+      45,    -1,    23,    45,    24,    45,    25,    45,    -1,    22,
+      54,    24,    45,    25,    45,    -1,    24,    45,    25,    45,
+      -1,    22,    54,    23,    45,    25,    45,    -1,    23,    45,
+      25,    45,    -1,    22,    54,    25,    45,    -1,    25,    45,
+      -1,    22,    54,    23,    45,    24,    45,    -1,    23,    45,
+      24,    45,    -1,    22,    54,    24,    45,    -1,    24,    45,
+      -1,    22,    54,    23,    45,    -1,    23,    45,    -1,    22,
+      54,    -1,     3,    26,     3,    -1,    54,    34,     3,    26,
+       3,    -1,    -1,    56,    -1,    27,    45,    -1,    56,    27,
+      45,    -1,    -1,    58,    -1,    28,    59,    -1,    58,    28,
+      59,    -1,    -1,    60,    -1,    61,    47,    -1,    60,    61,
+      47,    -1,    45,    36,    73,    -1,    45,    36,    73,    65,
+      -1,    45,    65,    -1,    45,    37,    62,    38,    36,    73,
+      65,    -1,    45,    37,    62,    38,    65,    -1,    -1,    63,
+      -1,    64,    46,    -1,    63,    64,    46,    -1,    45,    36,
+      73,    -1,    30,    47,    66,     5,    -1,    30,    47,     5,
+      -1,    29,    62,    30,    47,    66,     5,    -1,    29,    62,
+      30,    47,     5,    -1,    67,    47,    -1,    66,    67,    47,
+      -1,    27,     3,    -1,    27,     3,    39,     3,    -1,    27,
+       3,    39,     3,    37,    70,    38,    -1,    68,    -1,     3,
+      -1,     3,    37,    70,    38,    -1,     3,    39,    69,    -1,
+       3,    37,    70,    38,    39,    69,    -1,    31,    39,    69,
+      -1,    32,    39,    69,    -1,    37,    72,    38,    39,    69,
+      -1,    33,    -1,    33,    37,    70,    38,    -1,    33,    39,
+      69,    -1,    33,    37,    70,    38,    39,    69,    -1,    33,
+      40,     3,    41,    -1,    33,    40,     3,    41,    37,    70,
+      38,    -1,    33,    40,     3,    41,    39,    69,    -1,    33,
+      40,     3,    41,    37,    70,    38,    39,    69,    -1,     3,
+      -1,     3,    37,    70,    38,    -1,    69,    39,     3,    -1,
+      69,    39,     3,    37,    70,    38,    -1,    -1,    71,    -1,
+      72,    -1,    71,    34,    72,    -1,    37,    72,    38,    -1,
+      17,    -1,    18,    -1,    19,    -1,    20,    -1,    68,    -1,
+       3,    -1,     6,    -1,     7,    -1,     8,    -1,     9,    -1,
+      10,    -1,    11,    -1,    12,    -1,    13,    -1,    14,    -1,
+      15,    -1,    16,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   151,   151,   154,   155,   159,   160,   163,   164,   167,
-     168,   171,   172,   176,   180,   181,   184,   185,   188,   189,
-     192,   193,   194,   195,   197,   198,   199,   200,   202,   203,
-     204,   205,   207,   208,   209,   212,   213,   217,   218,   221,
-     222,   226,   227,   230,   231,   234,   235,   238,   239,   242,
-     243,   244,   245,   246,   249,   250,   253,   254,   257,   260,
-     261,   264,   265,   268,   269,   273,   274,   275,   278,   279,
-     280,   281,   282,   283,   284,   285,   286,   287,   288,   289,
-     290,   291,   292,   295,   296,   297,   298,   301,   302,   305,
-     306,   309,   310,   311,   312,   313,   314,   318,   319,   320,
-     321,   322,   323,   324,   325,   326,   327,   328,   329
+       0,   173,   173,   176,   177,   181,   182,   185,   186,   189,
+     190,   193,   194,   198,   202,   203,   204,   207,   208,   211,
+     212,   215,   216,   217,   218,   220,   221,   222,   223,   225,
+     226,   227,   228,   230,   231,   232,   235,   236,   240,   241,
+     244,   245,   249,   250,   253,   254,   257,   258,   261,   262,
+     265,   266,   267,   268,   269,   272,   273,   276,   277,   280,
+     283,   284,   285,   286,   289,   290,   293,   294,   295,   296,
+     299,   300,   301,   302,   303,   304,   305,   306,   307,   308,
+     309,   310,   311,   312,   313,   316,   317,   318,   319,   322,
+     323,   326,   327,   330,   331,   332,   333,   334,   335,   339,
+     340,   341,   342,   343,   344,   345,   346,   347,   348,   349,
+     350
 };
 #endif
 
@@ -599,8 +614,8 @@ static const char *const yytname[] =
   "features_block", "nonempty_features_block", "feature_decl_seq",
   "nonempty_feature_decl_seq", "feature_decl", "ids_with_type_seq",
   "nonempty_ids_with_type_seq", "ids_with_type", "routine_decl_body",
-  "local_decl", "instruction_seq", "instruction", "call", "call_sub_seq",
-  "argument_seq", "nonempty_argument_seq", "expr", "type", 0
+  "instruction_seq", "instruction", "call", "call_sub_seq", "argument_seq",
+  "nonempty_argument_seq", "expr", "type", 0
 };
 #endif
 
@@ -621,32 +636,34 @@ static const yytype_uint16 yytoknum[] =
 static const yytype_uint8 yyr1[] =
 {
        0,    42,    43,    44,    44,    45,    45,    46,    46,    47,
-      47,    48,    48,    49,    50,    50,    51,    51,    52,    52,
-      53,    53,    53,    53,    53,    53,    53,    53,    53,    53,
-      53,    53,    53,    53,    53,    54,    54,    55,    55,    56,
-      56,    57,    57,    58,    58,    59,    59,    60,    60,    61,
-      61,    61,    61,    61,    62,    62,    63,    63,    64,    65,
-      65,    66,    66,    67,    67,    68,    68,    68,    69,    69,
-      69,    69,    69,    69,    69,    69,    69,    69,    69,    69,
-      69,    69,    69,    70,    70,    70,    70,    71,    71,    72,
-      72,    73,    73,    73,    73,    73,    73,    74,    74,    74,
-      74,    74,    74,    74,    74,    74,    74,    74,    74
+      47,    48,    48,    49,    50,    50,    50,    51,    51,    52,
+      52,    53,    53,    53,    53,    53,    53,    53,    53,    53,
+      53,    53,    53,    53,    53,    53,    54,    54,    55,    55,
+      56,    56,    57,    57,    58,    58,    59,    59,    60,    60,
+      61,    61,    61,    61,    61,    62,    62,    63,    63,    64,
+      65,    65,    65,    65,    66,    66,    67,    67,    67,    67,
+      68,    68,    68,    68,    68,    68,    68,    68,    68,    68,
+      68,    68,    68,    68,    68,    69,    69,    69,    69,    70,
+      70,    71,    71,    72,    72,    72,    72,    72,    72,    73,
+      73,    73,    73,    73,    73,    73,    73,    73,    73,    73,
+      73
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     1,     1,     2,     1,     3,     0,     1,     0,
-       1,     1,     2,     6,     0,     2,     2,     3,     1,     3,
-       8,     6,     6,     4,     6,     4,     4,     2,     6,     4,
-       4,     2,     4,     2,     2,     3,     5,     0,     1,     2,
-       3,     0,     1,     2,     3,     0,     1,     2,     3,     3,
-       4,     2,     7,     5,     0,     1,     2,     3,     3,     5,
-       4,     0,     2,     2,     3,     2,     7,     1,     1,     4,
-       3,     6,     3,     3,     5,     1,     4,     4,     7,     3,
-       6,     6,     9,     1,     4,     3,     6,     0,     1,     1,
-       3,     1,     3,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1
+       1,     1,     2,     6,     0,     1,     2,     2,     3,     1,
+       3,     8,     6,     6,     4,     6,     4,     4,     2,     6,
+       4,     4,     2,     4,     2,     2,     3,     5,     0,     1,
+       2,     3,     0,     1,     2,     3,     0,     1,     2,     3,
+       3,     4,     2,     7,     5,     0,     1,     2,     3,     3,
+       4,     3,     6,     5,     2,     3,     2,     4,     7,     1,
+       1,     4,     3,     6,     3,     3,     5,     1,     4,     3,
+       6,     4,     7,     6,     9,     1,     4,     3,     6,     0,
+       1,     1,     3,     3,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -654,25 +671,26 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     0,     0,     2,     3,    14,     1,     4,     0,    37,
-      18,    15,     7,     0,    41,    38,     0,     0,     0,     0,
-       0,     7,     8,    16,     5,    39,    45,     0,    42,     0,
-       0,    34,    33,    31,    27,    19,    17,     0,    61,    43,
-      46,     9,    13,    45,    40,     0,     0,     0,     0,     0,
-       0,     0,     0,     6,    54,     0,    54,    51,     0,     9,
-      11,    47,    10,    44,    35,    32,    30,    26,     0,    29,
-      25,    23,     0,    62,    55,     7,    97,    98,    99,   100,
-     101,   102,   103,   104,   105,   106,   107,   108,    49,     0,
-       9,    48,    12,     0,     0,     0,     0,     0,     0,     7,
-      56,    50,    61,     0,    28,    24,    22,    36,    21,    58,
-      57,     0,    53,    68,    60,     0,     0,     0,    75,     0,
-       0,     9,    67,     0,    61,    87,     0,    65,     0,     0,
-      87,     0,     0,    93,    94,    95,    96,     0,    91,     0,
-      59,     9,    63,    20,    52,     0,    88,    89,    83,    70,
-       0,    72,    73,     0,    79,     0,     0,     0,    64,    69,
-       0,    87,     0,     0,    76,    77,    92,     0,     0,    90,
-       0,    85,    87,     0,    87,     0,    74,    71,    84,    87,
-       0,    80,     0,    81,     0,    66,    78,    86,     0,    82
+       0,     0,     0,     2,     3,    14,     1,     4,    15,    38,
+      19,    16,     7,     0,    42,    39,     0,     0,     0,     0,
+       0,     7,     8,    17,     5,    40,    46,     0,    43,     0,
+       0,    35,    34,    32,    28,    20,    18,     0,     0,    44,
+      47,     9,    13,    46,    41,     0,     0,     0,     0,     0,
+       0,     0,     0,     6,    55,     9,     0,    55,    52,     9,
+      11,    48,    10,    45,    36,    33,    31,    27,     0,    30,
+      26,    24,     0,     0,    56,     7,     0,    99,   100,   101,
+     102,   103,   104,   105,   106,   107,   108,   109,   110,    50,
+       0,    49,    12,     0,     0,     0,     0,     0,     0,     9,
+       7,    57,    70,    61,     0,     0,     0,    77,     0,     0,
+       9,    69,    51,     0,    29,    25,    23,    37,    22,    59,
+       0,    58,    89,     0,    66,     0,     0,    89,     0,     0,
+      94,    95,    96,    97,     0,    98,     0,    60,     9,    64,
+       0,    54,     0,    63,     0,     0,    90,    91,    85,    72,
+       0,    74,    75,     0,    79,     0,     0,     0,    65,     0,
+      21,    62,    71,     0,    89,     0,    67,    78,    81,    93,
+       0,    53,     0,    92,     0,    87,    89,     0,    89,     0,
+      76,    73,    86,    89,     0,    80,     0,    83,     0,    68,
+      82,    88,     0,    84
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
@@ -680,98 +698,99 @@ static const yytype_int16 yydefgoto[] =
 {
       -1,     2,     3,    38,    23,    61,    62,     4,     9,    11,
       12,    20,    31,    14,    15,    27,    28,    39,    40,    41,
-      73,    74,    75,    57,    58,   120,   121,   138,   149,   145,
-     146,   147,    88
+      73,    74,    75,    58,   109,   110,   135,   149,   145,   146,
+     147,    89
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -121
+#define YYPACT_NINF -117
 static const yytype_int16 yypact[] =
 {
-      13,    26,    23,    13,  -121,    25,  -121,  -121,    63,    68,
-     109,    63,    64,   101,    77,    79,   105,   101,   101,   101,
-     106,    64,  -121,  -121,  -121,    78,   101,   111,    90,   101,
-     110,     2,   -12,   -10,    78,  -121,  -121,   136,    57,  -121,
-     101,   107,  -121,   101,    78,   137,   101,   101,   101,   138,
-     101,   101,   101,  -121,   101,   114,   101,  -121,   113,   107,
-    -121,  -121,   112,  -121,  -121,     6,    20,    78,   118,    40,
-      78,    78,    43,  -121,   101,    64,  -121,  -121,  -121,  -121,
-    -121,  -121,  -121,  -121,  -121,  -121,  -121,  -121,    22,   108,
-     107,  -121,  -121,   101,   101,   101,   142,   101,   114,    64,
-    -121,  -121,    60,    70,    44,    78,    78,  -121,    78,  -121,
-    -121,   114,  -121,    53,  -121,   145,   115,   116,    98,    39,
-      82,   107,  -121,   101,   120,    39,   147,   117,   147,   147,
-      39,   147,   148,  -121,  -121,  -121,  -121,    39,  -121,   119,
-    -121,   107,  -121,    78,  -121,   121,   124,  -121,   123,   122,
-     149,   122,   122,   125,   122,   126,   127,   129,  -121,   130,
-      39,    39,   150,   133,   132,    61,   129,   147,   147,  -121,
-     128,   135,    39,   147,    39,   147,   122,   122,  -121,    39,
-     139,   122,   140,   122,   141,  -121,   134,  -121,   147,   122
+      20,    -1,    45,    20,  -117,    28,  -117,  -117,    50,    41,
+     134,    50,    35,    70,    59,    67,    95,    70,    70,    70,
+     109,    35,  -117,  -117,  -117,    84,    70,   114,    96,    70,
+     107,    -5,    -3,    -2,    84,  -117,  -117,   131,    86,  -117,
+      70,   100,  -117,    70,    84,   136,    70,    70,    70,   138,
+      70,    70,    70,  -117,    70,   100,   137,    70,  -117,   100,
+    -117,  -117,   129,  -117,  -117,     2,    17,    84,   139,    21,
+      84,    84,    -6,   140,    70,    35,    69,  -117,  -117,  -117,
+    -117,  -117,  -117,  -117,  -117,  -117,  -117,  -117,  -117,    47,
+     128,  -117,  -117,    70,    70,    70,   164,    70,   137,   100,
+      35,  -117,    56,  -117,   165,   130,   132,   123,    72,    80,
+     100,  -117,  -117,   125,    31,    84,    84,  -117,    84,  -117,
+      94,  -117,    72,   169,   135,   169,   169,    72,   169,   170,
+    -117,  -117,  -117,  -117,    72,  -117,   141,  -117,   100,  -117,
+     137,  -117,    70,  -117,   105,   142,   143,  -117,   144,   145,
+     172,   145,   145,   147,   145,   146,   148,   149,  -117,    47,
+      84,  -117,   150,    72,    72,   173,   153,   152,    91,   149,
+     169,  -117,   169,  -117,   154,   156,    72,   169,    72,   169,
+     145,   145,  -117,    72,   157,   145,   158,   145,   159,  -117,
+     155,  -117,   169,   145
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -121,  -121,  -121,   -13,   -11,   -58,  -121,   159,  -121,  -121,
-     153,  -121,  -121,  -121,  -121,  -121,  -121,   131,  -121,   143,
-     144,  -121,   102,   -74,  -121,  -121,    55,  -101,  -120,  -112,
-    -121,  -116,   -91
+    -117,  -117,  -117,   -13,   -12,   -52,  -117,   175,  -117,  -117,
+     171,  -117,  -117,  -117,  -117,  -117,  -117,   160,  -117,   161,
+     126,  -117,   124,   -88,    79,   -92,   -66,  -113,  -116,  -117,
+     -94,   -90
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
    positive, shift that token.  If negative, reduce the rule which
    number is the opposite.  If zero, do what YYDEFACT says.
    If YYTABLE_NINF, syntax error.  */
-#define YYTABLE_NINF -62
-static const yytype_int16 yytable[] =
+#define YYTABLE_NINF -1
+static const yytype_uint8 yytable[] =
 {
-      25,    91,   122,   139,    32,    33,    34,   109,   151,   152,
-      36,   154,    50,    51,   101,    52,    44,     1,   153,   122,
-     124,   156,    37,     6,    37,    46,    47,    48,   112,     5,
-      93,    94,   103,    65,    66,    67,    49,    69,    70,    71,
-      37,    72,   113,    72,   169,    95,     8,   176,   177,   170,
-     144,    54,   -61,   181,    37,   183,   133,   134,   135,   136,
-     180,    72,   182,   142,   100,    97,    10,   184,   189,   123,
-     116,   117,   118,   113,    37,   114,   137,    37,    37,    98,
-     104,   105,   106,   158,   108,   113,    54,   140,   110,    54,
-     125,    37,   126,    55,    56,    13,   111,   115,   174,    22,
-     175,   116,   117,   118,    24,    26,    29,   119,    30,   115,
-     143,    35,    37,   116,   117,   118,    42,    76,    43,   119,
-      77,    78,    79,    80,    81,    82,    83,    84,    85,    86,
-      87,    16,    17,    18,    19,   130,    45,   131,   132,    53,
-      64,    68,    60,    90,    96,   107,   102,    92,   127,    54,
-     148,   155,   163,   171,   128,   129,   150,   157,   160,   159,
-     161,   162,     7,   164,    21,   166,   178,   165,   167,   168,
-     172,   173,   179,   188,    63,   141,    99,   185,   186,   187,
-       0,     0,     0,    59,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-      89
+      25,   112,     5,    76,    32,    33,    34,    91,   119,    36,
+     111,   153,   151,   152,   136,   154,    44,   138,    46,    47,
+      48,    50,    51,    52,     1,   141,    93,    94,    37,    49,
+      98,    37,    37,    65,    66,    67,    37,    69,    70,    71,
+     156,    72,    95,   111,    72,     6,    97,   120,   174,     8,
+     159,    37,   138,    10,   111,    37,   142,   180,   139,   181,
+     184,    72,   186,   101,   185,    37,   187,   188,    13,   173,
+      22,   171,   102,    24,   103,   102,    54,    55,   111,   193,
+     114,   115,   116,   102,   118,   137,   158,    26,   121,   130,
+     131,   132,   133,   122,    29,   123,   104,   102,    30,   143,
+     105,   106,   107,   105,   106,   107,   108,   104,   102,   134,
+     161,   105,   106,   107,    35,    54,    55,   108,    37,    42,
+      37,   104,    56,    57,    43,   105,   106,   107,   178,   160,
+     179,   108,   104,    45,    53,    60,   105,   106,   107,    64,
+      77,    68,   108,    78,    79,    80,    81,    82,    83,    84,
+      85,    86,    87,    88,    54,    55,    16,    17,    18,    19,
+     127,   140,   128,   129,    92,    96,   113,   117,   124,   125,
+      99,   126,   148,   155,   150,   166,   175,   163,     7,   157,
+     162,   164,    21,    90,   165,   167,   169,   168,   170,   172,
+     176,   177,   182,   183,   192,   189,   190,   191,   100,   144,
+       0,    59,     0,    63
 };
 
 static const yytype_int16 yycheck[] =
 {
-      13,    59,   103,   119,    17,    18,    19,    98,   128,   129,
-      21,   131,    24,    25,    88,    25,    29,     4,   130,   120,
-     111,   137,    34,     0,    34,    23,    24,    25,   102,     3,
-      24,    25,    90,    46,    47,    48,    34,    50,    51,    52,
-      34,    54,     3,    56,   160,    25,    21,   167,   168,   161,
-     124,    29,    30,   173,    34,   175,    17,    18,    19,    20,
-     172,    74,   174,   121,    75,    25,     3,   179,   188,    25,
-      31,    32,    33,     3,    34,     5,    37,    34,    34,    36,
-      93,    94,    95,   141,    97,     3,    29,     5,    99,    29,
-      37,    34,    39,    36,    37,    27,    36,    27,    37,    35,
-      39,    31,    32,    33,     3,    28,    27,    37,     3,    27,
-     123,     5,    34,    31,    32,    33,     5,     3,    28,    37,
-       6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-      16,    22,    23,    24,    25,    37,    26,    39,    40,     3,
-       3,     3,    35,    30,    26,     3,    38,    35,     3,    29,
-       3,     3,     3,     3,    39,    39,    39,    38,    34,    38,
-      37,    39,     3,    38,    11,    38,    38,    41,    39,    39,
-      37,    39,    37,    39,    43,   120,    74,    38,    38,    38,
-      -1,    -1,    -1,    40,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      56
+      13,    89,     3,    55,    17,    18,    19,    59,    98,    21,
+      76,   127,   125,   126,   108,   128,    29,   109,    23,    24,
+      25,    24,    25,    25,     4,   113,    24,    25,    34,    34,
+      36,    34,    34,    46,    47,    48,    34,    50,    51,    52,
+     134,    54,    25,   109,    57,     0,    25,    99,   164,    21,
+     140,    34,   144,     3,   120,    34,    25,   170,   110,   172,
+     176,    74,   178,    75,   177,    34,   179,   183,    27,   163,
+      35,   159,     3,     3,     5,     3,    29,    30,   144,   192,
+      93,    94,    95,     3,    97,     5,   138,    28,   100,    17,
+      18,    19,    20,    37,    27,    39,    27,     3,     3,     5,
+      31,    32,    33,    31,    32,    33,    37,    27,     3,    37,
+       5,    31,    32,    33,     5,    29,    30,    37,    34,     5,
+      34,    27,    36,    37,    28,    31,    32,    33,    37,   142,
+      39,    37,    27,    26,     3,    35,    31,    32,    33,     3,
+       3,     3,    37,     6,     7,     8,     9,    10,    11,    12,
+      13,    14,    15,    16,    29,    30,    22,    23,    24,    25,
+      37,    36,    39,    40,    35,    26,    38,     3,     3,    39,
+      30,    39,     3,     3,    39,     3,     3,    34,     3,    38,
+      38,    37,    11,    57,    39,    38,    38,    41,    39,    39,
+      37,    39,    38,    37,    39,    38,    38,    38,    74,   120,
+      -1,    40,    -1,    43
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -783,20 +802,21 @@ static const yytype_uint8 yystos[] =
       53,    52,    35,    46,     3,    45,    28,    57,    58,    27,
        3,    54,    45,    45,    45,     5,    46,    34,    45,    59,
       60,    61,     5,    28,    45,    26,    23,    24,    25,    34,
-      24,    25,    25,     3,    29,    36,    37,    65,    66,    61,
+      24,    25,    25,     3,    29,    30,    36,    37,    65,    61,
       35,    47,    48,    59,     3,    45,    45,    45,     3,    45,
-      45,    45,    45,    62,    63,    64,     3,     6,     7,     8,
-       9,    10,    11,    12,    13,    14,    15,    16,    74,    62,
-      30,    47,    35,    24,    25,    25,    26,    25,    36,    64,
-      46,    65,    38,    47,    45,    45,    45,     3,    45,    74,
-      46,    36,    65,     3,     5,    27,    31,    32,    33,    37,
-      67,    68,    69,    25,    74,    37,    39,     3,    39,    39,
-      37,    39,    40,    17,    18,    19,    20,    37,    69,    73,
-       5,    68,    47,    45,    65,    71,    72,    73,     3,    70,
-      39,    70,    70,    71,    70,     3,    73,    38,    47,    38,
-      34,    37,    39,     3,    38,    41,    38,    39,    39,    73,
-      71,     3,    37,    39,    37,    39,    70,    70,    38,    37,
-      71,    70,    71,    70,    71,    38,    38,    38,    39,    70
+      45,    45,    45,    62,    63,    64,    47,     3,     6,     7,
+       8,     9,    10,    11,    12,    13,    14,    15,    16,    73,
+      62,    47,    35,    24,    25,    25,    26,    25,    36,    30,
+      64,    46,     3,     5,    27,    31,    32,    33,    37,    66,
+      67,    68,    65,    38,    45,    45,    45,     3,    45,    73,
+      47,    46,    37,    39,     3,    39,    39,    37,    39,    40,
+      17,    18,    19,    20,    37,    68,    72,     5,    67,    47,
+      36,    65,    25,     5,    66,    70,    71,    72,     3,    69,
+      39,    69,    69,    70,    69,     3,    72,    38,    47,    73,
+      45,     5,    38,    34,    37,    39,     3,    38,    41,    38,
+      39,    65,    39,    72,    70,     3,    37,    39,    37,    39,
+      69,    69,    38,    37,    70,    69,    70,    69,    70,    38,
+      38,    38,    39,    69
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1611,333 +1631,523 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 151 "src/bison/bison.y"
+#line 173 "src/bison/bison.y"
     { (yyval.program_field) = create_program(curr_node_index++, (yyvsp[(1) - (1)].class_decl_seq_field)); tree_root = (yyval.program_field); ;}
     break;
 
   case 3:
-#line 154 "src/bison/bison.y"
+#line 176 "src/bison/bison.y"
     { (yyval.class_decl_seq_field) = create_class_decl_seq(curr_node_index++, (yyvsp[(1) - (1)].class_decl_field)); ;}
     break;
 
   case 4:
-#line 155 "src/bison/bison.y"
+#line 177 "src/bison/bison.y"
     { (yyval.class_decl_seq_field) = append_class_decl_seq(curr_node_index++, (yyvsp[(1) - (2)].class_decl_seq_field), (yyvsp[(2) - (2)].class_decl_field)); ;}
     break;
 
   case 5:
-#line 159 "src/bison/bison.y"
+#line 181 "src/bison/bison.y"
     { (yyval.identifiers_comma_seq_field) = create_identifiers_comma_seq(curr_node_index++, (yyvsp[(1) - (1)].id_field)); ;}
     break;
 
   case 6:
-#line 160 "src/bison/bison.y"
+#line 182 "src/bison/bison.y"
     { (yyval.identifiers_comma_seq_field) = append_identifiers_comma_seq(curr_node_index++, (yyvsp[(1) - (3)].identifiers_comma_seq_field), (yyvsp[(3) - (3)].id_field)); ;}
     break;
 
   case 13:
-#line 176 "src/bison/bison.y"
+#line 198 "src/bison/bison.y"
     { (yyval.class_decl_field) = create_class_decl(curr_node_index++, (yyvsp[(2) - (6)].id_field), (yyvsp[(3) - (6)].inheritance_block_field), (yyvsp[(4) - (6)].creators_block_field), (yyvsp[(5) - (6)].features_block_field)); ;}
     break;
 
   case 14:
-#line 180 "src/bison/bison.y"
+#line 202 "src/bison/bison.y"
     { (yyval.inheritance_block_field) = NULL; ;}
     break;
 
   case 15:
-#line 181 "src/bison/bison.y"
-    { (yyval.inheritance_block_field) = create_inheritance_block(curr_node_index++, (yyvsp[(2) - (2)].parent_seq_field)); ;}
+#line 203 "src/bison/bison.y"
+    { (yyval.inheritance_block_field) = NULL; ;}
     break;
 
   case 16:
-#line 184 "src/bison/bison.y"
-    { (yyval.parent_seq_field) = create_parent_seq(curr_node_index++, (yyvsp[(1) - (2)].parent_field)); ;}
+#line 204 "src/bison/bison.y"
+    { (yyval.inheritance_block_field) = create_inheritance_block(curr_node_index++, (yyvsp[(2) - (2)].parent_seq_field)); ;}
     break;
 
   case 17:
-#line 185 "src/bison/bison.y"
-    { (yyval.parent_seq_field) = append_parent_seq(curr_node_index++, (yyvsp[(1) - (3)].parent_seq_field), (yyvsp[(2) - (3)].parent_field)); ;}
+#line 207 "src/bison/bison.y"
+    { (yyval.parent_seq_field) = create_parent_seq(curr_node_index++, (yyvsp[(1) - (2)].parent_field)); ;}
     break;
 
   case 18:
-#line 188 "src/bison/bison.y"
-    { (yyval.parent_field) = create_parent(curr_node_index++, (yyvsp[(1) - (1)].id_field), NULL); ;}
+#line 208 "src/bison/bison.y"
+    { (yyval.parent_seq_field) = append_parent_seq(curr_node_index++, (yyvsp[(1) - (3)].parent_seq_field), (yyvsp[(2) - (3)].parent_field)); ;}
     break;
 
   case 19:
-#line 189 "src/bison/bison.y"
-    { (yyval.parent_field) = create_parent(curr_node_index++, (yyvsp[(1) - (3)].id_field), (yyvsp[(2) - (3)].parent_info_field)); ;}
+#line 211 "src/bison/bison.y"
+    { (yyval.parent_field) = create_parent(curr_node_index++, (yyvsp[(1) - (1)].id_field), NULL); ;}
     break;
 
   case 20:
-#line 192 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (8)].rename_seq_field), (yyvsp[(4) - (8)].identifiers_comma_seq_field), (yyvsp[(6) - (8)].identifiers_comma_seq_field), (yyvsp[(8) - (8)].identifiers_comma_seq_field)); ;}
+#line 212 "src/bison/bison.y"
+    { (yyval.parent_field) = create_parent(curr_node_index++, (yyvsp[(1) - (3)].id_field), (yyvsp[(2) - (3)].parent_info_field)); ;}
     break;
 
   case 21:
-#line 193 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (6)].identifiers_comma_seq_field), (yyvsp[(4) - (6)].identifiers_comma_seq_field), (yyvsp[(6) - (6)].identifiers_comma_seq_field)); ;}
+#line 215 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (8)].rename_seq_field), (yyvsp[(4) - (8)].identifiers_comma_seq_field), (yyvsp[(6) - (8)].identifiers_comma_seq_field), (yyvsp[(8) - (8)].identifiers_comma_seq_field)); ;}
     break;
 
   case 22:
-#line 194 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (6)].rename_seq_field), NULL, (yyvsp[(4) - (6)].identifiers_comma_seq_field), (yyvsp[(6) - (6)].identifiers_comma_seq_field)); ;}
+#line 216 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (6)].identifiers_comma_seq_field), (yyvsp[(4) - (6)].identifiers_comma_seq_field), (yyvsp[(6) - (6)].identifiers_comma_seq_field)); ;}
     break;
 
   case 23:
-#line 195 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, NULL, (yyvsp[(2) - (4)].identifiers_comma_seq_field), (yyvsp[(4) - (4)].identifiers_comma_seq_field)); ;}
+#line 217 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (6)].rename_seq_field), NULL, (yyvsp[(4) - (6)].identifiers_comma_seq_field), (yyvsp[(6) - (6)].identifiers_comma_seq_field)); ;}
     break;
 
   case 24:
-#line 197 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (6)].rename_seq_field), (yyvsp[(4) - (6)].identifiers_comma_seq_field), NULL, (yyvsp[(6) - (6)].identifiers_comma_seq_field)); ;}
+#line 218 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, NULL, (yyvsp[(2) - (4)].identifiers_comma_seq_field), (yyvsp[(4) - (4)].identifiers_comma_seq_field)); ;}
     break;
 
   case 25:
-#line 198 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (4)].identifiers_comma_seq_field), NULL, (yyvsp[(4) - (4)].identifiers_comma_seq_field)); ;}
+#line 220 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (6)].rename_seq_field), (yyvsp[(4) - (6)].identifiers_comma_seq_field), NULL, (yyvsp[(6) - (6)].identifiers_comma_seq_field)); ;}
     break;
 
   case 26:
-#line 199 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (4)].rename_seq_field), NULL, NULL, (yyvsp[(4) - (4)].identifiers_comma_seq_field)); ;}
+#line 221 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (4)].identifiers_comma_seq_field), NULL, (yyvsp[(4) - (4)].identifiers_comma_seq_field)); ;}
     break;
 
   case 27:
-#line 200 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, NULL, NULL, (yyvsp[(2) - (2)].identifiers_comma_seq_field)); ;}
+#line 222 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (4)].rename_seq_field), NULL, NULL, (yyvsp[(4) - (4)].identifiers_comma_seq_field)); ;}
     break;
 
   case 28:
-#line 202 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (6)].rename_seq_field), (yyvsp[(4) - (6)].identifiers_comma_seq_field), (yyvsp[(6) - (6)].identifiers_comma_seq_field), NULL); ;}
+#line 223 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, NULL, NULL, (yyvsp[(2) - (2)].identifiers_comma_seq_field)); ;}
     break;
 
   case 29:
-#line 203 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (4)].identifiers_comma_seq_field), (yyvsp[(4) - (4)].identifiers_comma_seq_field), NULL); ;}
+#line 225 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (6)].rename_seq_field), (yyvsp[(4) - (6)].identifiers_comma_seq_field), (yyvsp[(6) - (6)].identifiers_comma_seq_field), NULL); ;}
     break;
 
   case 30:
-#line 204 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (4)].rename_seq_field), NULL, (yyvsp[(4) - (4)].identifiers_comma_seq_field), NULL); ;}
+#line 226 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (4)].identifiers_comma_seq_field), (yyvsp[(4) - (4)].identifiers_comma_seq_field), NULL); ;}
     break;
 
   case 31:
-#line 205 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, NULL, (yyvsp[(2) - (2)].identifiers_comma_seq_field), NULL); ;}
+#line 227 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (4)].rename_seq_field), NULL, (yyvsp[(4) - (4)].identifiers_comma_seq_field), NULL); ;}
     break;
 
   case 32:
-#line 207 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (4)].rename_seq_field), (yyvsp[(4) - (4)].identifiers_comma_seq_field), NULL, NULL); ;}
+#line 228 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, NULL, (yyvsp[(2) - (2)].identifiers_comma_seq_field), NULL); ;}
     break;
 
   case 33:
-#line 208 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (2)].identifiers_comma_seq_field), NULL, NULL); ;}
+#line 230 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (4)].rename_seq_field), (yyvsp[(4) - (4)].identifiers_comma_seq_field), NULL, NULL); ;}
     break;
 
   case 34:
-#line 209 "src/bison/bison.y"
-    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (2)].rename_seq_field), NULL, NULL, NULL); ;}
+#line 231 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, NULL, (yyvsp[(2) - (2)].identifiers_comma_seq_field), NULL, NULL); ;}
     break;
 
   case 35:
-#line 212 "src/bison/bison.y"
-    { (yyval.rename_seq_field) = create_rename_seq(curr_node_index++, (yyvsp[(1) - (3)].id_field), (yyvsp[(3) - (3)].id_field)); ;}
+#line 232 "src/bison/bison.y"
+    { (yyval.parent_info_field) = create_parent_info(curr_node_index++, (yyvsp[(2) - (2)].rename_seq_field), NULL, NULL, NULL); ;}
     break;
 
   case 36:
-#line 213 "src/bison/bison.y"
-    { (yyval.rename_seq_field) = append_rename_seq(curr_node_index++, (yyvsp[(1) - (5)].rename_seq_field), (yyvsp[(3) - (5)].id_field), (yyvsp[(5) - (5)].id_field)); ;}
+#line 235 "src/bison/bison.y"
+    { (yyval.rename_seq_field) = create_rename_seq(curr_node_index++, (yyvsp[(1) - (3)].id_field), (yyvsp[(3) - (3)].id_field)); ;}
     break;
 
   case 37:
-#line 217 "src/bison/bison.y"
-    { (yyval.creators_block_field) = NULL; ;}
+#line 236 "src/bison/bison.y"
+    { (yyval.rename_seq_field) = append_rename_seq(curr_node_index++, (yyvsp[(1) - (5)].rename_seq_field), (yyvsp[(3) - (5)].id_field), (yyvsp[(5) - (5)].id_field)); ;}
     break;
 
   case 38:
-#line 218 "src/bison/bison.y"
-    { (yyval.creators_block_field) = create_creators_block(curr_node_index++, (yyvsp[(1) - (1)].nonempty_creators_block_field)); ;}
+#line 240 "src/bison/bison.y"
+    { (yyval.creators_block_field) = NULL; ;}
     break;
 
   case 39:
-#line 221 "src/bison/bison.y"
-    { (yyval.nonempty_creators_block_field) = create_nonempty_creators_block(curr_node_index++, (yyvsp[(2) - (2)].identifiers_comma_seq_field)); ;}
+#line 241 "src/bison/bison.y"
+    { (yyval.creators_block_field) = create_creators_block(curr_node_index++, (yyvsp[(1) - (1)].nonempty_creators_block_field)); ;}
     break;
 
   case 40:
-#line 222 "src/bison/bison.y"
-    { (yyval.nonempty_creators_block_field) = append_nonempty_creators_block(curr_node_index++, (yyvsp[(1) - (3)].nonempty_creators_block_field), (yyvsp[(3) - (3)].identifiers_comma_seq_field)); ;}
+#line 244 "src/bison/bison.y"
+    { (yyval.nonempty_creators_block_field) = create_nonempty_creators_block(curr_node_index++, (yyvsp[(2) - (2)].identifiers_comma_seq_field)); ;}
     break;
 
   case 41:
-#line 226 "src/bison/bison.y"
-    { (yyval.features_block_field) = NULL; ;}
+#line 245 "src/bison/bison.y"
+    { (yyval.nonempty_creators_block_field) = append_nonempty_creators_block(curr_node_index++, (yyvsp[(1) - (3)].nonempty_creators_block_field), (yyvsp[(3) - (3)].identifiers_comma_seq_field)); ;}
     break;
 
   case 42:
-#line 227 "src/bison/bison.y"
-    { (yyval.features_block_field) = create_features_block(curr_node_index++, (yyvsp[(1) - (1)].nonempty_features_block_field)); ;}
+#line 249 "src/bison/bison.y"
+    { (yyval.features_block_field) = NULL; ;}
     break;
 
   case 43:
-#line 230 "src/bison/bison.y"
-    { (yyval.nonempty_features_block_field) = create_nonempty_features_block(curr_node_index++, (yyvsp[(2) - (2)].feature_decl_seq_field)); ;}
+#line 250 "src/bison/bison.y"
+    { (yyval.features_block_field) = create_features_block(curr_node_index++, (yyvsp[(1) - (1)].nonempty_features_block_field)); ;}
     break;
 
   case 44:
-#line 231 "src/bison/bison.y"
-    { (yyval.nonempty_features_block_field) = append_nonempty_features_block(curr_node_index++, (yyvsp[(1) - (3)].nonempty_features_block_field), (yyvsp[(3) - (3)].feature_decl_seq_field)); ;}
+#line 253 "src/bison/bison.y"
+    { (yyval.nonempty_features_block_field) = create_nonempty_features_block(curr_node_index++, (yyvsp[(2) - (2)].feature_decl_seq_field)); ;}
     break;
 
   case 45:
-#line 234 "src/bison/bison.y"
-    { (yyval.feature_decl_seq_field) = NULL; ;}
+#line 254 "src/bison/bison.y"
+    { (yyval.nonempty_features_block_field) = append_nonempty_features_block(curr_node_index++, (yyvsp[(1) - (3)].nonempty_features_block_field), (yyvsp[(3) - (3)].feature_decl_seq_field)); ;}
     break;
 
   case 46:
-#line 235 "src/bison/bison.y"
-    { (yyval.feature_decl_seq_field) = create_feature_decl_seq(curr_node_index++, (yyvsp[(1) - (1)].nonempty_feature_decl_seq_field)); ;}
+#line 257 "src/bison/bison.y"
+    { (yyval.feature_decl_seq_field) = NULL; ;}
     break;
 
   case 47:
-#line 238 "src/bison/bison.y"
-    { (yyval.nonempty_feature_decl_seq_field) = create_nonempty_feature_decl_seq(curr_node_index++, (yyvsp[(1) - (2)].feature_decl_field)); ;}
+#line 258 "src/bison/bison.y"
+    { (yyval.feature_decl_seq_field) = create_feature_decl_seq(curr_node_index++, (yyvsp[(1) - (1)].nonempty_feature_decl_seq_field)); ;}
     break;
 
   case 48:
-#line 239 "src/bison/bison.y"
-    { (yyval.nonempty_feature_decl_seq_field) = append_nonempty_feature_decl_seq(curr_node_index++, (yyvsp[(1) - (3)].nonempty_feature_decl_seq_field), (yyvsp[(2) - (3)].feature_decl_field)); ;}
+#line 261 "src/bison/bison.y"
+    { (yyval.nonempty_feature_decl_seq_field) = create_nonempty_feature_decl_seq(curr_node_index++, (yyvsp[(1) - (2)].feature_decl_field)); ;}
     break;
 
   case 49:
-#line 242 "src/bison/bison.y"
-    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (3)].identifiers_comma_seq_field), (yyvsp[(3) - (3)].type_field), NULL, NULL); ;}
+#line 262 "src/bison/bison.y"
+    { (yyval.nonempty_feature_decl_seq_field) = append_nonempty_feature_decl_seq(curr_node_index++, (yyvsp[(1) - (3)].nonempty_feature_decl_seq_field), (yyvsp[(2) - (3)].feature_decl_field)); ;}
     break;
 
   case 50:
-#line 243 "src/bison/bison.y"
-    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (4)].identifiers_comma_seq_field), (yyvsp[(3) - (4)].type_field), NULL, (yyvsp[(4) - (4)].routine_decl_body_field)); ;}
+#line 265 "src/bison/bison.y"
+    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (3)].identifiers_comma_seq_field), (yyvsp[(3) - (3)].type_field), NULL, NULL); ;}
     break;
 
   case 51:
-#line 244 "src/bison/bison.y"
-    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (2)].identifiers_comma_seq_field), NULL, NULL, (yyvsp[(2) - (2)].routine_decl_body_field)); ;}
+#line 266 "src/bison/bison.y"
+    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (4)].identifiers_comma_seq_field), (yyvsp[(3) - (4)].type_field), NULL, (yyvsp[(4) - (4)].routine_decl_body_field)); ;}
     break;
 
   case 52:
-#line 245 "src/bison/bison.y"
-    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (7)].identifiers_comma_seq_field), (yyvsp[(6) - (7)].type_field), (yyvsp[(3) - (7)].ids_with_type_seq_field), (yyvsp[(7) - (7)].routine_decl_body_field)); ;}
+#line 267 "src/bison/bison.y"
+    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (2)].identifiers_comma_seq_field), NULL, NULL, (yyvsp[(2) - (2)].routine_decl_body_field)); ;}
     break;
 
   case 53:
-#line 246 "src/bison/bison.y"
-    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (5)].identifiers_comma_seq_field), NULL, (yyvsp[(3) - (5)].ids_with_type_seq_field), (yyvsp[(5) - (5)].routine_decl_body_field)); ;}
+#line 268 "src/bison/bison.y"
+    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (7)].identifiers_comma_seq_field), (yyvsp[(6) - (7)].type_field), (yyvsp[(3) - (7)].ids_with_type_seq_field), (yyvsp[(7) - (7)].routine_decl_body_field)); ;}
     break;
 
   case 54:
-#line 249 "src/bison/bison.y"
-    { (yyval.ids_with_type_seq_field) = NULL; ;}
+#line 269 "src/bison/bison.y"
+    { (yyval.feature_decl_field) = create_feature_decl(curr_node_index++, (yyvsp[(1) - (5)].identifiers_comma_seq_field), NULL, (yyvsp[(3) - (5)].ids_with_type_seq_field), (yyvsp[(5) - (5)].routine_decl_body_field)); ;}
     break;
 
   case 55:
-#line 250 "src/bison/bison.y"
-    { (yyval.ids_with_type_seq_field) = create_ids_with_type_seq(curr_node_index++, (yyvsp[(1) - (1)].nonempty_ids_with_type_seq_field)); ;}
+#line 272 "src/bison/bison.y"
+    { (yyval.ids_with_type_seq_field) = NULL; ;}
     break;
 
   case 56:
-#line 253 "src/bison/bison.y"
-    { (yyval.nonempty_ids_with_type_seq_field) = create_nonempty_ids_with_type_seq(curr_node_index++, (yyvsp[(1) - (2)].ids_with_type_field)); ;}
+#line 273 "src/bison/bison.y"
+    { (yyval.ids_with_type_seq_field) = create_ids_with_type_seq(curr_node_index++, (yyvsp[(1) - (1)].nonempty_ids_with_type_seq_field)); ;}
     break;
 
   case 57:
-#line 254 "src/bison/bison.y"
-    { (yyval.nonempty_ids_with_type_seq_field) = append_nonempty_ids_with_type_seq(curr_node_index++, (yyvsp[(1) - (3)].nonempty_ids_with_type_seq_field), (yyvsp[(2) - (3)].ids_with_type_field)); ;}
+#line 276 "src/bison/bison.y"
+    { (yyval.nonempty_ids_with_type_seq_field) = create_nonempty_ids_with_type_seq(curr_node_index++, (yyvsp[(1) - (2)].ids_with_type_field)); ;}
     break;
 
   case 58:
-#line 257 "src/bison/bison.y"
-    { (yyval.ids_with_type_field) = create_ids_with_type(curr_node_index++, (yyvsp[(1) - (3)].identifiers_comma_seq_field), (yyvsp[(3) - (3)].type_field)); ;}
+#line 277 "src/bison/bison.y"
+    { (yyval.nonempty_ids_with_type_seq_field) = append_nonempty_ids_with_type_seq(curr_node_index++, (yyvsp[(1) - (3)].nonempty_ids_with_type_seq_field), (yyvsp[(2) - (3)].ids_with_type_field)); ;}
     break;
 
   case 59:
-#line 260 "src/bison/bison.y"
-    { (yyval.routine_decl_body_field) = create_routine_decl_body(curr_node_index++); ;}
+#line 280 "src/bison/bison.y"
+    { (yyval.ids_with_type_field) = create_ids_with_type(curr_node_index++, (yyvsp[(1) - (3)].identifiers_comma_seq_field), (yyvsp[(3) - (3)].type_field)); ;}
     break;
 
   case 60:
-#line 261 "src/bison/bison.y"
-    { (yyval.routine_decl_body_field) = create_routine_decl_body(curr_node_index++); ;}
+#line 283 "src/bison/bison.y"
+    { (yyval.routine_decl_body_field) = create_routine_decl_body(curr_node_index++, NULL, (yyvsp[(3) - (4)].instruction_seq_field)); ;}
+    break;
+
+  case 61:
+#line 284 "src/bison/bison.y"
+    { (yyval.routine_decl_body_field) = create_routine_decl_body(curr_node_index++, NULL, NULL); ;}
+    break;
+
+  case 62:
+#line 285 "src/bison/bison.y"
+    { (yyval.routine_decl_body_field) = create_routine_decl_body(curr_node_index++, (yyvsp[(2) - (6)].ids_with_type_seq_field), (yyvsp[(5) - (6)].instruction_seq_field)); ;}
+    break;
+
+  case 63:
+#line 286 "src/bison/bison.y"
+    { (yyval.routine_decl_body_field) = create_routine_decl_body(curr_node_index++, (yyvsp[(2) - (5)].ids_with_type_seq_field), NULL); ;}
+    break;
+
+  case 64:
+#line 289 "src/bison/bison.y"
+    { (yyval.instruction_seq_field) = create_instruction_seq(curr_node_index++, (yyvsp[(1) - (2)].instruction_field)); ;}
+    break;
+
+  case 65:
+#line 290 "src/bison/bison.y"
+    { (yyval.instruction_seq_field) = append_instruction_seq(curr_node_index++, (yyvsp[(1) - (3)].instruction_seq_field), (yyvsp[(2) - (3)].instruction_field)); ;}
+    break;
+
+  case 66:
+#line 293 "src/bison/bison.y"
+    { (yyval.instruction_field) = create_create_instruction(curr_node_index++, (yyvsp[(2) - (2)].id_field), NULL, NULL); ;}
+    break;
+
+  case 67:
+#line 294 "src/bison/bison.y"
+    { (yyval.instruction_field) = create_create_instruction(curr_node_index++, (yyvsp[(2) - (4)].id_field), (yyvsp[(4) - (4)].id_field), NULL); ;}
+    break;
+
+  case 68:
+#line 295 "src/bison/bison.y"
+    { (yyval.instruction_field) = create_create_instruction(curr_node_index++, (yyvsp[(2) - (7)].id_field), (yyvsp[(4) - (7)].id_field), (yyvsp[(6) - (7)].argument_seq_field)); ;}
+    break;
+
+  case 69:
+#line 296 "src/bison/bison.y"
+    { (yyval.instruction_field) = create_call_instruction(curr_node_index++, (yyvsp[(1) - (1)].call_field)); ;}
+    break;
+
+  case 70:
+#line 299 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_my_method(curr_node_index++, (yyvsp[(1) - (1)].id_field), NULL, NULL); ;}
+    break;
+
+  case 71:
+#line 300 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_my_method(curr_node_index++, (yyvsp[(1) - (4)].id_field), (yyvsp[(3) - (4)].argument_seq_field), NULL); ;}
+    break;
+
+  case 72:
+#line 301 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_my_method(curr_node_index++, (yyvsp[(1) - (3)].id_field), NULL, (yyvsp[(3) - (3)].call_sub_seq_field)); ;}
+    break;
+
+  case 73:
+#line 302 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_my_method(curr_node_index++, (yyvsp[(1) - (6)].id_field), (yyvsp[(3) - (6)].argument_seq_field), (yyvsp[(6) - (6)].call_sub_seq_field)); ;}
+    break;
+
+  case 74:
+#line 303 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_method_of_current(curr_node_index++, (yyvsp[(3) - (3)].call_sub_seq_field)); ;}
+    break;
+
+  case 75:
+#line 304 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_method_of_result(curr_node_index++, (yyvsp[(3) - (3)].call_sub_seq_field)); ;}
+    break;
+
+  case 76:
+#line 305 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_method_of_paren_expr(curr_node_index++, (yyvsp[(2) - (5)].expr_field), (yyvsp[(5) - (5)].call_sub_seq_field)); ;}
+    break;
+
+  case 77:
+#line 306 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, NULL, NULL, NULL); ;}
+    break;
+
+  case 78:
+#line 307 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, NULL, (yyvsp[(3) - (4)].argument_seq_field), NULL); ;}
+    break;
+
+  case 79:
+#line 308 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, NULL, NULL, (yyvsp[(3) - (3)].call_sub_seq_field)); ;}
+    break;
+
+  case 80:
+#line 309 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, NULL, (yyvsp[(3) - (6)].argument_seq_field), (yyvsp[(6) - (6)].call_sub_seq_field)); ;}
+    break;
+
+  case 81:
+#line 310 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, (yyvsp[(3) - (4)].id_field), NULL, NULL); ;}
+    break;
+
+  case 82:
+#line 311 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, (yyvsp[(3) - (7)].id_field), (yyvsp[(6) - (7)].argument_seq_field), NULL); ;}
+    break;
+
+  case 83:
+#line 312 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, (yyvsp[(3) - (6)].id_field), NULL, (yyvsp[(6) - (6)].call_sub_seq_field)); ;}
+    break;
+
+  case 84:
+#line 313 "src/bison/bison.y"
+    { (yyval.call_field) = create_call_precursor(curr_node_index++, (yyvsp[(3) - (9)].id_field), (yyvsp[(6) - (9)].argument_seq_field), (yyvsp[(9) - (9)].call_sub_seq_field)); ;}
+    break;
+
+  case 85:
+#line 316 "src/bison/bison.y"
+    { (yyval.call_sub_seq_field) = create_call_sub_seq(curr_node_index++, (yyvsp[(1) - (1)].id_field), NULL); ;}
+    break;
+
+  case 86:
+#line 317 "src/bison/bison.y"
+    { (yyval.call_sub_seq_field) = create_call_sub_seq(curr_node_index++, (yyvsp[(1) - (4)].id_field), (yyvsp[(3) - (4)].argument_seq_field)); ;}
+    break;
+
+  case 87:
+#line 318 "src/bison/bison.y"
+    { (yyval.call_sub_seq_field) = append_call_sub_seq(curr_node_index++, (yyvsp[(1) - (3)].call_sub_seq_field), (yyvsp[(3) - (3)].id_field), NULL); ;}
+    break;
+
+  case 88:
+#line 319 "src/bison/bison.y"
+    { (yyval.call_sub_seq_field) = append_call_sub_seq(curr_node_index++, (yyvsp[(1) - (6)].call_sub_seq_field), (yyvsp[(3) - (6)].id_field), (yyvsp[(5) - (6)].argument_seq_field)); ;}
+    break;
+
+  case 89:
+#line 322 "src/bison/bison.y"
+    { (yyval.argument_seq_field) = NULL; ;}
+    break;
+
+  case 90:
+#line 323 "src/bison/bison.y"
+    { (yyval.argument_seq_field) = create_argument_seq(curr_node_index++, (yyvsp[(1) - (1)].nonempty_argument_seq_field)); ;}
+    break;
+
+  case 91:
+#line 326 "src/bison/bison.y"
+    { (yyval.nonempty_argument_seq_field) = create_nonempty_argument_seq(curr_node_index++, (yyvsp[(1) - (1)].expr_field)); ;}
+    break;
+
+  case 92:
+#line 327 "src/bison/bison.y"
+    { (yyval.nonempty_argument_seq_field) = append_nonempty_argument_seq(curr_node_index++, (yyvsp[(1) - (3)].nonempty_argument_seq_field), (yyvsp[(3) - (3)].expr_field)); ;}
+    break;
+
+  case 93:
+#line 330 "src/bison/bison.y"
+    { (yyval.expr_field) = (yyvsp[(2) - (3)].expr_field); ;}
+    break;
+
+  case 94:
+#line 331 "src/bison/bison.y"
+    { (yyval.expr_field) = create_expr_liter_bool(curr_node_index++, (yyvsp[(1) - (1)].liter_boolean_field)); ;}
+    break;
+
+  case 95:
+#line 332 "src/bison/bison.y"
+    { (yyval.expr_field) = create_expr_liter_int (curr_node_index++, (yyvsp[(1) - (1)].liter_integer_field)); ;}
+    break;
+
+  case 96:
+#line 333 "src/bison/bison.y"
+    { (yyval.expr_field) = create_expr_liter_char(curr_node_index++, (yyvsp[(1) - (1)].liter_char_field)); ;}
     break;
 
   case 97:
-#line 318 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_user_defined, (yyvsp[(1) - (1)].id_field)); ;}
+#line 334 "src/bison/bison.y"
+    { (yyval.expr_field) = create_expr_liter_str (curr_node_index++, (yyvsp[(1) - (1)].liter_string_field)); ;}
     break;
 
   case 98:
-#line 319 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_boolean, NULL); ;}
+#line 335 "src/bison/bison.y"
+    { (yyval.expr_field) = create_expr_call(curr_node_index++, (yyvsp[(1) - (1)].call_field)); ;}
     break;
 
   case 99:
-#line 320 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_character, NULL); ;}
+#line 339 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_user_defined, (yyvsp[(1) - (1)].id_field)); ;}
     break;
 
   case 100:
-#line 321 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_8,  NULL); ;}
+#line 340 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_boolean, NULL); ;}
     break;
 
   case 101:
-#line 322 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_16, NULL); ;}
+#line 341 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_character, NULL); ;}
     break;
 
   case 102:
-#line 323 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_32, NULL); ;}
+#line 342 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_8,  NULL); ;}
     break;
 
   case 103:
-#line 324 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_64, NULL); ;}
+#line 343 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_16, NULL); ;}
     break;
 
   case 104:
-#line 325 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_8,  NULL); ;}
+#line 344 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_32, NULL); ;}
     break;
 
   case 105:
-#line 326 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_16, NULL); ;}
+#line 345 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer_64, NULL); ;}
     break;
 
   case 106:
-#line 327 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_32, NULL); ;}
+#line 346 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_8,  NULL); ;}
     break;
 
   case 107:
-#line 328 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_64, NULL); ;}
+#line 347 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_16, NULL); ;}
     break;
 
   case 108:
-#line 329 "src/bison/bison.y"
+#line 348 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_32, NULL); ;}
+    break;
+
+  case 109:
+#line 349 "src/bison/bison.y"
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural_64, NULL); ;}
+    break;
+
+  case 110:
+#line 350 "src/bison/bison.y"
     { (yyval.type_field) = create_type(curr_node_index++, dtype_string, NULL); ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 1941 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/bison/parser.c"
+#line 2151 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/bison/parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2151,6 +2361,6 @@ yyreturn:
 }
 
 
-#line 332 "src/bison/bison.y"
+#line 353 "src/bison/bison.y"
 
 

@@ -40,3 +40,14 @@ void print_ids_with_type(FILE* dot_file, struct ids_with_type_strct* ids_with_ty
 void print_type(FILE* dot_file, struct type_strct* type);
 
 void print_routine_decl_body(FILE* dot_file, struct routine_decl_body_strct* routine_decl_body);
+
+void print_instruction_seq(FILE* dot_file, struct instruction_seq_strct* instruction_seq);
+void print_instruction(FILE* dot_file, struct instruction_strct* instruction);
+
+void print_call(FILE* dot_file, struct call_strct* call);
+void print_call_sub_seq(FILE* dot_file, struct call_sub_seq_strct* call_sub_seq);
+
+void print_argument_seq(FILE* dot_file, struct argument_seq_strct* argument_seq);
+void print_nonempty_argument_seq(FILE* dot_file, struct nonempty_argument_seq_strct* nonempty_argument_seq);
+
+void print_expr(FILE* dot_file, struct expr_strct* expr);

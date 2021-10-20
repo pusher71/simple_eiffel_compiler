@@ -144,9 +144,20 @@ typedef union YYSTYPE
     struct ids_with_type_seq_strct*             ids_with_type_seq_field;
     struct nonempty_ids_with_type_seq_strct*    nonempty_ids_with_type_seq_field;
     struct ids_with_type_strct*                 ids_with_type_field;
-    struct type_strct* type_field;
+    struct type_strct*                          type_field;
 
     struct routine_decl_body_strct* routine_decl_body_field;
+
+    // ... Instruction
+    struct instruction_seq_strct*   instruction_seq_field;
+    struct instruction_strct*       instruction_field;
+
+    struct call_strct*                      call_field;
+    struct call_sub_seq_strct*              call_sub_seq_field;
+    struct argument_seq_strct*              argument_seq_field;
+    struct nonempty_argument_seq_strct*     nonempty_argument_seq_field;
+
+    struct expr_strct* expr_field;
 
     /* Constants */
     short				liter_boolean_field;
@@ -157,7 +168,7 @@ typedef union YYSTYPE
     char*  				id_field;
 }
 /* Line 1529 of yacc.c.  */
-#line 161 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
+#line 172 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

@@ -1680,7 +1680,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithDecInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)     { chaaraddchr(read_charArray, charCode); }
     else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1696,7 +1696,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithBinInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)     { chaaraddchr(read_charArray, charCode); }
     else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1712,7 +1712,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithOctInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)     { chaaraddchr(read_charArray, charCode); }
     else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1728,7 +1728,7 @@ YY_RULE_SETUP
 
     short charCode = getDecIntFromStringWithHexInt_eiffel(buffer);
 
-    if (charCode >= minCharCode && charCode <= maxCharCode)       { chaaraddchr(read_charArray, charCode); }
+    if (charCode >= minCharCode && charCode <= maxCharCode)     { chaaraddchr(read_charArray, charCode); }
     else                                                        { lexerErrorValue = charCode; lexerErrorCode = INVALID_CHAR_CODE; }
 
     debug_moveCursorToNextCharacter(yyleng);
@@ -1821,7 +1821,7 @@ YY_RULE_SETUP
 #line 434 "src/flex/flex.l"
 {
     for (int i=0; i<strlen(yytext); i++) {
-        if (yytext[i] == '\n')     { debug_moveCursorToNextLine(); }
+        if (yytext[i] == '\n')   { debug_moveCursorToNextLine(); }
         else                     { debug_moveCursorToNextCharacter(1); }
     }
 }
@@ -1926,7 +1926,7 @@ YY_RULE_SETUP
     chaardestroy(read_charArray);
 
     for (int i=0; i<strlen(yytext); i++) {
-        if (yytext[i] == '\n')     { debug_moveCursorToNextLine(); }
+        if (yytext[i] == '\n')   { debug_moveCursorToNextLine(); }
         else                     { debug_moveCursorToNextCharacter(1); }
     }
 }

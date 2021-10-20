@@ -319,9 +319,283 @@ struct type_strct* create_type(unsigned int node_index, enum type_enum type, cha
     return result;
 }
 
-struct routine_decl_body_strct* create_routine_decl_body(unsigned int node_index) {
+struct routine_decl_body_strct* create_routine_decl_body(unsigned int node_index,
+                                                         struct ids_with_type_seq_strct* local_ids_with_type_seq,
+                                                         struct instruction_seq_strct* instruction_seq)
+{
     struct routine_decl_body_strct* result = (struct routine_decl_body_strct*)malloc(sizeof(struct routine_decl_body_strct));
     result->_node_index = node_index;
+    result->local_ids_with_type_seq = local_ids_with_type_seq;
+    result->instruction_seq = instruction_seq;
+
+    return result;
+}
+
+
+
+struct instruction_seq_strct* create_instruction_seq(unsigned int node_index, struct instruction_strct* instruction) {
+    struct instruction_seq_strct* result = (struct instruction_seq_strct*)malloc(sizeof(struct instruction_seq_strct));
+    result->_node_index = node_index;
+    result->value = instruction;
+    result->next = NULL;
+
+    return result;
+}
+
+struct instruction_seq_strct* append_instruction_seq(unsigned int node_index,
+                                                     struct instruction_seq_strct* instruction_seq,
+                                                     struct instruction_strct* instruction)
+{
+    struct instruction_seq_strct* begin = instruction_seq;
+
+    while (instruction_seq->next != NULL) {
+        instruction_seq = instruction_seq->next;
+    }
+
+    instruction_seq->next = create_instruction_seq(node_index, instruction);
+    instruction_seq->next->_node_index = node_index;
+
+    return begin;
+}
+
+struct instruction_strct* create_create_instruction(unsigned int node_index, char* var_name, char* method_name, struct argument_seq_strct* argument_seq) {
+    struct instruction_strct* result = (struct instruction_strct*)malloc(sizeof(struct instruction_strct));
+    result->_node_index = node_index;
+    result->type = instr_create;
+
+    result->first_id_name   = var_name;
+    result->second_id_name  = method_name;
+    result->argument_seq    = argument_seq;
+
+    result->call = NULL;
+
+    return result;
+}
+
+struct instruction_strct* create_call_instruction(unsigned int node_index, struct call_strct* call) {
+    struct instruction_strct* result = (struct instruction_strct*)malloc(sizeof(struct instruction_strct));
+    result->_node_index = node_index;
+    result->type = instr_call;
+
+    result->first_id_name   = NULL;
+    result->second_id_name  = NULL;
+    result->argument_seq    = NULL;
+
+    result->call = call;
+
+    return result;
+}
+
+struct call_strct* create_call_my_method(unsigned int node_index,
+                                         char* id_name,
+                                         struct argument_seq_strct* argument_seq,
+                                         struct call_sub_seq_strct* call_sub_seq)
+{
+    struct call_strct* result = (struct call_strct*)malloc(sizeof(struct call_strct));
+    result->_node_index = node_index;
+    result->type        = call_my_method;
+
+    result->call_sub_seq        = call_sub_seq;
+    result->id_name             = id_name;
+    result->argument_seq        = argument_seq;
+
+    result->parenthesized_expr  = NULL;
+
+    return result;
+}
+
+struct call_strct* create_call_method_of_current(unsigned int node_index,
+                                                 struct call_sub_seq_strct* call_sub_seq)
+{
+    struct call_strct* result = (struct call_strct*)malloc(sizeof(struct call_strct));
+    result->_node_index = node_index;
+    result->type        = call_current;
+
+    result->call_sub_seq        = call_sub_seq;
+    result->id_name             = NULL;
+    result->argument_seq        = NULL;
+
+    result->parenthesized_expr  = NULL;
+
+    return result;
+}
+
+struct call_strct* create_call_method_of_result(unsigned int node_index,
+                                                struct call_sub_seq_strct* call_sub_seq)
+{
+    struct call_strct* result = (struct call_strct*)malloc(sizeof(struct call_strct));
+    result->_node_index = node_index;
+    result->type        = call_result;
+
+    result->call_sub_seq        = call_sub_seq;
+    result->id_name             = NULL;
+    result->argument_seq        = NULL;
+
+    result->parenthesized_expr  = NULL;
+
+    return result;
+}
+
+struct call_strct* create_call_method_of_paren_expr(unsigned int node_index,
+                                                    struct expr_strct* parenthesized_expr,
+                                                    struct call_sub_seq_strct* call_sub_seq)
+{
+    struct call_strct* result = (struct call_strct*)malloc(sizeof(struct call_strct));
+    result->_node_index = node_index;
+    result->type        = call_parenthesized_expr;
+
+    result->call_sub_seq        = call_sub_seq;
+    result->id_name             = NULL;
+    result->argument_seq        = NULL;
+
+    result->parenthesized_expr  = parenthesized_expr;
+
+    return result;
+}
+
+struct call_strct* create_call_precursor(unsigned int node_index,
+                                         char* id_name,
+                                         struct argument_seq_strct* argument_seq,
+                                         struct call_sub_seq_strct* call_sub_seq)
+{
+    struct call_strct* result = (struct call_strct*)malloc(sizeof(struct call_strct));
+    result->_node_index = node_index;
+    result->type        = call_precursor;
+
+    result->call_sub_seq        = call_sub_seq;
+
+    result->id_name             = id_name;
+    result->argument_seq        = argument_seq;
+    result->parenthesized_expr  = NULL;
+
+    return result;
+}
+
+struct call_sub_seq_strct* create_call_sub_seq(unsigned int node_index,
+                                               char* id_name,
+                                               struct argument_seq_strct* argument_seq)
+{
+    struct call_sub_seq_strct* result = (struct call_sub_seq_strct*)malloc(sizeof(struct call_sub_seq_strct));
+    result->_node_index = node_index;
+
+    result->id_name      = id_name;
+    result->argument_seq = argument_seq;
+
+    result->next = NULL;
+
+    return result;
+}
+
+struct call_sub_seq_strct* append_call_sub_seq(unsigned int node_index,
+                                               struct call_sub_seq_strct* call_sub_seq,
+                                               char* id_name,
+                                               struct argument_seq_strct* argument_seq)
+{
+    struct call_sub_seq_strct* begin = call_sub_seq;
+
+    while (call_sub_seq->next != NULL) {
+        call_sub_seq = call_sub_seq->next;
+    }
+
+    call_sub_seq->next = create_call_sub_seq(node_index, id_name, argument_seq);
+    call_sub_seq->next->_node_index = node_index;
+
+    return begin;
+}
+
+struct argument_seq_strct* create_argument_seq(unsigned int node_index, struct nonempty_argument_seq_strct* nonempty_argument_seq) {
+    struct argument_seq_strct* result = (struct argument_seq_strct*)malloc(sizeof(struct argument_seq_strct));
+    result->_node_index = node_index;
+    result->nonempty_argument_seq = nonempty_argument_seq;
+
+    return result;
+}
+
+struct nonempty_argument_seq_strct* create_nonempty_argument_seq(unsigned int node_index,
+                                                                 struct expr_strct* expr)
+{
+    struct nonempty_argument_seq_strct* result = (struct nonempty_argument_seq_strct*)malloc(sizeof(struct nonempty_argument_seq_strct));
+    result->_node_index = node_index;
+
+    result->value = expr;
+    result->next  = NULL;
+
+    return result;
+}
+
+struct nonempty_argument_seq_strct* append_nonempty_argument_seq(unsigned int node_index,
+                                                                 struct nonempty_argument_seq_strct* nonempty_argument_seq,
+                                                                 struct expr_strct* expr)
+{
+    struct nonempty_argument_seq_strct* begin = nonempty_argument_seq;
+
+    while (nonempty_argument_seq->next != NULL) {
+        nonempty_argument_seq = nonempty_argument_seq->next;
+    }
+
+    nonempty_argument_seq->next = create_nonempty_argument_seq(node_index, expr);
+    nonempty_argument_seq->next->_node_index = node_index;
+
+    return begin;
+}
+
+struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_bool) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index = node_index;
+    result->type = expr_liter_bool;
+
+    result->liter_bool  = liter_bool;
+
+    result->liter_str = NULL;
+    result->call      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index = node_index;
+    result->type = expr_liter_int;
+
+    result->liter_int = liter_int;
+
+    result->liter_str = NULL;
+    result->call      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_char) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index = node_index;
+    result->type = expr_liter_char;
+
+    result->liter_char  = liter_char;
+
+    result->liter_str = NULL;
+    result->call      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArray* liter_str) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index = node_index;
+    result->type = expr_liter_str;
+
+    result->liter_str = liter_str;
+    result->call      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_call(unsigned int node_index, struct call_strct* call) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index = node_index;
+    result->type = expr_call;
+
+    result->liter_str = NULL;
+    result->call      = call;
 
     return result;
 }

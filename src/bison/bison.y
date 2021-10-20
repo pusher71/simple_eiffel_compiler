@@ -49,9 +49,20 @@
     struct ids_with_type_seq_strct*             ids_with_type_seq_field;
     struct nonempty_ids_with_type_seq_strct*    nonempty_ids_with_type_seq_field;
     struct ids_with_type_strct*                 ids_with_type_field;
-    struct type_strct* type_field;
+    struct type_strct*                          type_field;
 
     struct routine_decl_body_strct* routine_decl_body_field;
+
+    // ... Instruction
+    struct instruction_seq_strct*   instruction_seq_field;
+    struct instruction_strct*       instruction_field;
+
+    struct call_strct*                      call_field;
+    struct call_sub_seq_strct*              call_sub_seq_field;
+    struct argument_seq_strct*              argument_seq_field;
+    struct nonempty_argument_seq_strct*     nonempty_argument_seq_field;
+
+    struct expr_strct* expr_field;
 
     /* Constants */
     short				liter_boolean_field;
@@ -146,6 +157,17 @@
 
 %type<routine_decl_body_field>          routine_decl_body;
 
+// ... Instruction
+%type<instruction_seq_field>    instruction_seq;
+%type<instruction_field>        instruction;
+
+%type<call_field>                       call;
+%type<call_sub_seq_field>               call_sub_seq;
+%type<argument_seq_field>               argument_seq;
+%type<nonempty_argument_seq_field>      nonempty_argument_seq;
+
+%type<expr_field> expr;
+
 %%
 
 program: class_decl_seq { $$ = create_program(curr_node_index++, $1); tree_root = $$; }
@@ -178,6 +200,7 @@ class_decl: CLASS ID inheritance_block creators_block features_block END { $$ = 
 
 // ... INHERITANCE BLOCK
 inheritance_block: /* EMPTY */          { $$ = NULL; }
+                 | INHERIT              { $$ = NULL; }
                  | INHERIT parent_seq   { $$ = create_inheritance_block(curr_node_index++, $2); }
 				 ;
 
@@ -257,61 +280,59 @@ nonempty_ids_with_type_seq: ids_with_type opt_semicolon                         
 ids_with_type: identifiers_comma_seq ':' type   { $$ = create_ids_with_type(curr_node_index++, $1, $3); }
 			 ;
 
-routine_decl_body: local_decl DO opt_semicolon_seq instruction_seq END  { $$ = create_routine_decl_body(curr_node_index++); }
-                 | local_decl DO opt_semicolon_seq END                  { $$ = create_routine_decl_body(curr_node_index++); }
-				 ;
+routine_decl_body: DO opt_semicolon_seq instruction_seq END                             { $$ = create_routine_decl_body(curr_node_index++, NULL, $3); }
+                 | DO opt_semicolon_seq END                                             { $$ = create_routine_decl_body(curr_node_index++, NULL, NULL); }
+                 | LOCAL ids_with_type_seq DO opt_semicolon_seq instruction_seq END     { $$ = create_routine_decl_body(curr_node_index++, $2, $5); }
+                 | LOCAL ids_with_type_seq DO opt_semicolon_seq END                     { $$ = create_routine_decl_body(curr_node_index++, $2, NULL); }
+                 ;
 
-local_decl: /* EMPTY */
-          | LOCAL ids_with_type_seq
-		  ;
+instruction_seq: instruction opt_semicolon_seq                      { $$ = create_instruction_seq(curr_node_index++, $1); }
+               | instruction_seq instruction opt_semicolon_seq      { $$ = append_instruction_seq(curr_node_index++, $1, $2); }
+               ;
 
-instruction_seq: instruction opt_semicolon_seq
-                        | instruction_seq instruction opt_semicolon_seq
-                        ;
-
-
-instruction: CREATE ID
-		   | CREATE ID '.' ID '(' argument_seq ')'
-           | call
+instruction: CREATE ID                                  { $$ = create_create_instruction(curr_node_index++, $2, NULL, NULL); }
+           | CREATE ID '.' ID                           { $$ = create_create_instruction(curr_node_index++, $2, $4, NULL); }
+           | CREATE ID '.' ID '(' argument_seq ')'      { $$ = create_create_instruction(curr_node_index++, $2, $4, $6); }
+           | call                                       { $$ = create_call_instruction(curr_node_index++, $1); }
            ;
 
-call: ID
-    | ID '(' argument_seq ')'
-    | ID '.' call_sub_seq
-    | ID '(' argument_seq ')' '.' call_sub_seq
-    | CURRENT '.' call_sub_seq
-    | RESULT '.' call_sub_seq
-    | '(' expr ')' '.' call_sub_seq
-    | PRECURSOR
-    | PRECURSOR '(' argument_seq ')'
-    | PRECURSOR '{' ID '}'
-    | PRECURSOR '{' ID '}' '(' argument_seq ')'
-    | PRECURSOR '.' call_sub_seq
-    | PRECURSOR '(' argument_seq ')' '.' call_sub_seq
-    | PRECURSOR '{' ID '}' '.' call_sub_seq
-    | PRECURSOR '{' ID '}' '(' argument_seq ')' '.' call_sub_seq
+call: ID                                                            { $$ = create_call_my_method(curr_node_index++, $1, NULL, NULL); }
+    | ID '(' argument_seq ')'                                       { $$ = create_call_my_method(curr_node_index++, $1, $3, NULL); }
+    | ID '.' call_sub_seq                                           { $$ = create_call_my_method(curr_node_index++, $1, NULL, $3); }
+    | ID '(' argument_seq ')' '.' call_sub_seq                      { $$ = create_call_my_method(curr_node_index++, $1, $3, $6); }
+    | CURRENT '.' call_sub_seq                                      { $$ = create_call_method_of_current(curr_node_index++, $3); }
+    | RESULT '.' call_sub_seq                                       { $$ = create_call_method_of_result(curr_node_index++, $3); }
+    | '(' expr ')' '.' call_sub_seq                                 { $$ = create_call_method_of_paren_expr(curr_node_index++, $2, $5); }
+    | PRECURSOR                                                     { $$ = create_call_precursor(curr_node_index++, NULL, NULL, NULL); }
+    | PRECURSOR '(' argument_seq ')'                                { $$ = create_call_precursor(curr_node_index++, NULL, $3, NULL); }
+    | PRECURSOR '.' call_sub_seq                                    { $$ = create_call_precursor(curr_node_index++, NULL, NULL, $3); }
+    | PRECURSOR '(' argument_seq ')' '.' call_sub_seq               { $$ = create_call_precursor(curr_node_index++, NULL, $3, $6); }
+    | PRECURSOR '{' ID '}'                                          { $$ = create_call_precursor(curr_node_index++, $3, NULL, NULL); }
+    | PRECURSOR '{' ID '}' '(' argument_seq ')'                     { $$ = create_call_precursor(curr_node_index++, $3, $6, NULL); }
+    | PRECURSOR '{' ID '}' '.' call_sub_seq                         { $$ = create_call_precursor(curr_node_index++, $3, NULL, $6); }
+    | PRECURSOR '{' ID '}' '(' argument_seq ')' '.' call_sub_seq    { $$ = create_call_precursor(curr_node_index++, $3, $6, $9); }
     ;
 
-call_sub_seq: ID
-            | ID '(' argument_seq ')'
-            | call_sub_seq '.' ID
-            | call_sub_seq '.' ID '(' argument_seq ')'
+call_sub_seq: ID                                        { $$ = create_call_sub_seq(curr_node_index++, $1, NULL); }
+            | ID '(' argument_seq ')'                   { $$ = create_call_sub_seq(curr_node_index++, $1, $3); }
+            | call_sub_seq '.' ID                       { $$ = append_call_sub_seq(curr_node_index++, $1, $3, NULL); }
+            | call_sub_seq '.' ID '(' argument_seq ')'  { $$ = append_call_sub_seq(curr_node_index++, $1, $3, $5); }
             ;
 
-argument_seq: /* EMPTY */
-			| nonempty_argument_seq
+argument_seq: /* EMPTY */               { $$ = NULL; }
+            | nonempty_argument_seq     { $$ = create_argument_seq(curr_node_index++, $1); }
 			;
 
-nonempty_argument_seq: expr
-		    		 | nonempty_argument_seq ',' expr
+nonempty_argument_seq: expr                             { $$ = create_nonempty_argument_seq(curr_node_index++, $1); }
+                     | nonempty_argument_seq ',' expr   { $$ = append_nonempty_argument_seq(curr_node_index++, $1, $3); }
 					 ;
 
-expr: call
-    | '(' expr ')'
-    | LITER_BOOLEAN
-    | LITER_INTEGER
-    | LITER_CHAR
-    | LITER_STRING
+expr: '(' expr ')'      { $$ = $2; }
+    | LITER_BOOLEAN     { $$ = create_expr_liter_bool(curr_node_index++, $1); }
+    | LITER_INTEGER     { $$ = create_expr_liter_int (curr_node_index++, $1); }
+    | LITER_CHAR        { $$ = create_expr_liter_char(curr_node_index++, $1); }
+    | LITER_STRING      { $$ = create_expr_liter_str (curr_node_index++, $1); }
+    | call              { $$ = create_expr_call(curr_node_index++, $1); }
     ;
 
 // DATA TYPES

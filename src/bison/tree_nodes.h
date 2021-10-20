@@ -164,4 +164,89 @@ struct type_strct {
 
 struct routine_decl_body_strct {
     unsigned int _node_index;
+
+    struct ids_with_type_seq_strct* local_ids_with_type_seq;
+    struct instruction_seq_strct*   instruction_seq;
+};
+
+struct instruction_seq_strct {
+    unsigned int _node_index;
+
+    struct instruction_strct* value;
+    struct instruction_seq_strct* next;
+};
+
+enum instruction_enum {
+    instr_create,
+    instr_call
+};
+
+struct instruction_strct {
+    unsigned int _node_index;
+    enum instruction_enum type;
+
+    char* first_id_name;
+    char* second_id_name;
+    struct argument_seq_strct* argument_seq;
+
+    struct call_strct* call;
+};
+
+enum call_enum {
+    call_my_method,
+    call_current,
+    call_result,
+    call_parenthesized_expr,
+    call_precursor
+};
+
+struct call_strct {
+    unsigned int _node_index;
+    enum call_enum type;
+
+    struct call_sub_seq_strct* call_sub_seq;
+
+    char* id_name;
+    struct argument_seq_strct* argument_seq;
+    struct expr_strct* parenthesized_expr;
+};
+
+struct call_sub_seq_strct {
+    unsigned int _node_index;
+
+    char* id_name;
+    struct argument_seq_strct* argument_seq;
+
+    struct call_sub_seq_strct* next;
+};
+
+struct argument_seq_strct {
+    unsigned int _node_index;
+    struct nonempty_argument_seq_strct* nonempty_argument_seq;
+};
+
+struct nonempty_argument_seq_strct {
+    unsigned int _node_index;
+
+    struct expr_strct* value;
+    struct nonempty_argument_seq_strct* next;
+};
+
+enum expr_type {
+    expr_call,
+    expr_liter_bool,
+    expr_liter_int,
+    expr_liter_char,
+    expr_liter_str
+};
+
+struct expr_strct {
+    unsigned int _node_index;
+    enum expr_type type;
+
+    struct call_strct*  call;
+    int                 liter_bool;
+    int                 liter_int;
+    char                liter_char;
+    struct CharArray*   liter_str;
 };

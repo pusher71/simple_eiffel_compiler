@@ -76,4 +76,61 @@ struct ids_with_type_strct* create_ids_with_type(unsigned int node_index, struct
 
 struct type_strct* create_type(unsigned int node_index, enum type_enum type, char* id_name);
 
-struct routine_decl_body_strct* create_routine_decl_body(unsigned int node_index);
+struct routine_decl_body_strct* create_routine_decl_body(unsigned int node_index,
+                                                         struct ids_with_type_seq_strct* local_ids_with_type_seq,
+                                                         struct instruction_seq_strct* instruction_seq);
+
+struct instruction_seq_strct* create_instruction_seq(unsigned int node_index, struct instruction_strct* instruction);
+struct instruction_seq_strct* append_instruction_seq(unsigned int node_index,
+                                                     struct instruction_seq_strct* instruction_seq,
+                                                     struct instruction_strct* instruction);
+
+// ... Instruction
+struct instruction_strct* create_create_instruction(unsigned int node_index, char* var_name, char* method_name, struct argument_seq_strct* argument_seq);
+struct instruction_strct* create_call_instruction(unsigned int node_index, struct call_strct* call);
+
+struct call_strct* create_call_my_method(unsigned int node_index,
+                                         char* id_name,
+                                         struct argument_seq_strct* argument_seq,
+                                         struct call_sub_seq_strct* call_sub_seq);
+
+struct call_strct* create_call_method_of_current(unsigned int node_index,
+                                                 struct call_sub_seq_strct* call_sub_seq);
+
+struct call_strct* create_call_method_of_result(unsigned int node_index,
+                                                struct call_sub_seq_strct* call_sub_seq);
+
+struct call_strct* create_call_method_of_paren_expr(unsigned int node_index,
+                                                    struct expr_strct* parenthesized_expr,
+                                                    struct call_sub_seq_strct* call_sub_seq);
+
+struct call_strct* create_call_precursor(unsigned int node_index,
+                                         char* id_name,
+                                         struct argument_seq_strct* argument_seq,
+                                         struct call_sub_seq_strct* call_sub_seq);
+
+struct call_sub_seq_strct* create_call_sub_seq(unsigned int node_index,
+                                               char* id_name,
+                                               struct argument_seq_strct* argument_seq);
+
+struct call_sub_seq_strct* append_call_sub_seq(unsigned int node_index,
+                                               struct call_sub_seq_strct* call_sub_seq,
+                                               char* id_name,
+                                               struct argument_seq_strct* argument_seq);
+
+struct argument_seq_strct* create_argument_seq(unsigned int node_index, struct nonempty_argument_seq_strct* nonempty_argument_seq);
+
+struct nonempty_argument_seq_strct* create_nonempty_argument_seq(unsigned int node_index,
+                                                                 struct expr_strct* expr);
+
+struct nonempty_argument_seq_strct* append_nonempty_argument_seq(unsigned int node_index,
+                                                                 struct nonempty_argument_seq_strct* nonempty_argument_seq,
+                                                                 struct expr_strct* expr);
+
+// ... Expression
+struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_bool);
+struct expr_strct* create_expr_liter_int (unsigned int node_index, int liter_int);
+struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_char);
+struct expr_strct* create_expr_liter_str (unsigned int node_index, struct CharArray* liter_str);
+
+struct expr_strct* create_expr_call(unsigned int node_index, struct call_strct* call);
