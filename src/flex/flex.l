@@ -637,18 +637,17 @@ select          { debug_moveCursorToNextCharacter(yyleng); return SELECT; }
 local           { debug_moveCursorToNextCharacter(yyleng); return LOCAL; }
 result          { debug_moveCursorToNextCharacter(yyleng); return RESULT; }
 current         { debug_moveCursorToNextCharacter(yyleng); return CURRENT; }
-void            { debug_moveCursorToNextCharacter(yyleng); }
 
-if              { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-then            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-else            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-elseif          { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-inspect         { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-when            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-loop            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-from            { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-until           { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
-variant         { printf("<KEYWORD: %s>\n", yytext); debug_moveCursorToNextCharacter(yyleng); }
+if              { debug_moveCursorToNextCharacter(yyleng); }
+then            { debug_moveCursorToNextCharacter(yyleng); }
+else            { debug_moveCursorToNextCharacter(yyleng); }
+elseif          { debug_moveCursorToNextCharacter(yyleng); }
+inspect         { debug_moveCursorToNextCharacter(yyleng); }
+when            { debug_moveCursorToNextCharacter(yyleng); }
+loop            { debug_moveCursorToNextCharacter(yyleng); }
+from            { debug_moveCursorToNextCharacter(yyleng); }
+until           { debug_moveCursorToNextCharacter(yyleng); }
+variant         { debug_moveCursorToNextCharacter(yyleng); }
 
 boolean         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_BOOLEAN; }
 character       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_CHARACTER; }

@@ -8,6 +8,8 @@ class MAIN
     create
 
     feature
+        A : BASE
+
     feature
     feature
     feature
