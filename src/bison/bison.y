@@ -241,9 +241,11 @@ creators_block: /* EMPTY */                 { $$ = NULL; }
               | nonempty_creators_block     { $$ = create_creators_block(curr_node_index++, $1); }
 			  ;
 
-nonempty_creators_block: CREATE identifiers_comma_seq                           { $$ = create_nonempty_creators_block(curr_node_index++, $2); }
+nonempty_creators_block: CREATE                                                 { $$ = create_nonempty_creators_block(curr_node_index++, NULL); }
+                       | CREATE identifiers_comma_seq                           { $$ = create_nonempty_creators_block(curr_node_index++, $2); }
                        | nonempty_creators_block CREATE identifiers_comma_seq   { $$ = append_nonempty_creators_block(curr_node_index++, $1, $3); }
-					   ;
+                       | nonempty_creators_block CREATE                         { $$ = append_nonempty_creators_block(curr_node_index++, $1, NULL); }
+                       ;
 
 // ... FEATURES BLOCK
 features_block: /* EMPTY */                 { $$ = NULL; }

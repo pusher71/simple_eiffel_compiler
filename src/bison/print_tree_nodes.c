@@ -146,7 +146,7 @@ void print_creators_block(FILE* dot_file, struct creators_block_strct* creators_
 
     while(curr != NULL) {
         print_nonempty_creators_block(dot_file, curr);
-        fprintf(dot_file, "%u -> %u[label=\"sel: %d\"];\n", creators_block->_node_index, curr->_node_index, curr_index);
+        fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", creators_block->_node_index, curr->_node_index, curr_index);
 
         curr = curr->next;
         curr_index++;
