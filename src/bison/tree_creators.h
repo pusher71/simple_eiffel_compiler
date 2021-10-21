@@ -87,6 +87,21 @@ struct instruction_seq_strct* append_instruction_seq(unsigned int node_index,
 
 // ... Instruction
 struct instruction_strct* create_create_instruction(unsigned int node_index, char* var_name, char* method_name, struct argument_seq_strct* argument_seq);
+
+struct instruction_strct* create_assignment_instruction(unsigned int node_index,
+                                                struct expr_strct* expr_left,
+                                                struct expr_strct* expr_right);
+
+struct instruction_strct* create_if_instruction(unsigned int node_index,
+                                                struct expr_strct* condition,
+                                                struct instruction_seq_strct* branch_true,
+                                                struct instruction_seq_strct* branch_false);
+
+struct instruction_strct* create_loop_instruction(unsigned int node_index,
+                                                struct instruction_strct* init,
+                                                struct expr_strct* condition,
+                                                struct instruction_seq_strct* body);
+
 struct instruction_strct* create_call_instruction(unsigned int node_index, struct call_strct* call);
 
 struct call_strct* create_call_my_method(unsigned int node_index,
@@ -134,3 +149,5 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
 struct expr_strct* create_expr_liter_str (unsigned int node_index, struct CharArray* liter_str);
 
 struct expr_strct* create_expr_call(unsigned int node_index, struct call_strct* call);
+
+struct expr_strct* create_expr_operation(unsigned int node_index, struct expr_strct* expr_left, struct expr_strct* expr_right, enum expr_type operation);

@@ -178,7 +178,10 @@ struct instruction_seq_strct {
 
 enum instruction_enum {
     instr_create,
-    instr_call
+    instr_call,
+    instr_assignment,
+    instr_if,
+    instr_loop
 };
 
 struct instruction_strct {
@@ -190,6 +193,16 @@ struct instruction_strct {
     struct argument_seq_strct* argument_seq;
 
     struct call_strct* call;
+
+    struct expr_strct* expr_left;
+    struct expr_strct* expr_right;
+
+    struct expr_strct* condition;
+    struct instruction_seq_strct* branch_true;
+    struct instruction_seq_strct* branch_false;
+
+    struct instruction_strct* init;
+    struct instruction_seq_strct* body;
 };
 
 enum call_enum {
@@ -237,7 +250,23 @@ enum expr_type {
     expr_liter_bool,
     expr_liter_int,
     expr_liter_char,
-    expr_liter_str
+    expr_liter_str,
+    expr_plus,
+    expr_uminus,
+    expr_bminus,
+    expr_mul,
+    expr_idiv,
+    expr_fdiv,
+    expr_less,
+    expr_great,
+    expr_less_equal,
+    expr_great_equal,
+    expr_equal,
+    expr_notequal,
+    expr_not,
+    expr_and,
+    expr_or,
+    expr_xor
 };
 
 struct expr_strct {
@@ -249,4 +278,7 @@ struct expr_strct {
     int                 liter_int;
     char                liter_char;
     struct CharArray*   liter_str;
+
+    struct expr_strct*  expr_left;
+    struct expr_strct*  expr_right;
 };

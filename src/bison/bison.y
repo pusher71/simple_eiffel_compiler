@@ -66,9 +66,9 @@
 
     /* Constants */
     short				liter_boolean_field;
-    long int 			liter_integer_field;
+    long int                            liter_integer_field;
     char				liter_char_field;
-    CharArray* 			liter_string_field;
+    CharArray*                          liter_string_field;
 
     char*  				id_field;
 }
@@ -79,6 +79,11 @@
 
 %token<id_field> ID
 %token CLASS
+%token IF
+%token ELSE
+%token FROM
+%token UNTIL
+%token LOOP
 %token END
 
 // --------------- DATA TYPES ---------------
@@ -93,6 +98,15 @@
 %token DATATYPE_NATURAL_32
 %token DATATYPE_NATURAL_64
 %token DATATYPE_STRING
+
+// --------------- OPERATORS ----------------
+%token ASSIGNMENT
+%left AND OR XOR
+%left '<' '>' LESS_EQUAL GREAT_EQUAL '=' NOTEQUAL
+%left '+' '-'
+%left '*' INTEGER_DIVISION FRACTIONAL_DIVISION
+%right UMINUS NOT
+%left '@' '('
 
 // ---------------- LITERALS ----------------
 %token<liter_boolean_field> LITER_BOOLEAN
@@ -296,10 +310,15 @@ instruction: CREATE ID                                  { $$ = create_create_ins
            | CREATE ID '.' ID                           { $$ = create_create_instruction(curr_node_index++, $2, $4, NULL); }
            | CREATE ID '.' ID '(' argument_seq ')'      { $$ = create_create_instruction(curr_node_index++, $2, $4, $6); }
            | call                                       { $$ = create_call_instruction(curr_node_index++, $1); }
+           | expr ASSIGNMENT expr                                                   { $$ = create_assignment_instruction(curr_node_index++, $1, $3); }
+           | IF '(' expr ')' instruction_seq END                                    { $$ = create_if_instruction(curr_node_index++, $3, $5, NULL); }
+           | IF '(' expr ')' instruction_seq ELSE instruction_seq END               { $$ = create_if_instruction(curr_node_index++, $3, $5, $7); }
+           | FROM instruction UNTIL expr LOOP instruction_seq END                   { $$ = create_loop_instruction(curr_node_index++, $2, $4, $6); }
            ;
 
 call: ID                                                            { $$ = create_call_my_method(curr_node_index++, $1, NULL, NULL); }
     | ID '(' argument_seq ')'                                       { $$ = create_call_my_method(curr_node_index++, $1, $3, NULL); }
+    | ID '@' argument_seq                                           { $$ = create_call_my_method(curr_node_index++, $1, $3, NULL); }
     | ID '.' call_sub_seq                                           { $$ = create_call_my_method(curr_node_index++, $1, NULL, $3); }
     | ID '(' argument_seq ')' '.' call_sub_seq                      { $$ = create_call_my_method(curr_node_index++, $1, $3, $6); }
     | CURRENT '.' call_sub_seq                                      { $$ = create_call_method_of_current(curr_node_index++, $3); }
@@ -335,6 +354,22 @@ expr: '(' expr ')'      { $$ = $2; }
     | LITER_CHAR        { $$ = create_expr_liter_char(curr_node_index++, $1); }
     | LITER_STRING      { $$ = create_expr_liter_str (curr_node_index++, $1); }
     | call              { $$ = create_expr_call(curr_node_index++, $1); }
+    | expr '+' expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_plus); }
+    | expr '-' expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_bminus); }
+    | expr '*' expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_mul); }
+    | expr INTEGER_DIVISION expr        { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_idiv); }
+    | expr FRACTIONAL_DIVISION expr     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_fdiv); }
+    | expr '<' expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_less); }
+    | expr '>' expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_great); }
+    | expr LESS_EQUAL expr              { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_less_equal); }
+    | expr GREAT_EQUAL expr             { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_great_equal); }
+    | expr '=' expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_equal); }
+    | expr NOTEQUAL expr                { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_notequal); }
+    | expr AND expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_and); }
+    | expr OR expr                      { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_or); }
+    | expr XOR expr                     { $$ = create_expr_operation(curr_node_index++, $1, $3, expr_xor); }
+    | NOT expr                          { $$ = create_expr_operation(curr_node_index++, NULL, $2, expr_not); }
+    | '-' expr %prec UMINUS             { $$ = create_expr_operation(curr_node_index++, NULL, $2, expr_uminus); }
     ;
 
 // DATA TYPES

@@ -369,6 +369,97 @@ struct instruction_strct* create_create_instruction(unsigned int node_index, cha
 
     result->call = NULL;
 
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    result->condition       = NULL;
+    result->branch_true     = NULL;
+    result->branch_false    = NULL;
+
+    result->init            = NULL;
+    result->body            = NULL;
+
+    return result;
+}
+
+struct instruction_strct* create_assignment_instruction(unsigned int node_index,
+                                                struct expr_strct* expr_left,
+                                                struct expr_strct* expr_right) {
+    struct instruction_strct* result = (struct instruction_strct*)malloc(sizeof(struct instruction_strct));
+    result->_node_index = node_index;
+    result->type = instr_assignment;
+
+    result->first_id_name   = NULL;
+    result->second_id_name  = NULL;
+    result->argument_seq    = NULL;
+
+    result->call = NULL;
+
+    result->expr_left       = expr_left;
+    result->expr_right      = expr_right;
+
+    result->condition       = NULL;
+    result->branch_true     = NULL;
+    result->branch_false    = NULL;
+
+    result->init            = NULL;
+    result->body            = NULL;
+
+    return result;
+}
+
+struct instruction_strct* create_if_instruction(unsigned int node_index,
+                                                struct expr_strct* condition,
+                                                struct instruction_seq_strct* branch_true,
+                                                struct instruction_seq_strct* branch_false) {
+    struct instruction_strct* result = (struct instruction_strct*)malloc(sizeof(struct instruction_strct));
+    result->_node_index = node_index;
+    result->type = instr_if;
+
+    result->first_id_name   = NULL;
+    result->second_id_name  = NULL;
+    result->argument_seq    = NULL;
+
+    result->call = NULL;
+
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    result->condition       = condition;
+    result->branch_true     = branch_true;
+    result->branch_false    = branch_false;
+
+    result->init            = NULL;
+    result->body            = NULL;
+
+    return result;
+}
+
+
+struct instruction_strct* create_loop_instruction(unsigned int node_index,
+                                                struct instruction_strct* init,
+                                                struct expr_strct* condition,
+                                                struct instruction_seq_strct* body) {
+    struct instruction_strct* result = (struct instruction_strct*)malloc(sizeof(struct instruction_strct));
+    result->_node_index = node_index;
+    result->type = instr_loop;
+
+    result->first_id_name   = NULL;
+    result->second_id_name  = NULL;
+    result->argument_seq    = NULL;
+
+    result->call = NULL;
+
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    result->condition       = condition;
+    result->branch_true     = NULL;
+    result->branch_false    = NULL;
+
+    result->init            = init;
+    result->body            = body;
+
     return result;
 }
 
@@ -382,6 +473,13 @@ struct instruction_strct* create_call_instruction(unsigned int node_index, struc
     result->argument_seq    = NULL;
 
     result->call = call;
+
+    result->condition       = NULL;
+    result->branch_true     = NULL;
+    result->branch_false    = NULL;
+
+    result->init            = NULL;
+    result->body            = NULL;
 
     return result;
 }
@@ -549,6 +647,9 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
     result->liter_str = NULL;
     result->call      = NULL;
 
+    result->expr_left  = NULL;
+    result->expr_right = NULL;
+
     return result;
 }
 
@@ -561,6 +662,9 @@ struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int)
 
     result->liter_str = NULL;
     result->call      = NULL;
+
+    result->expr_left  = NULL;
+    result->expr_right = NULL;
 
     return result;
 }
@@ -575,6 +679,9 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
     result->liter_str = NULL;
     result->call      = NULL;
 
+    result->expr_left  = NULL;
+    result->expr_right = NULL;
+
     return result;
 }
 
@@ -586,6 +693,9 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
     result->liter_str = liter_str;
     result->call      = NULL;
 
+    result->expr_left  = NULL;
+    result->expr_right = NULL;
+
     return result;
 }
 
@@ -596,6 +706,23 @@ struct expr_strct* create_expr_call(unsigned int node_index, struct call_strct* 
 
     result->liter_str = NULL;
     result->call      = call;
+
+    result->expr_left  = NULL;
+    result->expr_right = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_operation(unsigned int node_index, struct expr_strct* expr_left, struct expr_strct* expr_right, enum expr_type operation) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index = node_index;
+    result->type = operation;
+
+    result->liter_str = NULL;
+    result->call      = NULL;
+
+    result->expr_left  = expr_left;
+    result->expr_right = expr_right;
 
     return result;
 }

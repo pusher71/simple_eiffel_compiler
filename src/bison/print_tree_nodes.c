@@ -383,6 +383,42 @@ void print_instruction(FILE* dot_file, struct instruction_strct* instruction) {
             print_call(dot_file, instruction->call);
             fprintf(dot_file, "%u -> %u;\n", instruction->_node_index, instruction->call->_node_index);
             break;
+
+        case instr_assignment:
+            fprintf(dot_file, "%u[label=\":=\"];\n", instruction->_node_index);
+
+            print_expr(dot_file, instruction->expr_left);
+            fprintf(dot_file, "%u -> %u[label=\"left_value\"];\n", instruction->_node_index, instruction->expr_left->_node_index);
+
+            print_expr(dot_file, instruction->expr_right);
+            fprintf(dot_file, "%u -> %u[label=\"right_value\"];\n", instruction->_node_index, instruction->expr_right->_node_index);
+            break;
+
+        case instr_if:
+            fprintf(dot_file, "%u[label=\":=\"];\n", instruction->_node_index);
+
+            print_expr(dot_file, instruction->condition);
+            fprintf(dot_file, "%u -> %u[label=\"condition\"];\n", instruction->_node_index, instruction->condition->_node_index);
+
+            print_instruction_seq(dot_file, instruction->branch_true);
+            fprintf(dot_file, "%u -> %u[label=\"branch_true\"];\n", instruction->_node_index, instruction->branch_true->_node_index);
+
+            print_instruction_seq(dot_file, instruction->branch_false);
+            fprintf(dot_file, "%u -> %u[label=\"branch_false\"];\n", instruction->_node_index, instruction->branch_false->_node_index);
+            break;
+
+        case instr_loop:
+            fprintf(dot_file, "%u[label=\":=\"];\n", instruction->_node_index);
+
+            print_instruction(dot_file, instruction->init);
+            fprintf(dot_file, "%u -> %u[label=\"initialization\"];\n", instruction->_node_index, instruction->init->_node_index);
+
+            print_expr(dot_file, instruction->condition);
+            fprintf(dot_file, "%u -> %u[label=\"condition\"];\n", instruction->_node_index, instruction->condition->_node_index);
+
+            print_instruction_seq(dot_file, instruction->body);
+            fprintf(dot_file, "%u -> %u[label=\"body\"];\n", instruction->_node_index, instruction->body->_node_index);
+            break;
     }
 }
 
@@ -545,5 +581,45 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             print_call(dot_file, expr->call);
             fprintf(dot_file, "%u -> %u;\n", expr->_node_index, expr->call->_node_index);
             break;
+
+        case expr_plus:
+            fprintf(dot_file, "%u[label=\"+\"];\n", expr->_node_index);
+        case expr_bminus:
+            fprintf(dot_file, "%u[label=\"-\"];\n", expr->_node_index);
+        case expr_mul:
+            fprintf(dot_file, "%u[label=\"*\"];\n", expr->_node_index);
+        case expr_idiv:
+            fprintf(dot_file, "%u[label=\"//\"];\n", expr->_node_index);
+        case expr_fdiv:
+            fprintf(dot_file, "%u[label=\"\\\\\"];\n", expr->_node_index);
+        case expr_less:
+            fprintf(dot_file, "%u[label=\"<\"];\n", expr->_node_index);
+        case expr_great:
+            fprintf(dot_file, "%u[label=\">\"];\n", expr->_node_index);
+        case expr_less_equal:
+            fprintf(dot_file, "%u[label=\"<=\"];\n", expr->_node_index);
+        case expr_great_equal:
+            fprintf(dot_file, "%u[label=\">=\"];\n", expr->_node_index);
+        case expr_and:
+            fprintf(dot_file, "%u[label=\"and\"];\n", expr->_node_index);
+        case expr_or:
+            fprintf(dot_file, "%u[label=\"or\"];\n", expr->_node_index);
+        case expr_xor:
+            fprintf(dot_file, "%u[label=\"xor\"];\n", expr->_node_index);
+
+            print_expr(dot_file, expr->expr_left);
+            fprintf(dot_file, "%u -> %u[label=\"expr_left\"];\n", expr->_node_index, expr->expr_left->_node_index);
+
+            print_expr(dot_file, expr->expr_right);
+            fprintf(dot_file, "%u -> %u[label=\"expr_right\"];\n", expr->_node_index, expr->expr_right->_node_index);
+            break;
+
+        case expr_not:
+            fprintf(dot_file, "%u[label=\"not\"];\n", expr->_node_index);
+        case expr_uminus:
+            fprintf(dot_file, "%u[label=\"-\"];\n", expr->_node_index);
+
+            print_expr(dot_file, expr->expr_right);
+            fprintf(dot_file, "%u -> %u;\n", expr->_node_index, expr->expr_right->_node_index);
     }
 }
