@@ -42,68 +42,102 @@
      ID = 258,
      CLASS = 259,
      END = 260,
-     DATATYPE_BOOLEAN = 261,
-     DATATYPE_CHARACTER = 262,
-     DATATYPE_INTEGER_8 = 263,
-     DATATYPE_INTEGER_16 = 264,
-     DATATYPE_INTEGER_32 = 265,
-     DATATYPE_INTEGER_64 = 266,
-     DATATYPE_NATURAL_8 = 267,
-     DATATYPE_NATURAL_16 = 268,
-     DATATYPE_NATURAL_32 = 269,
-     DATATYPE_NATURAL_64 = 270,
-     DATATYPE_STRING = 271,
-     LITER_BOOLEAN = 272,
-     LITER_INTEGER = 273,
-     LITER_CHAR = 274,
-     LITER_STRING = 275,
-     INHERIT = 276,
-     RENAME = 277,
-     UNDEFINE = 278,
-     REDEFINE = 279,
-     SELECT = 280,
-     AS = 281,
-     CREATE = 282,
-     FEATURE = 283,
-     LOCAL = 284,
-     DO = 285,
-     CURRENT = 286,
-     RESULT = 287,
-     PRECURSOR = 288
+     IF = 261,
+     THEN = 262,
+     ELSE = 263,
+     FROM = 264,
+     UNTIL = 265,
+     LOOP = 266,
+     DATATYPE_BOOLEAN = 267,
+     DATATYPE_CHARACTER = 268,
+     DATATYPE_INTEGER_8 = 269,
+     DATATYPE_INTEGER_16 = 270,
+     DATATYPE_INTEGER_32 = 271,
+     DATATYPE_INTEGER_64 = 272,
+     DATATYPE_NATURAL_8 = 273,
+     DATATYPE_NATURAL_16 = 274,
+     DATATYPE_NATURAL_32 = 275,
+     DATATYPE_NATURAL_64 = 276,
+     DATATYPE_STRING = 277,
+     DATATYPE_ARRAY = 278,
+     ASSIGNMENT = 279,
+     XOR = 280,
+     OR = 281,
+     AND = 282,
+     NOTEQUAL = 283,
+     GREAT_EQUAL = 284,
+     LESS_EQUAL = 285,
+     INTEGER_DIVISION = 286,
+     NOT = 287,
+     UMINUS = 288,
+     LITER_BOOLEAN = 289,
+     LITER_INTEGER = 290,
+     LITER_CHAR = 291,
+     LITER_STRING = 292,
+     INHERIT = 293,
+     RENAME = 294,
+     UNDEFINE = 295,
+     REDEFINE = 296,
+     SELECT = 297,
+     AS = 298,
+     CREATE = 299,
+     FEATURE = 300,
+     LOCAL = 301,
+     DO = 302,
+     CURRENT = 303,
+     RESULT = 304,
+     PRECURSOR = 305
    };
 #endif
 /* Tokens.  */
 #define ID 258
 #define CLASS 259
 #define END 260
-#define DATATYPE_BOOLEAN 261
-#define DATATYPE_CHARACTER 262
-#define DATATYPE_INTEGER_8 263
-#define DATATYPE_INTEGER_16 264
-#define DATATYPE_INTEGER_32 265
-#define DATATYPE_INTEGER_64 266
-#define DATATYPE_NATURAL_8 267
-#define DATATYPE_NATURAL_16 268
-#define DATATYPE_NATURAL_32 269
-#define DATATYPE_NATURAL_64 270
-#define DATATYPE_STRING 271
-#define LITER_BOOLEAN 272
-#define LITER_INTEGER 273
-#define LITER_CHAR 274
-#define LITER_STRING 275
-#define INHERIT 276
-#define RENAME 277
-#define UNDEFINE 278
-#define REDEFINE 279
-#define SELECT 280
-#define AS 281
-#define CREATE 282
-#define FEATURE 283
-#define LOCAL 284
-#define DO 285
-#define CURRENT 286
-#define RESULT 287
-#define PRECURSOR 288
+#define IF 261
+#define THEN 262
+#define ELSE 263
+#define FROM 264
+#define UNTIL 265
+#define LOOP 266
+#define DATATYPE_BOOLEAN 267
+#define DATATYPE_CHARACTER 268
+#define DATATYPE_INTEGER_8 269
+#define DATATYPE_INTEGER_16 270
+#define DATATYPE_INTEGER_32 271
+#define DATATYPE_INTEGER_64 272
+#define DATATYPE_NATURAL_8 273
+#define DATATYPE_NATURAL_16 274
+#define DATATYPE_NATURAL_32 275
+#define DATATYPE_NATURAL_64 276
+#define DATATYPE_STRING 277
+#define DATATYPE_ARRAY 278
+#define ASSIGNMENT 279
+#define XOR 280
+#define OR 281
+#define AND 282
+#define NOTEQUAL 283
+#define GREAT_EQUAL 284
+#define LESS_EQUAL 285
+#define INTEGER_DIVISION 286
+#define NOT 287
+#define UMINUS 288
+#define LITER_BOOLEAN 289
+#define LITER_INTEGER 290
+#define LITER_CHAR 291
+#define LITER_STRING 292
+#define INHERIT 293
+#define RENAME 294
+#define UNDEFINE 295
+#define REDEFINE 296
+#define SELECT 297
+#define AS 298
+#define CREATE 299
+#define FEATURE 300
+#define LOCAL 301
+#define DO 302
+#define CURRENT 303
+#define RESULT 304
+#define PRECURSOR 305
 
 
 
@@ -122,53 +156,40 @@ typedef union YYSTYPE
 
     /* Class */
     // Inheritance block
-    struct inheritance_block_strct* inheritance_block_field;
-
     struct parent_seq_strct*    parent_seq_field;
     struct parent_strct*        parent_field;
-    struct parent_info_strct*   parent_info_field;
     struct rename_seq_strct*    rename_seq_field;
 
     // Creators block
-    struct creators_block_strct*            creators_block_field;
-    struct nonempty_creators_block_strct*   nonempty_creators_block_field;
+    struct creators_seq_strct*          creators_seq_field;
 
     // Features block
-    struct features_block_strct*                features_block_field;
-    struct nonempty_features_block_strct*       nonempty_features_block_field;
+    struct features_seq_strct*          features_seq_field;
+    struct feature_decl_seq_strct*      feature_decl_seq_field;
+    struct feature_decl_strct*          feature_decl_field;
 
-    struct feature_decl_seq_strct*              feature_decl_seq_field;
-    struct nonempty_feature_decl_seq_strct*     nonempty_feature_decl_seq_field;
-    struct feature_decl_strct*                  feature_decl_field;
-
-    struct ids_with_type_seq_strct*             ids_with_type_seq_field;
-    struct nonempty_ids_with_type_seq_strct*    nonempty_ids_with_type_seq_field;
-    struct ids_with_type_strct*                 ids_with_type_field;
-    struct type_strct*                          type_field;
-
-    struct routine_decl_body_strct* routine_decl_body_field;
+    struct ids_with_type_seq_strct*     ids_with_type_seq_field;
+    struct type_strct*                  type_field;
 
     // ... Instruction
     struct instruction_seq_strct*   instruction_seq_field;
     struct instruction_strct*       instruction_field;
 
     struct call_strct*                      call_field;
-    struct call_sub_seq_strct*              call_sub_seq_field;
     struct argument_seq_strct*              argument_seq_field;
-    struct nonempty_argument_seq_strct*     nonempty_argument_seq_field;
 
     struct expr_strct* expr_field;
 
     /* Constants */
-    short				liter_boolean_field;
-    long int 			liter_integer_field;
-    char				liter_char_field;
-    CharArray* 			liter_string_field;
+    short       liter_boolean_field;
+    long int    liter_integer_field;
+    char        liter_char_field;
+    CharArray*  liter_string_field;
 
-    char*  				id_field;
+    char*       id_field;
 }
 /* Line 1529 of yacc.c.  */
-#line 172 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
+#line 193 "/Users/alekseiyakimov/Downloads/simple_eiffel_compiler-bogdan/src/flex/parser.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

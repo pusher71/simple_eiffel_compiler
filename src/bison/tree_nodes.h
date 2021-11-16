@@ -28,18 +28,12 @@ struct class_decl_strct {
 
     char* id_name;
 
-    struct inheritance_block_strct*     inheritance_block;
-    struct creators_block_strct*        creators_block;
-    struct features_block_strct*        features_block;
+    struct parent_seq_strct*    parent_seq;
+    struct creators_seq_strct*  creators_seq;
+    struct features_seq_strct*  features_seq;
 };
 
 // Inheritance block
-struct inheritance_block_strct {
-    unsigned int _node_index;
-
-    struct parent_seq_strct* parent_seq;
-};
-
 struct parent_seq_strct {
     unsigned int _node_index;
 
@@ -51,11 +45,6 @@ struct parent_strct {
     unsigned int _node_index;
 
     char* id_name;
-    struct parent_info_strct* parent_info;
-};
-
-struct parent_info_strct {
-    unsigned int _node_index;
 
     struct rename_seq_strct*              rename_seq;
     struct identifiers_comma_seq_strct*   undefine_seq;
@@ -73,41 +62,26 @@ struct rename_seq_strct {
 };
 
 // Creators block
-struct creators_block_strct {
-    unsigned int _node_index;
-    struct nonempty_creators_block_strct* nonempty_creators_block;
-};
-
-struct nonempty_creators_block_strct {
+struct creators_seq_strct {
     unsigned int _node_index;
 
     struct identifiers_comma_seq_strct* value;
-    struct nonempty_creators_block_strct* next;
+    struct creators_seq_strct* next;
 };
 
 // Features block
-struct features_block_strct {
-    unsigned int _node_index;
-    struct nonempty_features_block_strct* nonempty_features_block;
-};
-
-struct nonempty_features_block_strct {
+struct features_seq_strct {
     unsigned int _node_index;
 
     struct feature_decl_seq_strct* value;
-    struct nonempty_features_block_strct* next;
+    struct features_seq_strct* next;
 };
 
 struct feature_decl_seq_strct {
     unsigned int _node_index;
-    struct nonempty_feature_decl_seq_strct* nonempty_feature_decl_seq;
-};
-
-struct nonempty_feature_decl_seq_strct {
-    unsigned int _node_index;
 
     struct feature_decl_strct* value;
-    struct nonempty_feature_decl_seq_strct* next;
+    struct feature_decl_seq_strct* next;
 };
 
 struct feature_decl_strct {
@@ -117,30 +91,23 @@ struct feature_decl_strct {
     struct type_strct* type;
 
     struct ids_with_type_seq_strct* feature_param_seq;
-    struct routine_decl_body_strct* routine_decl_body;
+
+    struct ids_with_type_seq_strct* local_variables;
+    struct instruction_seq_strct*   routine_body;
 };
 
 struct ids_with_type_seq_strct {
     unsigned int _node_index;
-    struct nonempty_ids_with_type_seq_strct* nonempty_ids_with_type_seq;
-};
-
-struct nonempty_ids_with_type_seq_strct {
-    unsigned int _node_index;
-
-    struct ids_with_type_strct* value;
-    struct nonempty_ids_with_type_seq_strct* next;
-};
-
-struct ids_with_type_strct {
-    unsigned int _node_index;
 
     struct identifiers_comma_seq_strct* identifiers_comma_seq;
     struct type_strct* type;
+
+    struct ids_with_type_seq_strct* next;
 };
 
 enum type_enum {
     dtype_user_defined,
+    dtype_array,
 
     dtype_boolean,
     dtype_character,
@@ -156,17 +123,11 @@ enum type_enum {
 };
 
 struct type_strct {
-    unsigned int _node_index;
-    enum type_enum type;
+    unsigned int        _node_index;
+    enum type_enum      type;
 
-    char* id_name;
-};
-
-struct routine_decl_body_strct {
-    unsigned int _node_index;
-
-    struct ids_with_type_seq_strct* local_ids_with_type_seq;
-    struct instruction_seq_strct*   instruction_seq;
+    char*               id_name;
+    struct type_strct*  arrayelem_type;
 };
 
 struct instruction_seq_strct {
@@ -177,8 +138,11 @@ struct instruction_seq_strct {
 };
 
 enum instruction_enum {
-    instr_create,
-    instr_call
+    instruction_create,
+    instruction_if,
+    instruction_assign,
+    instruction_loop,
+    instruction_expr
 };
 
 struct instruction_strct {
@@ -189,11 +153,21 @@ struct instruction_strct {
     char* second_id_name;
     struct argument_seq_strct* argument_seq;
 
-    struct call_strct* call;
+    struct expr_strct* assign_expr;
+
+    struct expr_strct* condition;
+    struct instruction_seq_strct* branch_true;
+    struct instruction_seq_strct* branch_false;
+
+    struct instruction_seq_strct* init;
+    struct instruction_seq_strct* body;
+
+    struct expr_strct* instruction_as_expr;
 };
 
 enum call_enum {
-    call_my_method,
+    call_method_or_var,
+    call_method,
     call_current,
     call_result,
     call_parenthesized_expr,
@@ -204,49 +178,60 @@ struct call_strct {
     unsigned int _node_index;
     enum call_enum type;
 
-    struct call_sub_seq_strct* call_sub_seq;
-
     char* id_name;
     struct argument_seq_strct* argument_seq;
     struct expr_strct* parenthesized_expr;
 };
 
-struct call_sub_seq_strct {
-    unsigned int _node_index;
-
-    char* id_name;
-    struct argument_seq_strct* argument_seq;
-
-    struct call_sub_seq_strct* next;
-};
-
 struct argument_seq_strct {
-    unsigned int _node_index;
-    struct nonempty_argument_seq_strct* nonempty_argument_seq;
-};
-
-struct nonempty_argument_seq_strct {
     unsigned int _node_index;
 
     struct expr_strct* value;
-    struct nonempty_argument_seq_strct* next;
+    struct argument_seq_strct* next;
 };
 
 enum expr_type {
-    expr_call,
     expr_liter_bool,
     expr_liter_int,
     expr_liter_char,
-    expr_liter_str
+    expr_liter_str,
+
+    expr_call,
+    expr_subcall,
+    expr_arrelem,
+
+    expr_plus,
+    expr_bminus,
+    expr_mul,
+    expr_idiv,
+    expr_uminus,
+
+    expr_less,
+    expr_great,
+    expr_less_equal,
+    expr_great_equal,
+    expr_equal,
+    expr_notequal,
+
+    expr_and,
+    expr_or,
+    expr_xor,
+    expr_not
 };
 
 struct expr_strct {
     unsigned int _node_index;
     enum expr_type type;
 
-    struct call_strct*  call;
+    struct call_strct*          call;
+    char*                       id_name;
+    struct argument_seq_strct*  argument_seq;
+
     int                 liter_bool;
     int                 liter_int;
     char                liter_char;
     struct CharArray*   liter_str;
+
+    struct expr_strct*  expr_left;
+    struct expr_strct*  expr_right;
 };

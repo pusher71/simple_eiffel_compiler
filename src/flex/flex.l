@@ -661,25 +661,25 @@ natural_32      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATUR
 natural_64      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_64; }
 string          { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_STRING; }
 
-"+"     { printf("<OPERATOR: PLUS>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"-"     { printf("<OPERATOR: MINUS>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"*"     { printf("<OPERATOR: MULT>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"//"    { printf("<OPERATOR: INTEGER DIVISION>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"\\"    { printf("<OPERATOR: FRACTIONAL DIVISION>\n"); debug_moveCursorToNextCharacter(yyleng); }
+"+"     { debug_moveCursorToNextCharacter(yyleng); return '+'; }
+"-"     { debug_moveCursorToNextCharacter(yyleng); return '-'; }
+"*"     { debug_moveCursorToNextCharacter(yyleng); return '*'; }
+"\\"    { debug_moveCursorToNextCharacter(yyleng); return INTEGER_DIVISION; }
 
-"="     { printf("<OPERATOR: EQUALITY>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"/="    { printf("<OPERATOR: INEQUALITY>\n"); debug_moveCursorToNextCharacter(yyleng); }
-">"     { printf("<OPERATOR: MORE>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"<"     { printf("<OPERATOR: LESS>\n"); debug_moveCursorToNextCharacter(yyleng); }
-">="    { printf("<OPERATOR: MORE OR EQUAL>\n"); debug_moveCursorToNextCharacter(yyleng); }
-"<="    { printf("<OPERATOR: LESS OR EQUAL>\n"); debug_moveCursorToNextCharacter(yyleng); }
+"="     { debug_moveCursorToNextCharacter(yyleng); return '='; }
+"/="    { debug_moveCursorToNextCharacter(yyleng); return NOTEQUAL; }
+">"     { debug_moveCursorToNextCharacter(yyleng); return '>'; }
+"<"     { debug_moveCursorToNextCharacter(yyleng); return '<'; }
+">="    { debug_moveCursorToNextCharacter(yyleng); return GREAT_EQUAL; }
+"<="    { debug_moveCursorToNextCharacter(yyleng); return LESS_EQUAL; }
 
-":="    { printf("<OPERATOR: ASSIGN>\n"); debug_moveCursorToNextCharacter(yyleng); }
+":="    { debug_moveCursorToNextCharacter(yyleng); return ASSIGNMENT; }
+"@"    { debug_moveCursorToNextCharacter(yyleng); return '@'; }
 
-and     { printf("<OPERATOR: AND>\n"); debug_moveCursorToNextCharacter(yyleng); }
-or      { printf("<OPERATOR: OR>\n"); debug_moveCursorToNextCharacter(yyleng); }
-not     { printf("<OPERATOR: NOT>\n"); debug_moveCursorToNextCharacter(yyleng); }
-xor     { printf("<OPERATOR: XOR>\n"); debug_moveCursorToNextCharacter(yyleng); }
+and     { debug_moveCursorToNextCharacter(yyleng); return AND; }
+or      { debug_moveCursorToNextCharacter(yyleng); return OR; }
+not     { debug_moveCursorToNextCharacter(yyleng); return NOT; }
+xor     { debug_moveCursorToNextCharacter(yyleng); return XOR; }
 
 "." { debug_moveCursorToNextCharacter(yyleng); return '.'; }
 ";" { debug_moveCursorToNextCharacter(yyleng); return ';'; }

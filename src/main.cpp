@@ -11,8 +11,22 @@ extern "C" {
 extern FILE* yyin;
 extern struct program_strct* tree_root;
 
+struct CompilerState {
+    bool isPrintingTreeNodes = false;
+};
+
+struct CompilerInfo {
+    char* sourceFilepath;
+};
+
 int main(int argc, char** argv) {
-    bool print_syntaxtree = true;
+    CompilerState compilerState;
+    compilerState.isPrintingTreeNodes = true;
+
+    if (argc != 2) {
+        std::cerr << "INPUT ERROR :: No source file have been provided." << std::endl;
+        return -1;
+    }
 
     // Parse input file if it can be opened
     const char* filepath = argv[1];
@@ -28,7 +42,7 @@ int main(int argc, char** argv) {
     }
 
     // Print result tree
-    if (print_syntaxtree) {
+    if (compilerState.isPrintingTreeNodes) {
         if (tree_root != NULL) {
             FILE* output_file = fopen("output_tree.dot", "w");
             print_program(output_file, tree_root);
