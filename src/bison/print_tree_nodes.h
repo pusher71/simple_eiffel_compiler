@@ -31,7 +31,5 @@ void print_type(FILE* dot_file, struct type_strct* type);
 void print_instruction_seq(FILE* dot_file, struct instruction_seq_strct* instruction_seq);
 void print_instruction(FILE* dot_file, struct instruction_strct* instruction);
 
-void print_call(FILE* dot_file, struct call_strct* call);
-
 void print_argument_seq(FILE* dot_file, struct argument_seq_strct* argument_seq);
 void print_expr(FILE* dot_file, struct expr_strct* expr);

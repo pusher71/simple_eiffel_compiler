@@ -96,19 +96,6 @@ void print_parent(FILE* dot_file, struct parent_strct* parent) {
     }
 
     {
-        struct  identifiers_comma_seq_strct* curr = parent->undefine_seq;
-        int     curr_index = 0;
-
-        while(curr != NULL) {
-            print_identifiers_comma_seq(dot_file, curr);
-            fprintf(dot_file, "%u -> %u[label=\"undef: %d\"];\n", parent->_node_index, curr->_node_index, curr_index);
-
-            curr = curr->next;
-            curr_index++;
-        }
-    }
-
-    {
         struct  identifiers_comma_seq_strct* curr = parent->redefine_seq;
         int     curr_index = 0;
 
@@ -269,29 +256,11 @@ void print_type(FILE* dot_file, struct type_strct* type) {
         case dtype_character:
             fprintf(dot_file, "%u[label=\"dtype <CHAR>\"];\n", type->_node_index);
             break;
-        case dtype_integer_8:
-            fprintf(dot_file, "%u[label=\"dtype <INT_8>\"];\n", type->_node_index);
+        case dtype_integer:
+            fprintf(dot_file, "%u[label=\"dtype <INT>\"];\n", type->_node_index);
             break;
-        case dtype_integer_16:
-            fprintf(dot_file, "%u[label=\"dtype <INT_16>\"];\n", type->_node_index);
-            break;
-        case dtype_integer_32:
-            fprintf(dot_file, "%u[label=\"dtype <INT_32>\"];\n", type->_node_index);
-            break;
-        case dtype_integer_64:
-            fprintf(dot_file, "%u[label=\"dtype <INT_64>\"];\n", type->_node_index);
-            break;
-        case dtype_natural_8:
-            fprintf(dot_file, "%u[label=\"dtype <NAT_8>\"];\n", type->_node_index);
-            break;
-        case dtype_natural_16:
-            fprintf(dot_file, "%u[label=\"dtype <NAT_16>\"];\n", type->_node_index);
-            break;
-        case dtype_natural_32:
-            fprintf(dot_file, "%u[label=\"dtype <NAT_32>\"];\n", type->_node_index);
-            break;
-        case dtype_natural_64:
-            fprintf(dot_file, "%u[label=\"dtype <NAT_64>\"];\n", type->_node_index);
+        case dtype_natural:
+            fprintf(dot_file, "%u[label=\"dtype <NAT>\"];\n", type->_node_index);
             break;
         case dtype_string:
             fprintf(dot_file, "%u[label=\"dtype <STR>\"];\n", type->_node_index);
@@ -318,10 +287,10 @@ void print_instruction(FILE* dot_file, struct instruction_strct* instruction) {
     switch(instruction->type) {
         case instruction_create:
             if (instruction->second_id_name == NULL) {
-                fprintf(dot_file, "%u[label=\"create <%s>\"];\n", instruction->_node_index, instruction->first_id_name);
+                fprintf(dot_file, "%u[label=\"instruction :: basic create <%s>\"];\n", instruction->_node_index, instruction->first_id_name);
             }
             else {
-                fprintf(dot_file, "%u[label=\"create <%s> with creator <%s>\"];\n", instruction->_node_index, instruction->first_id_name, instruction->second_id_name);
+                fprintf(dot_file, "%u[label=\"instruction :: create <%s> with creator <%s>\"];\n", instruction->_node_index, instruction->first_id_name, instruction->second_id_name);
             }
 
             {
@@ -339,7 +308,7 @@ void print_instruction(FILE* dot_file, struct instruction_strct* instruction) {
             break;
 
         case instruction_assign:
-            fprintf(dot_file, "%u[label=\"expr :: assign to <%s>\"];\n", instruction->_node_index, instruction->first_id_name);
+            fprintf(dot_file, "%u[label=\"instruction :: assign to <%s>\"];\n", instruction->_node_index, instruction->first_id_name);
 
             print_expr(dot_file, instruction->assign_expr);
             fprintf(dot_file, "%u -> %u[label=\"assign expr\"];\n", instruction->_node_index, instruction->assign_expr->_node_index);
@@ -349,7 +318,7 @@ void print_instruction(FILE* dot_file, struct instruction_strct* instruction) {
             fprintf(dot_file, "%u[label=\":=\"];\n", instruction->_node_index);
 
             print_expr(dot_file, instruction->condition);
-            fprintf(dot_file, "%u -> %u[label=\"condition\"];\n", instruction->_node_index, instruction->condition->_node_index);
+            fprintf(dot_file, "%u -> %u[label=\"instruction :: condition\"];\n", instruction->_node_index, instruction->condition->_node_index);
 
             {
                 struct instruction_seq_strct* curr = instruction->branch_true;
@@ -422,116 +391,6 @@ void print_instruction(FILE* dot_file, struct instruction_strct* instruction) {
     }
 }
 
-void print_call(FILE* dot_file, struct call_strct* call) {
-    struct call_sub_seq_strct*  curr;
-    int                         curr_index;
-
-    switch(call->type) {
-        case call_method:
-            fprintf(dot_file, "%u[label=\"my method <%s>\"];\n", call->_node_index, call->id_name);
-
-            {
-                struct argument_seq_strct* curr = call->argument_seq;
-                int curr_index = 0;
-
-                while(curr != NULL) {
-                    print_argument_seq(dot_file, curr);
-                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", call->_node_index, curr->_node_index, curr_index);
-
-                    curr = curr->next;
-                    curr_index++;
-                }
-            }
-
-            break;
-
-        case call_method_or_var:
-            fprintf(dot_file, "%u[label=\"my method or var <%s>\"];\n", call->_node_index, call->id_name);
-
-            break;
-
-        case call_current:
-            fprintf(dot_file, "%u[label=\"CURRENT method <%s>\"];\n", call->_node_index, call->id_name);
-
-            {
-                struct argument_seq_strct* curr = call->argument_seq;
-                int curr_index = 0;
-
-                while(curr != NULL) {
-                    print_argument_seq(dot_file, curr);
-                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", call->_node_index, curr->_node_index, curr_index);
-
-                    curr = curr->next;
-                    curr_index++;
-                }
-            }
-
-            break;
-
-        case call_result:
-            fprintf(dot_file, "%u[label=\"RESULT method <%s>\"];\n", call->_node_index, call->id_name);
-
-            {
-                struct argument_seq_strct* curr = call->argument_seq;
-                int curr_index = 0;
-
-                while(curr != NULL) {
-                    print_argument_seq(dot_file, curr);
-                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", call->_node_index, curr->_node_index, curr_index);
-
-                    curr = curr->next;
-                    curr_index++;
-                }
-            }
-
-            break;
-
-        case call_parenthesized_expr:
-            fprintf(dot_file, "%u[label=\"paren-expr method <%s>\"];\n", call->_node_index, call->id_name);
-
-            print_expr(dot_file, call->parenthesized_expr);
-            fprintf(dot_file, "%u -> %u[label=\"paren-expr\"];\n", call->_node_index, call->parenthesized_expr->_node_index);
-
-            {
-                struct argument_seq_strct* curr = call->argument_seq;
-                int curr_index = 0;
-
-                while(curr != NULL) {
-                    print_argument_seq(dot_file, curr);
-                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", call->_node_index, curr->_node_index, curr_index);
-
-                    curr = curr->next;
-                    curr_index++;
-                }
-            }
-
-            break;
-
-        case call_precursor:
-            if (call->id_name == NULL) {
-                fprintf(dot_file, "%u[label=\"PRECURSOR method\"];\n", call->_node_index);
-            }
-            else {
-                fprintf(dot_file, "%u[label=\"PRECURSOR method <%s>\"];\n", call->_node_index, call->id_name);
-            }
-
-            {
-                struct argument_seq_strct* curr = call->argument_seq;
-                int curr_index = 0;
-
-                while(curr != NULL) {
-                    print_argument_seq(dot_file, curr);
-                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", call->_node_index, curr->_node_index, curr_index);
-
-                    curr = curr->next;
-                    curr_index++;
-                }
-            }
-
-            break;
-    }
-}
-
 void print_argument_seq(FILE* dot_file, struct argument_seq_strct* argument_seq) {
     fprintf(dot_file, "%u[label=\"argument\"];\n", argument_seq->_node_index);
 
@@ -558,18 +417,87 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             fprintf(dot_file, "%u[label=\"expr :: str <%s>\"];\n", expr->_node_index, chaartostr(expr->liter_str));
             break;
 
-        case expr_call:
-            fprintf(dot_file, "%u[label=\"expr :: call\"];\n", expr->_node_index);
+        case expr_liter_void:
+            fprintf(dot_file, "%u[label=\"expr :: VOID\"];\n", expr->_node_index);
+            break;
 
-            print_call(dot_file, expr->call);
-            fprintf(dot_file, "%u -> %u;\n", expr->_node_index, expr->call->_node_index);
+        case expr_current:
+            fprintf(dot_file, "%u[label=\"expr :: CURRENT\"];\n", expr->_node_index);
+            break;
+
+        case expr_call_method_or_var:
+            fprintf(dot_file, "%u[label=\"expr :: my method or var <%s>\"];\n", expr->_node_index, expr->method_id_name);
+            break;
+
+        case expr_call_method:
+            fprintf(dot_file, "%u[label=\"expr :: my method <%s>\"];\n", expr->_node_index, expr->method_id_name);
+
+            {
+                struct argument_seq_strct* curr = expr->argument_seq;
+                int curr_index = 0;
+
+                while(curr != NULL) {
+                    print_argument_seq(dot_file, curr);
+                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", expr->_node_index, curr->_node_index, curr_index);
+
+                    curr = curr->next;
+                    curr_index++;
+                }
+            }
+
+            break;
+
+        case expr_call_precursor:
+            if (expr->class_id_name == NULL) {
+                fprintf(dot_file, "%u[label=\"expr :: PRECURSOR method\"];\n", expr->_node_index);
+            }
+            else {
+                fprintf(dot_file, "%u[label=\"expr :: PRECURSOR method of class <%s>\"];\n", expr->_node_index, expr->class_id_name);
+            }
+
+            {
+                struct argument_seq_strct* curr = expr->argument_seq;
+                int curr_index = 0;
+
+                while(curr != NULL) {
+                    print_argument_seq(dot_file, curr);
+                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", expr->_node_index, curr->_node_index, curr_index);
+
+                    curr = curr->next;
+                    curr_index++;
+                }
+            }
+
             break;
 
         case expr_subcall:
-            fprintf(dot_file, "%u[label=\"expr :: subcall <%s>\"];\n", expr->_node_index, expr->id_name);
+            fprintf(dot_file, "%u[label=\"expr :: subcall <%s>\"];\n", expr->_node_index, expr->method_id_name);
 
             print_expr(dot_file, expr->expr_left);
             fprintf(dot_file, "%u -> %u[label=\"expr_left\"];\n", expr->_node_index, expr->expr_left->_node_index);
+
+            {
+                struct argument_seq_strct* curr = expr->argument_seq;
+                int curr_index = 0;
+
+                while(curr != NULL) {
+                    print_argument_seq(dot_file, curr);
+                    fprintf(dot_file, "%u -> %u[label=\"%d\"];\n", expr->_node_index, curr->_node_index, curr_index);
+
+                    curr = curr->next;
+                    curr_index++;
+                }
+            }
+
+            break;
+
+        case expr_create:
+            if (expr->method_id_name == NULL) {
+                fprintf(dot_file, "%u[label=\"expr :: basic create of class <%s>\"];\n", expr->_node_index, expr->class_id_name);
+            }
+            else {
+                fprintf(dot_file, "%u[label=\"expr :: create of class <%s> with method <%s>\"];\n", expr->_node_index, expr->class_id_name, expr->method_id_name);
+            }
 
             {
                 struct argument_seq_strct* curr = expr->argument_seq;

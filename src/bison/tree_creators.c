@@ -97,7 +97,6 @@ struct parent_seq_strct* append_parent_seq(unsigned int node_index, struct paren
 struct parent_strct* create_parent(unsigned int                         node_index,
                                    char*                                id_name,
                                    struct rename_seq_strct*             rename_seq,
-                                   struct identifiers_comma_seq_strct*  undefine_seq,
                                    struct identifiers_comma_seq_strct*  redefine_seq,
                                    struct identifiers_comma_seq_strct*  select_seq)
 {
@@ -106,7 +105,6 @@ struct parent_strct* create_parent(unsigned int                         node_ind
     result->id_name         = id_name;
 
     result->rename_seq      = rename_seq;
-    result->undefine_seq    = undefine_seq;
     result->redefine_seq    = redefine_seq;
     result->select_seq      = select_seq;
 
@@ -435,23 +433,6 @@ struct instruction_strct* create_instruction_as_expr(unsigned int        node_in
     return result;
 }
 
-struct call_strct* create_call(unsigned int                 node_index,
-                               enum call_enum               type,
-                               char*                        id_name,
-                               struct argument_seq_strct*   argument_seq,
-                               struct expr_strct*           parenthesized_expr)
-{
-    struct call_strct* result   = (struct call_strct*)malloc(sizeof(struct call_strct));
-    result->_node_index         = node_index;
-    result->type                = type;
-
-    result->id_name             = id_name;
-    result->argument_seq        = argument_seq;
-    result->parenthesized_expr  = parenthesized_expr;
-
-    return result;
-}
-
 struct argument_seq_strct* create_argument_seq(unsigned int         node_index,
                                                struct expr_strct*   expr)
 {
@@ -482,11 +463,12 @@ struct argument_seq_strct* append_argument_seq(unsigned int                 node
 
 struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_bool) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = expr_liter_bool;
+    result->_node_index         = node_index;
+    result->type                = expr_liter_bool;
+    result->is_parenthesized    = 0;
 
-    result->call            = NULL;
-    result->id_name         = NULL;
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
     result->argument_seq    = NULL;
 
     result->liter_bool      = liter_bool;
@@ -502,14 +484,15 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
 
 struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = expr_liter_int;
+    result->_node_index         = node_index;
+    result->type                = expr_liter_int;
+    result->is_parenthesized    = 0;
 
-    result->call            = NULL;
-    result->id_name         = NULL;
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
     result->argument_seq    = NULL;
 
-    result->liter_bool      = -1;
+    result->liter_bool      = 0;
     result->liter_int       = liter_int;
     result->liter_char      = 0;
     result->liter_str       = NULL;
@@ -522,14 +505,15 @@ struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int)
 
 struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_char) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = expr_liter_char;
+    result->_node_index         = node_index;
+    result->type                = expr_liter_char;
+    result->is_parenthesized    = 0;
 
-    result->call            = NULL;
-    result->id_name         = NULL;
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
     result->argument_seq    = NULL;
 
-    result->liter_bool      = -1;
+    result->liter_bool      = 0;
     result->liter_int       = 0;
     result->liter_char      = liter_char;
     result->liter_str       = NULL;
@@ -542,14 +526,15 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
 
 struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArray* liter_str) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = expr_liter_str;
+    result->_node_index         = node_index;
+    result->type                = expr_liter_str;
+    result->is_parenthesized    = 0;
 
-    result->call            = NULL;
-    result->id_name         = NULL;
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
     result->argument_seq    = NULL;
 
-    result->liter_bool      = -1;
+    result->liter_bool      = 0;
     result->liter_int       = 0;
     result->liter_char      = 0;
     result->liter_str       = liter_str;
@@ -560,16 +545,87 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
     return result;
 }
 
-struct expr_strct* create_expr_call(unsigned int node_index, struct call_strct* call) {
+struct expr_strct* create_expr_liter_void(unsigned int node_index) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = expr_call;
+    result->_node_index         = node_index;
+    result->type                = expr_liter_void;
+    result->is_parenthesized    = 0;
 
-    result->call            = call;
-    result->id_name         = NULL;
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
     result->argument_seq    = NULL;
 
-    result->liter_bool      = -1;
+    result->liter_bool      = 0;
+    result->liter_int       = 0;
+    result->liter_char      = 0;
+    result->liter_str       = NULL;
+
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_current(unsigned int node_index) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index         = node_index;
+    result->type                = expr_current;
+    result->is_parenthesized    = 0;
+
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
+    result->argument_seq    = NULL;
+
+    result->liter_bool      = 0;
+    result->liter_int       = 0;
+    result->liter_char      = 0;
+    result->liter_str       = NULL;
+
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_call(unsigned int                 node_index,
+                                    enum expr_type               call_type,
+                                    char*                        method_id_name,
+                                    struct argument_seq_strct*   argument_seq)
+{
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index         = node_index;
+    result->type                = call_type;
+    result->is_parenthesized    = 0;
+
+    result->class_id_name   = NULL;
+    result->method_id_name  = method_id_name;
+    result->argument_seq    = NULL;
+
+    result->liter_bool      = 0;
+    result->liter_int       = 0;
+    result->liter_char      = 0;
+    result->liter_str       = NULL;
+
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_precursorcall(unsigned int                 node_index,
+                                             char*                        class_id_name,
+                                             struct argument_seq_strct*   argument_seq)
+{
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index         = node_index;
+    result->type                = expr_call_precursor;
+    result->is_parenthesized    = 0;
+
+    result->class_id_name   = class_id_name;
+    result->method_id_name  = NULL;
+    result->argument_seq    = argument_seq;
+
+    result->liter_bool      = 0;
     result->liter_int       = 0;
     result->liter_char      = 0;
     result->liter_str       = NULL;
@@ -586,19 +642,45 @@ struct expr_strct* create_expr_subcall(unsigned int                 node_index,
                                        struct argument_seq_strct*   argument_seq)
 {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = expr_subcall;
+    result->_node_index         = node_index;
+    result->type                = expr_subcall;
+    result->is_parenthesized    = 0;
 
-    result->call            = NULL;
-    result->id_name         = method_id_name;
+    result->class_id_name   = NULL;
+    result->method_id_name  = method_id_name;
     result->argument_seq    = argument_seq;
 
-    result->liter_bool      = -1;
+    result->liter_bool      = 0;
     result->liter_int       = 0;
     result->liter_char      = 0;
     result->liter_str       = NULL;
 
     result->expr_left       = expr;
+    result->expr_right      = NULL;
+
+    return result;
+}
+
+struct expr_strct* create_expr_creation(unsigned int                 node_index,
+                                        char*                        class_id_name,
+                                        char*                        method_id_name,
+                                        struct argument_seq_strct*   argument_seq)
+{
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index         = node_index;
+    result->type                = expr_create;
+    result->is_parenthesized    = 0;
+
+    result->class_id_name   = class_id_name;
+    result->method_id_name  = method_id_name;
+    result->argument_seq    = argument_seq;
+
+    result->liter_bool      = 0;
+    result->liter_int       = 0;
+    result->liter_char      = 0;
+    result->liter_str       = NULL;
+
+    result->expr_left       = NULL;
     result->expr_right      = NULL;
 
     return result;
@@ -610,11 +692,12 @@ struct expr_strct* create_expr_operation(unsigned int node_index,
                                          struct expr_strct* expr_right)
 {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
-    result->_node_index     = node_index;
-    result->type            = operation_type;
+    result->_node_index         = node_index;
+    result->type                = operation_type;
+    result->is_parenthesized    = 0;
 
-    result->call            = NULL;
-    result->id_name         = NULL;
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
     result->argument_seq    = NULL;
 
     result->liter_bool      = -1;

@@ -50,43 +50,38 @@
      LOOP = 266,
      DATATYPE_BOOLEAN = 267,
      DATATYPE_CHARACTER = 268,
-     DATATYPE_INTEGER_8 = 269,
-     DATATYPE_INTEGER_16 = 270,
-     DATATYPE_INTEGER_32 = 271,
-     DATATYPE_INTEGER_64 = 272,
-     DATATYPE_NATURAL_8 = 273,
-     DATATYPE_NATURAL_16 = 274,
-     DATATYPE_NATURAL_32 = 275,
-     DATATYPE_NATURAL_64 = 276,
-     DATATYPE_STRING = 277,
-     DATATYPE_ARRAY = 278,
-     ASSIGNMENT = 279,
-     XOR = 280,
-     OR = 281,
-     AND = 282,
-     NOTEQUAL = 283,
-     GREAT_EQUAL = 284,
-     LESS_EQUAL = 285,
-     INTEGER_DIVISION = 286,
-     NOT = 287,
-     UMINUS = 288,
-     LITER_BOOLEAN = 289,
-     LITER_INTEGER = 290,
-     LITER_CHAR = 291,
-     LITER_STRING = 292,
-     INHERIT = 293,
-     RENAME = 294,
-     UNDEFINE = 295,
-     REDEFINE = 296,
-     SELECT = 297,
-     AS = 298,
-     CREATE = 299,
-     FEATURE = 300,
-     LOCAL = 301,
-     DO = 302,
-     CURRENT = 303,
-     RESULT = 304,
-     PRECURSOR = 305
+     DATATYPE_INTEGER = 269,
+     DATATYPE_NATURAL = 270,
+     DATATYPE_STRING = 271,
+     DATATYPE_ARRAY = 272,
+     ASSIGNMENT = 273,
+     XOR = 274,
+     OR = 275,
+     AND = 276,
+     NOTEQUAL = 277,
+     GREAT_EQUAL = 278,
+     LESS_EQUAL = 279,
+     INTEGER_DIVISION = 280,
+     NOT = 281,
+     UMINUS = 282,
+     LITER_BOOLEAN = 283,
+     LITER_INTEGER = 284,
+     LITER_CHAR = 285,
+     LITER_STRING = 286,
+     LITER_VOID = 287,
+     INHERIT = 288,
+     RENAME = 289,
+     UNDEFINE = 290,
+     REDEFINE = 291,
+     SELECT = 292,
+     AS = 293,
+     CREATE = 294,
+     FEATURE = 295,
+     LOCAL = 296,
+     DO = 297,
+     CURRENT = 298,
+     RESULT = 299,
+     PRECURSOR = 300
    };
 #endif
 /* Tokens.  */
@@ -101,43 +96,38 @@
 #define LOOP 266
 #define DATATYPE_BOOLEAN 267
 #define DATATYPE_CHARACTER 268
-#define DATATYPE_INTEGER_8 269
-#define DATATYPE_INTEGER_16 270
-#define DATATYPE_INTEGER_32 271
-#define DATATYPE_INTEGER_64 272
-#define DATATYPE_NATURAL_8 273
-#define DATATYPE_NATURAL_16 274
-#define DATATYPE_NATURAL_32 275
-#define DATATYPE_NATURAL_64 276
-#define DATATYPE_STRING 277
-#define DATATYPE_ARRAY 278
-#define ASSIGNMENT 279
-#define XOR 280
-#define OR 281
-#define AND 282
-#define NOTEQUAL 283
-#define GREAT_EQUAL 284
-#define LESS_EQUAL 285
-#define INTEGER_DIVISION 286
-#define NOT 287
-#define UMINUS 288
-#define LITER_BOOLEAN 289
-#define LITER_INTEGER 290
-#define LITER_CHAR 291
-#define LITER_STRING 292
-#define INHERIT 293
-#define RENAME 294
-#define UNDEFINE 295
-#define REDEFINE 296
-#define SELECT 297
-#define AS 298
-#define CREATE 299
-#define FEATURE 300
-#define LOCAL 301
-#define DO 302
-#define CURRENT 303
-#define RESULT 304
-#define PRECURSOR 305
+#define DATATYPE_INTEGER 269
+#define DATATYPE_NATURAL 270
+#define DATATYPE_STRING 271
+#define DATATYPE_ARRAY 272
+#define ASSIGNMENT 273
+#define XOR 274
+#define OR 275
+#define AND 276
+#define NOTEQUAL 277
+#define GREAT_EQUAL 278
+#define LESS_EQUAL 279
+#define INTEGER_DIVISION 280
+#define NOT 281
+#define UMINUS 282
+#define LITER_BOOLEAN 283
+#define LITER_INTEGER 284
+#define LITER_CHAR 285
+#define LITER_STRING 286
+#define LITER_VOID 287
+#define INHERIT 288
+#define RENAME 289
+#define UNDEFINE 290
+#define REDEFINE 291
+#define SELECT 292
+#define AS 293
+#define CREATE 294
+#define FEATURE 295
+#define LOCAL 296
+#define DO 297
+#define CURRENT 298
+#define RESULT 299
+#define PRECURSOR 300
 
 
 
@@ -175,9 +165,7 @@ typedef union YYSTYPE
     struct instruction_seq_strct*   instruction_seq_field;
     struct instruction_strct*       instruction_field;
 
-    struct call_strct*                      call_field;
     struct argument_seq_strct*              argument_seq_field;
-
     struct expr_strct* expr_field;
 
     /* Constants */
@@ -189,7 +177,7 @@ typedef union YYSTYPE
     char*       id_field;
 }
 /* Line 1529 of yacc.c.  */
-#line 193 "/Users/alekseiyakimov/Downloads/simple_eiffel_compiler-bogdan/src/flex/parser.h"
+#line 181 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

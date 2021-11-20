@@ -47,7 +47,6 @@ struct parent_strct {
     char* id_name;
 
     struct rename_seq_strct*              rename_seq;
-    struct identifiers_comma_seq_strct*   undefine_seq;
     struct identifiers_comma_seq_strct*   redefine_seq;
     struct identifiers_comma_seq_strct*   select_seq;
 };
@@ -111,14 +110,8 @@ enum type_enum {
 
     dtype_boolean,
     dtype_character,
-    dtype_integer_8,
-    dtype_integer_16,
-    dtype_integer_32,
-    dtype_integer_64,
-    dtype_natural_8,
-    dtype_natural_16,
-    dtype_natural_32,
-    dtype_natural_64,
+    dtype_integer,
+    dtype_natural,
     dtype_string
 };
 
@@ -165,24 +158,6 @@ struct instruction_strct {
     struct expr_strct* instruction_as_expr;
 };
 
-enum call_enum {
-    call_method_or_var,
-    call_method,
-    call_current,
-    call_result,
-    call_parenthesized_expr,
-    call_precursor
-};
-
-struct call_strct {
-    unsigned int _node_index;
-    enum call_enum type;
-
-    char* id_name;
-    struct argument_seq_strct* argument_seq;
-    struct expr_strct* parenthesized_expr;
-};
-
 struct argument_seq_strct {
     unsigned int _node_index;
 
@@ -195,11 +170,16 @@ enum expr_type {
     expr_liter_int,
     expr_liter_char,
     expr_liter_str,
+    expr_liter_void,
 
-    expr_call,
+    expr_current,
+    expr_call_method_or_var,
+    expr_call_method,
+    expr_call_precursor,
     expr_subcall,
-    expr_arrelem,
+    expr_create,
 
+    expr_arrelem,
     expr_plus,
     expr_bminus,
     expr_mul,
@@ -222,9 +202,10 @@ enum expr_type {
 struct expr_strct {
     unsigned int _node_index;
     enum expr_type type;
+    int is_parenthesized;
 
-    struct call_strct*          call;
-    char*                       id_name;
+    char*                       class_id_name;
+    char*                       method_id_name;
     struct argument_seq_strct*  argument_seq;
 
     int                 liter_bool;

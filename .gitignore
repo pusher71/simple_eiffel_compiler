@@ -1,2 +1,6 @@
 .DS_Store
 build
+bin/.DS_Store
+.DS_Store
+*.user
+src/bison/bison.output

@@ -625,6 +625,7 @@ false  { debug_moveCursorToNextCharacter(yyleng); yylval.liter_boolean_field = 0
 
 class           { debug_moveCursorToNextCharacter(yyleng); return CLASS; }
 create          { debug_moveCursorToNextCharacter(yyleng); return CREATE; }
+precursor       { debug_moveCursorToNextCharacter(yyleng); return PRECURSOR; }
 do              { debug_moveCursorToNextCharacter(yyleng); return DO; }
 end             { debug_moveCursorToNextCharacter(yyleng); return END; }
 feature         { debug_moveCursorToNextCharacter(yyleng); return FEATURE; }
@@ -637,28 +638,19 @@ select          { debug_moveCursorToNextCharacter(yyleng); return SELECT; }
 local           { debug_moveCursorToNextCharacter(yyleng); return LOCAL; }
 result          { debug_moveCursorToNextCharacter(yyleng); return RESULT; }
 current         { debug_moveCursorToNextCharacter(yyleng); return CURRENT; }
+void            { debug_moveCursorToNextCharacter(yyleng); return LITER_VOID; }
 
-if              { debug_moveCursorToNextCharacter(yyleng); }
-then            { debug_moveCursorToNextCharacter(yyleng); }
-else            { debug_moveCursorToNextCharacter(yyleng); }
-elseif          { debug_moveCursorToNextCharacter(yyleng); }
-inspect         { debug_moveCursorToNextCharacter(yyleng); }
-when            { debug_moveCursorToNextCharacter(yyleng); }
-loop            { debug_moveCursorToNextCharacter(yyleng); }
-from            { debug_moveCursorToNextCharacter(yyleng); }
-until           { debug_moveCursorToNextCharacter(yyleng); }
-variant         { debug_moveCursorToNextCharacter(yyleng); }
+if              { debug_moveCursorToNextCharacter(yyleng); return IF; }
+then            { debug_moveCursorToNextCharacter(yyleng); return THEN; }
+else            { debug_moveCursorToNextCharacter(yyleng); return ELSE; }
+loop            { debug_moveCursorToNextCharacter(yyleng); return LOOP; }
+from            { debug_moveCursorToNextCharacter(yyleng); return FROM; }
+until           { debug_moveCursorToNextCharacter(yyleng); return UNTIL; }
 
 boolean         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_BOOLEAN; }
 character       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_CHARACTER; }
-integer_8       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_8; }
-integer_16      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_16; }
-integer_32      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_32; }
-integer_64      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER_64; }
-natural_8       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_8; }
-natural_16      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_16; }
-natural_32      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_32; }
-natural_64      { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL_64; }
+integer         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER; }
+natural         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL; }
 string          { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_STRING; }
 
 "+"     { debug_moveCursorToNextCharacter(yyleng); return '+'; }

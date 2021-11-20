@@ -30,7 +30,6 @@ struct parent_seq_strct* append_parent_seq(unsigned int node_index, struct paren
 struct parent_strct* create_parent(unsigned int                         node_index,
                                    char*                                id_name,
                                    struct rename_seq_strct*             rename_seq,
-                                   struct identifiers_comma_seq_strct*  undefine_seq,
                                    struct identifiers_comma_seq_strct*  redefine_seq,
                                    struct identifiers_comma_seq_strct*  select_seq);
 
@@ -108,12 +107,6 @@ struct instruction_strct* create_loop_instruction(unsigned int                  
 struct instruction_strct* create_instruction_as_expr(unsigned int        node_index,
                                                      struct expr_strct*  instruction_as_expr);
 
-struct call_strct* create_call(unsigned int                 node_index,
-                               enum call_enum               type,
-                               char*                        id_name,
-                               struct argument_seq_strct*   argument_seq,
-                               struct expr_strct*           parenthesized_expr);
-
 struct argument_seq_strct* create_argument_seq(unsigned int         node_index,
                                                struct expr_strct*   expr);
 
@@ -126,12 +119,27 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
 struct expr_strct* create_expr_liter_int (unsigned int node_index, int liter_int);
 struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_char);
 struct expr_strct* create_expr_liter_str (unsigned int node_index, struct CharArray* liter_str);
+struct expr_strct* create_expr_liter_void(unsigned int node_index);
 
-struct expr_strct* create_expr_call(unsigned int node_index, struct call_strct* call);
+struct expr_strct* create_expr_current(unsigned int node_index);
+struct expr_strct* create_expr_call(unsigned int                 node_index,
+                                    enum expr_type               call_type,
+                                    char*                        method_id_name,
+                                    struct argument_seq_strct*   argument_seq);
+
+struct expr_strct* create_expr_precursorcall(unsigned int                 node_index,
+                                             char*                        class_id_name,
+                                             struct argument_seq_strct*   argument_seq);
+
 struct expr_strct* create_expr_subcall(unsigned int                 node_index,
                                        struct expr_strct*           expr,
                                        char*                        method_id_name,
                                        struct argument_seq_strct*   argument_seq);
+
+struct expr_strct* create_expr_creation(unsigned int                 node_index,
+                                        char*                        class_id_name,
+                                        char*                        method_id_name,
+                                        struct argument_seq_strct*   argument_seq);
 
 struct expr_strct* create_expr_operation(unsigned int node_index,
                                          enum expr_type operation_type,
