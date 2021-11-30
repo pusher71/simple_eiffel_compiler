@@ -38,6 +38,16 @@ set(SOURCE_FILES
     src/bison/parser.c
     src/bison/tree_creators.c
     src/bison/print_tree_nodes.c
+
+    src/EiffelModel/EiffelCore/eprogram.cpp
+    src/EiffelModel/EiffelCore/eclass.cpp
+    src/EiffelModel/EiffelCore/efeature.cpp
+    src/EiffelModel/EiffelCore/etype.cpp
+    src/EiffelModel/EiffelFieldInfo/efield.cpp
+    src/EiffelModel/EiffelMethodInfo/emethod.cpp
+    src/EiffelModel/EiffelMethodInfo/elocalvariable.cpp
+    src/EiffelModel/EiffelMethodInfo/emethodcall.cpp
+    src/EiffelModel/EiffelErrors/semantic_error.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})

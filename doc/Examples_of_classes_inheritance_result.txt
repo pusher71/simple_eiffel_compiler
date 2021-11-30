@@ -1,0 +1,158 @@
+====================================================================================
+НОТАЦИЯ ПРИМЕРОВ
+====================================================================================
+
+'<' <name of class '>' - class define
+
+====================================================================================
+ПРИМЕРЫ НАСЛЕДОВАНИЯ
+====================================================================================
+--- РОМБОВИДНАЯ СТРУТУРА -----------------------------------------------------------
+- < INIT > -------------------------------------------------------------------------
+
+// Псевдокод создания массива объектов для каждого из примеров данного раздела
+arr : ARRAY[D] := new ARRAY(4);
+
+arr[0] = new A();
+arr[1] = new B();
+arr[2] = new C();
+arr[3] = new D();
+
+for elem in arr:
+    elem.func;
+
+- ОШИБКИ ---------------------------------------------------------------------------
+- Конфликты повторного наследования ---------------------------------------------
+- 1 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(func as fun;;)C(;;):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    Error: conflict between versions of a repeatedly inherited feature.
+    What to do: list one of the versions in exactly one Select clause.
+
+    Class: A
+    In parent B: fun
+    In parent C: func
+
+- 2 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(;;)C(;;):
+    B:D(func as fun;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    Error: conflict between versions of a repeatedly inherited feature.
+    What to do: list one of the versions in exactly one Select clause.
+
+    Class: A
+    In parent C: func
+    In parent B: fun
+
+- 3 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(func as fun;;fun)C(;;func):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+Error: conflict between versions of a repeatedly inherited feature.
+What to do: list one of the versions in exactly one Select clause.
+
+Class: A
+First version: func from class: D
+Second version: fun from class: D
+
+- 4 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(func as fun;;fun)C(;;func):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    Error: conflict between versions of a repeatedly inherited feature.
+    What to do: list one of the versions in exactly one Select clause.
+
+    Class: A
+    In parent C: func
+    In parent B: fun
+
+- 5 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(func as fun;;fun)C(;;func):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    Error: conflict between versions of a repeatedly inherited feature.
+    What to do: list one of the versions in exactly one Select clause.
+
+    Class: A
+    In parent C: func
+    In parent B: fun
+
+- Name-clashing -----------------------------------------------------------------
+
+- ПРАВИЛЬНЫЕ РЕЗУЛЬТАТЫ ------------------------------------------------------------
+- 1 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(;;)C(;;):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    D::func()
+    D::func()
+    D::func()
+    D::func()
+
+- 2 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(func as fun;;fun)C(;;):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    D::func()
+    D::func()
+    D::func()
+    D::func()
+
+- 3 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(;;)C(;;):
+    B:D(func as fun;;):
+    C:D(func as fun;;):
+    D::func
+
+ВЫВОД:
+    D::func()
+    D::func()
+    D::func()
+    D::func()
+
+- 4 --------------------------------------------------------------------------------
+ВХОД:
+    A:B(func as fun;;)C(;;func):
+    B:D(;;):
+    C:D(;;):
+    D::func
+
+ВЫВОД:
+    D::func()
+    D::func()
+    D::func()
+    D::func()
+
+
+
+

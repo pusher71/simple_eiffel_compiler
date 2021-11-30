@@ -1,0 +1,10 @@
+#ifndef ERROR_CODES_H
+#define ERROR_CODES_H
+
+enum SemanticErrorCode {
+    NO_ERROR,
+    CLASSES__DUPLICATE_CLASS_NAMES,
+    CLASS__NAME_IS_RESERVED_WORD,
+};
+
+#endif // ERROR_CODES_H

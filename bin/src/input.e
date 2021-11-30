@@ -1,62 +1,69 @@
-class
-    MAIN
-inherit parent
-    rename
-        a as b
-    redefine
-        a, b
-    select
-        a, b
-    end
-
-    file
-    rename
-        a as b
-    select
-        a, b
-    end
-
-create
-    make, a, b, c, d
-create
-    make, a, b, c, d
-create
-    make, a, b, c, d
+class MAIN
+inherit
+    A
+        select a, b, c, d
+    end;
+    B
+        rename ID as ID, hello as what
+    end;
+    C
+create ID, A
+create D, A
 feature
-    make
-    do;;;
-        ID := 3 - 4 + 5;
-        precursor.ID
-        var_1 := precursor{BOSS_CLASS}.ID(3, 4, 5);;;;
-        var_2 := precursor{BOSS_CLASS}(3, 4, 5).ID(3, 4, 5);;;;
-        ID := create {BIG_CLASS}.make(3, create{ARRAY}.make(3, 2));
-    end
+    a, b : INTEGER
 feature
-    make : NATURAL_16
-    do
-        io.put_string("[ Hello, }  ]")
-        ID := 4 + "HELLO" + call('%N', What(3, 4, 5))
-        d := a.b@c.d - a + 3;
+    c, d : CHARACTER
+end
 
-        ID := void
-
-        a := -b + c;
-    end
-
-    a : INTEGER_32
-    b : INTEGER_32
-    do
-    end
+class BIG_CLASS
+inherit
+    A
+        rename ID as ID, hello as what
+        redefine a, b, c
+    end;
+    B
+    C;
 feature
-    make
+    a_, b_ : ARRAY[INTEGER]
     local
-        a, b, d : INTEGER_32 hello : CHARACTER
+        local_0, local_1 : INTEGER; local_2 : ARRAY[STRING]
     do
-        ID := 4;
-
-        io.put_string("[ Hello, }  ]")
-        ID := 4 + "HELLO" + call('%N', What(3, 4, 5))
-        (a.b@c).d = a.b@c.d - a + 3
-        (2+3).hello(3, 4).ID.io.hello('W')@4
+        if (true) then io.put_string("Hello, World%N"); end
     end
+
+    c_, d_ : STRING
+end
+
+class BIG_CLASS
+create D
+create b
+create F
+end
+
+class WHAT
+inherit
+    A
+        select hello, a, b, c
+    end
+feature
+    a__, b__ : ARRAY[ARRAY[ID]]
+feature
+    c__, d__ : ARRAY[ARRAY[ARRAY[STRING]]]
+    local
+        s_local_0 : CHARACTER s_local_2 : ARRAY[MAIN]
+    do
+        s_local_2 := create{ID}.make(3, 4);
+    end
+
+feature
+    e__, f__ : STRING
+    do
+    end
+end
+
+class A_CLASS
+inherit
+    A;
+    B;
+    C;
 end

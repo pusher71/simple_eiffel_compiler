@@ -652,6 +652,7 @@ character       { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_CHARA
 integer         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEGER; }
 natural         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL; }
 string          { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_STRING; }
+array           { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_ARRAY; }
 
 "+"     { debug_moveCursorToNextCharacter(yyleng); return '+'; }
 "-"     { debug_moveCursorToNextCharacter(yyleng); return '-'; }

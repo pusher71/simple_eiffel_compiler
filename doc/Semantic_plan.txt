@@ -1,0 +1,110 @@
+====================================================================================
+ВЫДЕЛЯЕМЫЕ ТАБЛИЦЫ
+====================================================================================
+
+* EProgram :: class:
+	- userClasses : std::map<std::string, EClass;
+
+* EClass :: class:
+	- name 		: short									// UTF8 link to constant table
+	- constants : EConstantTable 						// Constants of class
+	- parents	: std::map<std::string, EParentInfo>	// Rename, redefine, select directives of each class parent
+	- creators	: std::vector<std::string>				// Names of creators
+	- fields	: std::map<short, EField>				// Fields table
+	- methods	: std::map<short, EMethod>				// Method table
+
+* EConstantTable :: class:
+	- constants : std::vector<std::pair<JvmConstantType, JvmConstantValue>>
+
+* JvmConstantType :: enum:
+	- jvm_utf8
+	- jvm_string
+	- jvm_class
+	- jvm_nameAndType
+	- jvm_fieldRef
+	- jvm_methodRef
+
+* JvmConstantValue :: union:
+	- jvm_utf8 : std::string
+	- jvm_string : short 			// UTF8 link to constant table
+	- jvm_class : short				// UTF8 link to constant table
+	- jvm_nameAndType : short[2]	// UTF8 links to constant table
+	- jvm_fieldRef : short[2]		// UTF8 links to constant table
+	- jvm_methodRef : short[2]		// UTF8 links to constant table
+
+* EParentInfo :: class:
+	- renameSeq 	: std::vector<std::pair<std::string, std::string>>
+	- redefineSeq 	: std::vector<std::string>
+	- selectSeq 	: std::vector<std::string>
+
+* EField :: class:
+	- name : short // UTF8 link to constant table
+	- type : short // UTF8 link to constant table (descriptor)
+
+* EMethod :: class:
+	- name : short 													// UTF8 link to constant table
+	- returnType : short 											// UTF8 link to constant table (descriptor)
+	- formalParameters : std::vector<std::string, EInnerVariable*> 	// Formal parameters of the method
+	- localVariables : std::map<std::string, EInnerVariable*> 		// Local variables of the method
+	- routineBody : std::vector<EInstruction>						// Instruction sequence
+
+* EInnerVariable :: class:
+	- id : short // UTF8 link to local table
+	- type : EType
+
+* EInstruction :: class:
+	- type : EInstructionType
+	
+* EInstructionType :: enum:
+	- instruction_create
+
+====================================================================================
+ПРОЦЕСС СЕМАНТИЧЕСКОГО АНАЛИЗА
+====================================================================================
+
+Этап 1. Общий проход по пользовательским классам;
+	* Цель
+	
+	Собрать информацию о пользовательских классах (имена классов, поля и
+    методов классов). Проверить на уникальность имена классов.
+
+	* Шаги выполнения
+	
+	1) Собрать информацию о классах
+		1. Для каждого класса
+			1.1. Записать имя класса в таблицу констант класса
+				(Ошибка: Класс с таким именем уже существует)
+			1.2. Записать информацию о полях класса
+			1.3. Записать информацию о методах класса
+			
+		Сложное действие 1.2. Записать информацию о полях класса
+			1. Записать имя поля в таблицу констант текущего класса
+				(Ошибка: Имя поля совпадает с именем класса, поля или метода текущего класса)
+			2. Записать информацию об узле типа данных в поле
+			
+		Сложное действие 1.3. Записать информацию о методах класса
+			1. Записать имя метода в таблицу констант текущего класса
+				(Ошибка: Имя метода совпадает с именем класса, поля или метода текущего класса)
+
+Этап 2. Проход по блокам наследования.
+	* Цель
+	
+	- Цели прохода по блоку наследования
+	1) Определить наличие циклов в наследовании;
+	2) Составить пространство всех полей и методов каждого класса с учётом наследования.
+
+	* Шаги выполнения
+
+	1) Пройтись по блоку наследования
+        1. Для каждого класса
+            1.1. Для каждого указания родителя
+                1.1.1. Занести данного родителя
+            1.1. Для каждого переименовывания
+                1.1.1. Занести в EC
+
+Этап 3. Проход по полям и методам классов
+	* Цель
+
+	1) Расставить типа данных у полей и методов;
+	2) Преобразовать узлы синтаксического дерева;
+	3) Расставить типы данных внутри методов классов;

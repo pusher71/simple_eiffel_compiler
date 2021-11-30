@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdio>
 
+#include "EiffelModel/EiffelCore/eprogram.h"
+
 extern "C" {
     int yylex();
     int yyparse();
@@ -52,6 +54,23 @@ int main(int argc, char** argv) {
         else {
             std::cerr << "FAILED TO PARSE INPUT FILE" << std::endl;
         }
+    }
+
+    // Perform semantic
+    EProgram* eiffelProgram = nullptr;
+
+    if (tree_root != NULL) {
+        eiffelProgram = EProgram::create(tree_root);
+    }
+
+    for (const auto& error : EProgram::semanticErrors) {
+        std::cerr << error.errorReason() << std::endl;
+    }
+
+    // Perform compilation
+    if (eiffelProgram != nullptr && EProgram::semanticErrors.empty()) {
+        eiffelProgram->compileToJVM("program.class");
+        delete eiffelProgram;
     }
 
     return 0;
