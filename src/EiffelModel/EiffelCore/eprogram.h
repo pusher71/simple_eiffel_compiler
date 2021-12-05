@@ -16,7 +16,7 @@ public:
 
     // ============== ATTRIBUTES ==============
 private:
-    std::map<std::string, EClass*> _classes;
+    std::map<std::string, EClass> _classes;
 
     // ============== OPERATIONS ==============
     // -------- creating --------
@@ -33,6 +33,7 @@ private:
     void runSemanticStage_0(const program_strct* programNode);
     void runSemanticStage_1();
     void runSemanticStage_2();
+    void runSemanticStage_3();
 
 public:
     bool compileToJVM(const std::string& jvmFilepath);

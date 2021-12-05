@@ -636,7 +636,6 @@ undefine        { debug_moveCursorToNextCharacter(yyleng); return UNDEFINE; }
 redefine        { debug_moveCursorToNextCharacter(yyleng); return REDEFINE; }
 select          { debug_moveCursorToNextCharacter(yyleng); return SELECT; }
 local           { debug_moveCursorToNextCharacter(yyleng); return LOCAL; }
-result          { debug_moveCursorToNextCharacter(yyleng); return RESULT; }
 current         { debug_moveCursorToNextCharacter(yyleng); return CURRENT; }
 void            { debug_moveCursorToNextCharacter(yyleng); return LITER_VOID; }
 
@@ -679,9 +678,11 @@ xor     { debug_moveCursorToNextCharacter(yyleng); return XOR; }
 "[" { debug_moveCursorToNextCharacter(yyleng); return '['; }
 "]" { debug_moveCursorToNextCharacter(yyleng); return ']'; }
 
-[_a-zA-Z]+[_a-zA-Z0-9]* {
+[a-zA-Z]+[_a-zA-Z0-9]* {
     char* id_name = (char*)malloc(yyleng+1);
+
     strcpy(id_name, yytext);
+    for (int i=0; i<yyleng; i++) { id_name[i] = tolower(id_name[i]); }
 
     yylval.id_field = id_name;
 

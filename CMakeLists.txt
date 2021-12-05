@@ -41,12 +41,12 @@ set(SOURCE_FILES
 
     src/EiffelModel/EiffelCore/eprogram.cpp
     src/EiffelModel/EiffelCore/eclass.cpp
+    src/EiffelModel/EiffelCore/econstanttable.cpp
     src/EiffelModel/EiffelCore/efeature.cpp
     src/EiffelModel/EiffelCore/etype.cpp
-    src/EiffelModel/EiffelFieldInfo/efield.cpp
-    src/EiffelModel/EiffelMethodInfo/emethod.cpp
-    src/EiffelModel/EiffelMethodInfo/elocalvariable.cpp
-    src/EiffelModel/EiffelMethodInfo/emethodcall.cpp
+    src/EiffelModel/EiffelAttributeInfo/eattribute.cpp
+    src/EiffelModel/EiffelRoutineInfo/eroutine.cpp
+    src/EiffelModel/EiffelRoutineInfo/einnervariable.cpp
     src/EiffelModel/EiffelErrors/semantic_error.cpp
 )
 

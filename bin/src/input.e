@@ -1,69 +1,110 @@
-class MAIN
-inherit
-    A
-        select a, b, c, d
-    end;
-    B
-        rename ID as ID, hello as what
-    end;
-    C
-create ID, A
-create D, A
-feature
-    a, b : INTEGER
-feature
-    c, d : CHARACTER
-end
+-- main.e
+class
+    MAIN
+create
+    make
 
-class BIG_CLASS
-inherit
-    A
-        rename ID as ID, hello as what
-        redefine a, b, c
-    end;
-    B
-    C;
 feature
-    a_, b_ : ARRAY[INTEGER]
+    make
     local
-        local_0, local_1 : INTEGER; local_2 : ARRAY[STRING]
+        othe : ARRAY[ARRAY[B]]
+        othe_2 : OTHER
     do
-        if (true) then io.put_string("Hello, World%N"); end
+        io.put_string("Example%N")
+
+        a := create{A};
+
+        a.func(create {OTHER})
     end
 
-    c_, d_ : STRING
+    to_instruction(o : OTHER)
+    do
+    end
 end
+-- EOF
 
-class BIG_CLASS
-create D
-create b
-create F
-end
-
-class WHAT
-inherit
+-- a.e
+class
     A
-        select hello, a, b, c
-    end
-feature
-    a__, b__ : ARRAY[ARRAY[ID]]
-feature
-    c__, d__ : ARRAY[ARRAY[ARRAY[STRING]]]
-    local
-        s_local_0 : CHARACTER s_local_2 : ARRAY[MAIN]
-    do
-        s_local_2 := create{ID}.make(3, 4);
-    end
 
-feature
-    e__, f__ : STRING
-    do
-    end
-end
-
-class A_CLASS
 inherit
-    A;
-    B;
-    C;
+    B
+    redefine
+        func
+    end
+
+feature
+    func(a_var : OTHER)
+    do
+        io.put_string("A::func(a : OTHER);%N");
+        io.put_integer(a.val);
+        io.put_integer(a.var);
+        io.put_character('%N');
+    end
+
 end
+-- EOF
+
+-- b.e
+class
+    B
+
+feature
+    func(o : OTHER_2)
+    do
+        io.put_string("B::func(o : ANY);%N");
+    end
+
+end
+-- EOF
+
+-- other.e
+class
+    OTHER
+
+inherit
+    OTHER_2
+    rename
+        var as val
+    redefine
+        val
+    end
+
+feature
+    var : INTEGER
+
+    val : INTEGER
+    do
+        io.put_string("OTHER::var()%N");
+    end
+
+end
+-- EOF
+
+-- other_2.e
+class
+    OTHER_2
+
+feature
+    var : INteGeR
+    do
+        io.put_string("OTHER_2::var()%N");
+    end
+
+end
+-- EOF
+
+-- wow.e
+class
+    WOW
+
+feature
+    wow(wow_0, wow_1 : ARRAY[WOW2]; wow_2, wow_3, wow_4 : INTEGER) : WOW
+    local
+        wow_0 : INTEGER
+        wow_1, wow_2 : CHARACTER
+    do
+    end
+
+end
+-- EOF

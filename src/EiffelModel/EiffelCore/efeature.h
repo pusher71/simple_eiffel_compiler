@@ -5,31 +5,45 @@
 #include "../../bison/tree_nodes.h"
 #include "etype.h"
 
+class EClass;
+
 class EFeature {
-    // ============== INNER TYPES =============
+    // ================= SUBTYPES =================
 public:
     enum EFeatureType {
-        efeature_field,
-        efeature_method
+        efeature_attribute,
+        efeature_routine
     };
 
-    // ============== ATTRIBUTES ==============
+    // ================ ATTRIBUTES ================
 protected:
     feature_decl_strct* _node;
 
     std::string _name;
+    EType       _type;
+
     std::string _ownerClassName;
-    EType*      _type;
 
-    // ============== OPERATIONS ==============
-    // -------- creating --------
+    // ================ OPERATIONS ================
+    // ----------------- creating -----------------
+protected:
+    EFeature(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+
 public:
-    static EFeature* create(const std::string& featureName, const std::string& ownerClassName, feature_decl_strct* featureDecl);
+    virtual ~EFeature() = 0;
 
-    virtual bool initSelf() = 0;
+    // ---------------- attributes ----------------
+public:
+    virtual EFeatureType featureType() const = 0;
 
-    // ------- attributes -------
-    EFeatureType type();
+    std::string name() const;
+    EType type() const;
+
+    std::string ownerClassName() const;
+
+    // ----------------- contract -----------------
+public:
+    virtual void validate() const = 0;
 };
 
 #endif // EFEATURE_H
