@@ -43,6 +43,7 @@ set(SOURCE_FILES
     src/EiffelModel/EiffelCore/eclass.cpp
     src/EiffelModel/EiffelCore/econstanttable.cpp
     src/EiffelModel/EiffelCore/efeature.cpp
+    src/EiffelModel/EiffelCore/efeaturemetainfo.cpp
     src/EiffelModel/EiffelCore/etype.cpp
     src/EiffelModel/EiffelAttributeInfo/eattribute.cpp
     src/EiffelModel/EiffelRoutineInfo/eroutine.cpp

@@ -25,7 +25,6 @@ enum SemanticErrorCode {
     FEATURES__FORMAL_PARAM_INVALID_TYPE,
     FEATURES__LOCAL_VAR_INVALID_TYPE,
 
-    /*
     // Third semantic stage error codes ...
     // ... Global error codes
     INHERITANCE__INHERIT_CYCLE,
@@ -45,7 +44,6 @@ enum SemanticErrorCode {
     // ... Select error codes
 
     // Fourth semantic stage error codes
-    */
 };
 
 #endif // ERROR_CODES_H

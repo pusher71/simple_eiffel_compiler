@@ -14,6 +14,8 @@ public:
         std::pair<short, short> jvm_nameAndType;
         std::pair<short, short> jvm_fieldRef;
         std::pair<short, short> jvm_methodRef;
+
+        JvmConstant();
     };
 
     enum JvmConstantType {

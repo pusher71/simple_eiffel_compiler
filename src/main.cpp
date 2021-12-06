@@ -10,8 +10,8 @@ extern "C" {
     void print_program(FILE* dot_file, struct program_strct* program);
 }
 
-extern FILE* yyin;
-extern struct program_strct* tree_root;
+extern "C" FILE* yyin;
+extern "C" struct program_strct* tree_root;
 
 struct CompilerState {
     bool isPrintingTreeNodes = false;

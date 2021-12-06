@@ -1,110 +1,128 @@
 -- main.e
-class
-    MAIN
-create
-    make
-
+class MAIN
+create make
 feature
-    make
-    local
-        othe : ARRAY[ARRAY[B]]
-        othe_2 : OTHER
-    do
-        io.put_string("Example%N")
-
-        a := create{A};
-
-        a.func(create {OTHER})
-    end
-
-    to_instruction(o : OTHER)
-    do
-    end
+make
+local
+obj : A
+do
+obj := create {O}
+obj.f
+obj.f4
+obj.f5
+end
 end
 -- EOF
 
--- a.e
-class
-    A
-
-inherit
-    B
-    redefine
-        func
-    end
-
-feature
-    func(a_var : OTHER)
-    do
-        io.put_string("A::func(a : OTHER);%N");
-        io.put_integer(a.val);
-        io.put_integer(a.var);
-        io.put_character('%N');
-    end
-
-end
--- EOF
-
--- b.e
-class
-    B
-
-feature
-    func(o : OTHER_2)
-    do
-        io.put_string("B::func(o : ANY);%N");
-    end
-
-end
--- EOF
-
--- other.e
-class
-    OTHER
-
-inherit
-    OTHER_2
+-- O.e
+class O
+  inherit
+    I1
     rename
-        var as val
+      f5 as f6
     redefine
-        val
+      f6
+    select
+      f2,
+      f6
     end
-
-feature
-    var : INTEGER
-
-    val : INTEGER
+    N
+    redefine
+      f8
+    end
+    A
+    rename
+      f as f7
+    end
+  feature
+    f6
     do
-        io.put_string("OTHER::var()%N");
+      io.put_string("O::f6()%N")
     end
-
+    f8
+    do
+      io.put_string("O::f8()%N")
+    end
 end
 -- EOF
 
--- other_2.e
-class
-    OTHER_2
-
-feature
-    var : INteGeR
-    do
-        io.put_string("OTHER_2::var()%N");
+-- N.e
+class N
+  inherit
+    M1
+    M2
+    select
+      f3
     end
-
 end
 -- EOF
 
--- wow.e
-class
-    WOW
+-- M1.e
+class M1
+  inherit
+    I2
+end
+-- EOF
 
-feature
-    wow(wow_0, wow_1 : ARRAY[WOW2]; wow_2, wow_3, wow_4 : INTEGER) : WOW
-    local
-        wow_0 : INTEGER
-        wow_1, wow_2 : CHARACTER
-    do
+-- M2.e
+class M2
+  inherit
+    I2
+    rename
+      f as f3
+    redefine
+      f3
     end
+  feature
+    f3
+    do
+      io.put_string("M2::f3()%N")
+    end
+    f8
+    do
+      io.put_string("M2::f8()%N")
+    end
+end
+-- EOF
 
+-- I1.e
+class I1
+  inherit
+    A
+    rename
+      f as f2
+    redefine
+      f2
+    end
+  feature
+    f2
+    do
+      io.put_string("I1::f2()%N")
+    end
+end
+-- EOF
+
+-- I2.e
+class I2
+  inherit
+    A
+end
+-- EOF
+
+-- A.e
+class A
+  feature
+    f
+    do
+      io.put_string("A::f()%N")
+    end
+    f4
+    do
+      io.put_string("A::f4()%N")
+    end
+    f5
+    do
+      io.put_string("A::f5()%N")
+    end
 end
 -- EOF

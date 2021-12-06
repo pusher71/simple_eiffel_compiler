@@ -52,6 +52,9 @@ void EProgram::runSemanticStage_1() {
 }
 
 void EProgram::runSemanticStage_2() {
+    for (auto& classInfo : this->_classes) {
+        classInfo.second.setupAcceptableFeaturesTable();
+    }
 }
 
 void EProgram::runSemanticStage_3() {
