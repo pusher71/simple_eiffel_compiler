@@ -9,6 +9,7 @@ class EAttribute : public EFeature {
     // ----------------- creating -----------------
 public:
     EAttribute(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+    EAttribute(const std::string& featureName, const EClass* ownerClass, const EType& returnType);
     ~EAttribute() override;
 
     // ---------------- attributes ----------------

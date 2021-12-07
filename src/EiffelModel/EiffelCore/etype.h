@@ -16,6 +16,10 @@ public:
     EType(const std::string& className);
 
     static EType voidType();
+    static EType boolType();
+    static EType intType();
+    static EType charType();
+    static EType stringType();
 
     // ----------------- contract -----------------
 public:

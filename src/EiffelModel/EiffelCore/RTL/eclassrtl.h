@@ -1,11 +1,17 @@
-#ifndef ERTLCLASS_H
-#define ERTLCLASS_H
+#ifndef ECLASSRTL_H
+#define ECLASSRTL_H
 
+#include "../eclass.h"
 
-class EClassRTL
-{
+class EClassRTL : public EClass {
+    // ================ OPERATIONS ================
+    // ----------------- creating -----------------
 public:
     EClassRTL();
+
+    // ---------------- attributes ----------------
+public:
+    std::string javaPackageName() const override;
 };
 
-#endif // ERTLCLASS_H
+#endif // ECLASSRTL_H

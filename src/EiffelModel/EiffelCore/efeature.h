@@ -20,7 +20,7 @@ protected:
     feature_decl_strct* _node;
 
     std::string _name;
-    EType       _type;
+    EType       _returnType;
 
     std::string _ownerClassName;
 
@@ -28,6 +28,7 @@ protected:
     // ----------------- creating -----------------
 protected:
     EFeature(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+    EFeature(const std::string& featureName, const EClass* ownerClass, const EType& returnType);
 
 public:
     virtual ~EFeature() = 0;
@@ -37,7 +38,7 @@ public:
     virtual EFeatureType featureType() const = 0;
 
     std::string name() const;
-    EType type() const;
+    EType returnType() const;
 
     std::string ownerClassName() const;
 

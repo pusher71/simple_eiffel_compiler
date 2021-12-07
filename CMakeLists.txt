@@ -41,13 +41,17 @@ set(SOURCE_FILES
 
     src/EiffelModel/EiffelCore/eprogram.cpp
     src/EiffelModel/EiffelCore/eclass.cpp
+    src/EiffelModel/EiffelCore/euserclass.cpp
+    src/EiffelModel/EiffelCore/RTL/eclassrtl.cpp
+    src/EiffelModel/EiffelCore/RTL/eclassany.cpp
+    src/EiffelModel/EiffelCore/RTL/eclassconsoleio.cpp
     src/EiffelModel/EiffelCore/econstanttable.cpp
     src/EiffelModel/EiffelCore/efeature.cpp
     src/EiffelModel/EiffelCore/efeaturemetainfo.cpp
     src/EiffelModel/EiffelCore/etype.cpp
-    src/EiffelModel/EiffelAttributeInfo/eattribute.cpp
-    src/EiffelModel/EiffelRoutineInfo/eroutine.cpp
-    src/EiffelModel/EiffelRoutineInfo/einnervariable.cpp
+    src/EiffelModel/EiffelFeatureInfo/eattribute.cpp
+    src/EiffelModel/EiffelFeatureInfo/eroutine.cpp
+    src/EiffelModel/EiffelFeatureInfo/einnervariable.cpp
     src/EiffelModel/EiffelErrors/semantic_error.cpp
 )
 

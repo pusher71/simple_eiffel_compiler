@@ -6,7 +6,7 @@
 ERoutine::ERoutine(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl),
       _routineBody(featureDecl->routine_body),
-      _current(EInnerVariable(0, ownerClass->getType()))
+      _current(EInnerVariable(0, EType(ownerClass->name())))
 {
     // Add formal parameters as inner variables of routine
     this->_defineFormalParameters(featureDecl->feature_param_seq);
@@ -15,9 +15,35 @@ ERoutine::ERoutine(const std::string& featureName, const EClass* ownerClass, fea
     this->_defineLocalVariables(featureDecl->local_variables);
 
     // Add "result" local variable
-    if (this->_type != nullptr) {
+    if (this->_returnType != nullptr) {
         short resultLocalIndex = this->_formalParameters.size() + this->_localVariables.size() + 1;
-        this->_localVariables.insert({"result", EInnerVariable(resultLocalIndex, this->_type)});
+        this->_localVariables.insert({"result", EInnerVariable(resultLocalIndex, this->_returnType)});
+    }
+}
+
+ERoutine::ERoutine(const std::string&                                   featureName,
+                   const EClass*                                        ownerClass,
+                   const EType&                                         returnType,
+                   const std::vector<std::pair<std::string, EType>>&    formalParameters,
+                   const std::vector<std::pair<std::string, EType>>&    localVariables)
+    :   EFeature(featureName, ownerClass, returnType),
+        _routineBody(nullptr),
+        _current(EInnerVariable(0, EType(ownerClass->name())))
+{
+    // Add formal parameters
+    short formalParamIndex = 1;
+
+    for (const auto& formalParamInfo : formalParameters) {
+        this->_formalParameters.insert({ formalParamInfo.first, EInnerVariable(formalParamIndex, EType(formalParamInfo.second)) });
+        formalParamIndex++;
+    }
+
+    // Add local variables
+    short localVarIndex = formalParamIndex;
+
+    for (const auto& localVarInfo : localVariables) {
+        this->_localVariables.insert({ localVarInfo.first, EInnerVariable(formalParamIndex, EType(localVarInfo.second)) });
+        localVarIndex++;
     }
 }
 

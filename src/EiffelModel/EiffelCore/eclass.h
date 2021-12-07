@@ -13,13 +13,14 @@
 
 class EClass {
     // ================= SUBTYPES =================
-private:
+protected:
     struct EParentInfo {
         std::vector<std::pair<std::string, std::string>>    renameSeq;
         std::vector<std::string>                            redefineSeq;
         std::vector<std::string>                            selectSeq;
     };
 
+private:
     enum EFeatureTableState {
         NOT_SETUP,
         IN_PROCESS,
@@ -27,11 +28,7 @@ private:
     };
 
     // ================ ATTRIBUTES ================
-private:
-    std::string                         _name;
-    EType                               _type;
-    EConstantTable                      _constants;
-
+protected:
     std::map<std::string, EParentInfo>                  _parents;
     std::vector<std::string>                            _creators;
     std::map<std::string, std::shared_ptr<EFeature>>    _features;
@@ -42,12 +39,14 @@ private:
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:
-    EClass(class_decl_strct* classNode);
+    EClass();
 
-private:
-    void _defineParents(const parent_seq_strct* parentSeq);
-    void _defineCreators(const creators_seq_strct* creatorSeq);
-    void _defineFeatures(const features_seq_strct* featuresSeq);
+protected:
+    void _initSelf();
+
+    virtual void _defineParents() = 0;
+    virtual void _defineCreators() = 0;
+    virtual void _defineFeatures() = 0;
     void _defineFeaturesTable();
 
 public:
@@ -60,15 +59,11 @@ private:
 
     // ---------------- attributes ----------------
 public:
-    std::string name() const;
-    EType getType() const;
+    virtual std::string name() const = 0;
+    virtual std::string javaPackageName() const = 0;
 
     const std::map<std::string, EParentInfo> parents() const;
     const std::map<std::string, std::shared_ptr<EFeature>> features() const;
-
-    // ----------------- contract -----------------
-public:
-    void compile();
 };
 
 #endif // ECLASSINFO_H

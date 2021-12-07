@@ -57,10 +57,10 @@ int main(int argc, char** argv) {
     }
 
     // Perform semantic
-    EProgram* eiffelProgram = nullptr;
+    EProgram eiffelProgram;
 
     if (tree_root != NULL) {
-        eiffelProgram = EProgram::create(tree_root);
+        eiffelProgram = EProgram(tree_root);
     }
 
     for (const auto& error : EProgram::semanticErrors) {
@@ -68,9 +68,8 @@ int main(int argc, char** argv) {
     }
 
     // Perform compilation
-    if (eiffelProgram != nullptr && EProgram::semanticErrors.empty()) {
-        eiffelProgram->compileToJVM("program.class");
-        delete eiffelProgram;
+    if (EProgram::semanticErrors.empty()) {
+        eiffelProgram.compileToJVM("program.class");
     }
 
     return 0;

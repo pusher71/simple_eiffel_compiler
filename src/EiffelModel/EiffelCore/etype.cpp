@@ -19,9 +19,11 @@ EType::EType(const std::string& className) {
     this->_type = create_type(-1, dtype_user_defined, className_cstr, NULL);
 }
 
-EType EType::voidType() {
-    return EType(nullptr);
-}
+EType EType::voidType()     { return nullptr; }
+EType EType::boolType()     { return EType(create_type(-1, dtype_boolean, nullptr, NULL)); }
+EType EType::intType()      { return EType(create_type(-1, dtype_integer, nullptr, NULL)); }
+EType EType::charType()     { return EType(create_type(-1, dtype_character, nullptr, NULL)); }
+EType EType::stringType()   { return EType(create_type(-1, dtype_string, nullptr, NULL)); }
 
 bool EType::isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) const {
     bool result = true;

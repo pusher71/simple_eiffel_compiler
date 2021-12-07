@@ -7,7 +7,14 @@ EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, fea
     : _name(featureName),
       _ownerClassName(ownerClass->name()),
       _node(featureDecl),
-      _type( (featureDecl->type != nullptr ? EType(featureDecl->type) : EType::voidType()) )
+      _returnType( (featureDecl->type != nullptr ? EType(featureDecl->type) : EType::voidType()) )
+{}
+
+EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, const EType& returnType)
+    : _name(featureName),
+      _ownerClassName(ownerClass->name()),
+      _node(nullptr),
+      _returnType(returnType)
 {}
 
 EFeature::~EFeature() {}
@@ -26,10 +33,10 @@ void EFeature::validate() const {
     }
 
     // Validate type of feature
-    if (this->_type != EType::voidType()) {
+    if (this->_returnType != EType::voidType()) {
         std::string invalidUserTypeName;
 
-        if (!this->_type.isUserDefinedSubtypeValid(invalidUserTypeName)) {
+        if (!this->_returnType.isUserDefinedSubtypeValid(invalidUserTypeName)) {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: no user defined subtype \"" + invalidUserTypeName + "\"";
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FEATURE_INVALID_TYPE, errorMessage));
         }
@@ -37,5 +44,5 @@ void EFeature::validate() const {
 }
 
 std::string EFeature::name() const { return this->_name; }
-EType EFeature::type() const { return this->_type; }
+EType EFeature::returnType() const { return this->_returnType; }
 std::string EFeature::ownerClassName() const { return this->_ownerClassName; }

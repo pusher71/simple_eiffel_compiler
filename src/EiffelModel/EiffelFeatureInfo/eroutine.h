@@ -21,6 +21,12 @@ private:
     // ----------------- creating -----------------
 public:
     ERoutine(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+    ERoutine(const std::string&                                 featureName,
+             const EClass*                                      ownerClass,
+             const EType&                                       returnType,
+             const std::vector<std::pair<std::string, EType>>&  formalParameters,
+             const std::vector<std::pair<std::string, EType>>&  localVariables);
+
     ~ERoutine() override;
 
 private:

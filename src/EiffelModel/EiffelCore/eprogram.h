@@ -16,13 +16,13 @@ public:
 
     // ============== ATTRIBUTES ==============
 private:
-    std::map<std::string, EClass> _classes;
+    std::map<std::string, std::shared_ptr<EClass>> _classes;
 
     // ============== OPERATIONS ==============
     // -------- creating --------
 public:
     EProgram();
-    static EProgram* create(const program_strct* program_node);
+    EProgram(const program_strct* program_node);
 
     // ------- attributes -------
 public:

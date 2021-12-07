@@ -5,6 +5,10 @@ EAttribute::EAttribute(const std::string& featureName, const EClass* ownerClass,
     : EFeature(featureName, ownerClass, featureDecl)
 {}
 
+EAttribute::EAttribute(const std::string& featureName, const EClass* ownerClass, const EType& returnType)
+    : EFeature(featureName, ownerClass, returnType)
+{}
+
 EAttribute::~EAttribute() {}
 
 EFeature::EFeatureType EAttribute::featureType() const { return efeature_attribute; }
