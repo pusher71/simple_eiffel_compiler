@@ -29,4 +29,4 @@ void EClassCONSOLEIO::_defineFeatures() {
     this->_features["last_string"]      = std::make_shared<EAttribute>( EAttribute("last_string", this, EType::stringType()) );
 }
 
-std::string EClassCONSOLEIO::name() const { return "#CONSOLEIO"; }
+std::string EClassCONSOLEIO::name() const { return "CONSOLEIO"; }

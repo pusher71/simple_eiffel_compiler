@@ -54,6 +54,7 @@ public:
 
 private:
     void _fillSelfFeaturesTableUsingParent(const EClass* parent, const EParentInfo& parentInfo);
+    bool _checkOnlyExistFeaturesAreSelected();
     void _resolveSelects();
     void _validateSelfFeaturesTable() const;
 

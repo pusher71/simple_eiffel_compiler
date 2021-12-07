@@ -37,6 +37,8 @@ void EClass::_initSelf() {
     this->_defineFeaturesTable();
 }
 
+#include <iostream>
+
 void EClass::setupAcceptableFeaturesTable(const std::vector<std::string>& classInheritPath) {
     if (this->_featuresTableState == DONE) {
         return;
@@ -50,6 +52,8 @@ void EClass::setupAcceptableFeaturesTable(const std::vector<std::string>& classI
 
         std::string errorMessage = "class \""+ this->name() + "\" has inherited self by path: " + classPathStr;
         EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__INHERIT_CYCLE, errorMessage));
+
+        return;
     }
 
     this->_featuresTableState = IN_PROCESS;
@@ -58,7 +62,7 @@ void EClass::setupAcceptableFeaturesTable(const std::vector<std::string>& classI
         EClass* parentClass = EProgram::current->getClassBy(parentInfo.first);
 
         // Setup parent features table if parent hasn't setup it
-        if (parentClass->_featuresTableState == NOT_SETUP) {
+        if (parentClass->_featuresTableState != DONE) {
             std::vector<std::string> newClassInheritPath(classInheritPath.begin(), classInheritPath.end());
             newClassInheritPath.push_back(this->name());
 
@@ -68,12 +72,15 @@ void EClass::setupAcceptableFeaturesTable(const std::vector<std::string>& classI
         this->_fillSelfFeaturesTableUsingParent(parentClass, parentInfo.second);
     }
 
-    // Remove duplicates
-    std::set<EFeatureMetaInfo> featuresTableAsSet(this->_featuresTable.begin(), this->_featuresTable.end());
-    this->_featuresTable.assign(featuresTableAsSet.begin(), featuresTableAsSet.end());
+    // Check that only exist features are selected
+    if (this->_checkOnlyExistFeaturesAreSelected()) {
+        // Remove duplicates
+        std::set<EFeatureMetaInfo> featuresTableAsSet(this->_featuresTable.begin(), this->_featuresTable.end());
+        this->_featuresTable.assign(featuresTableAsSet.begin(), featuresTableAsSet.end());
 
-    this->_resolveSelects();
-    this->_validateSelfFeaturesTable();
+        this->_resolveSelects();
+        this->_validateSelfFeaturesTable();
+    }
 
     this->_featuresTableState = DONE;
 }
@@ -109,6 +116,24 @@ void EClass::_fillSelfFeaturesTableUsingParent(const EClass* parent, const EPare
     }
 }
 
+bool EClass::_checkOnlyExistFeaturesAreSelected() {
+    for (const auto& parentInfo : this->_parents) {
+        for (const auto& selectInfo : parentInfo.second.selectSeq) {
+            int count = std::count_if(this->_featuresTable.begin(), this->_featuresTable.end(), [&](const auto& featureMetaInfo){ return (selectInfo == featureMetaInfo.finalName() && parentInfo.first == featureMetaInfo.parentClassName()); });
+            if (count == 0) {
+                std::string errorMessage = "class \"" + this->name() + "\" ";
+                errorMessage += ":: select of unknown feature \"" + selectInfo + "\"";
+
+                EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__SELECT_UNKNOWN_FEATURE, errorMessage));
+
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 void EClass::_resolveSelects() {
     // Divide acceptable features into groups by feature mark
     std::map<std::pair<std::string, std::string>, std::vector<EFeatureMetaInfo*>> featuresInfoDividedByMark;
@@ -122,11 +147,11 @@ void EClass::_resolveSelects() {
         if (featureGroupInfo.second.size() > 1) {
             std::vector<EFeatureMetaInfo*> selectedFeaturesInfo;
 
-            for (const auto& featureInfo : featureGroupInfo.second) {
-                std::vector<std::string> parentOfFeatureSelects = this->_parents[featureInfo->parentClassName()].selectSeq;
+            for (const auto& featureMetaInfo : featureGroupInfo.second) {
+                std::vector<std::string> parentOfFeatureSelects = this->_parents[featureMetaInfo->parentClassName()].selectSeq;
 
-                if (std::count(parentOfFeatureSelects.begin(), parentOfFeatureSelects.end(), featureInfo->finalName())) {
-                    selectedFeaturesInfo.push_back(featureInfo);
+                if (std::count(parentOfFeatureSelects.begin(), parentOfFeatureSelects.end(), featureMetaInfo->finalName())) {
+                    selectedFeaturesInfo.push_back(featureMetaInfo);
                     break;
                 }
             }
@@ -134,6 +159,20 @@ void EClass::_resolveSelects() {
             for (auto& featureInfo : featureGroupInfo.second) {
                 if (std::count(selectedFeaturesInfo.begin(), selectedFeaturesInfo.end(), featureInfo) == 0) {
                     featureInfo->setFeatureMark(this->name(), featureInfo->finalName());
+                }
+            }
+        }
+        else {
+            EFeatureMetaInfo* featureMetaInfo = featureGroupInfo.second.at(0);
+
+            for (const auto& parentInfo : this->_parents) {
+                if (std::count(parentInfo.second.selectSeq.begin(), parentInfo.second.selectSeq.end(), featureMetaInfo->finalName())) {
+                    std::string errorMessage = "class \"" + this->name() + "\" ";
+                    errorMessage += ":: feature \"" + featureMetaInfo->finalName() + "\" of parent class \"" + parentInfo.first + "\" is the only version to select from";
+
+                    EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__IMPROPER_SELECT, errorMessage));
+
+                    break;
                 }
             }
         }

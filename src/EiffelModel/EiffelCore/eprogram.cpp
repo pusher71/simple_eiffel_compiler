@@ -38,7 +38,7 @@ void EProgram::runSemanticStage_0(const program_strct* programNode) {
     class_decl_seq_strct* classDeclSeqElem = programNode->class_decl_seq;
     while (classDeclSeqElem != NULL && EProgram::semanticErrors.empty()) {
         if (this->_classes.count(classDeclSeqElem->value->id_name) != 0) {
-            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CLASSES__NAME_CLASHES_WITH_USER_CLASS_NAME, classDeclSeqElem->value->id_name));
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CLASSES__NAME_CLASHES_WITH_USER_CLASS_NAME, std::string("class \"") + classDeclSeqElem->value->id_name + "\""));
             break;
         }
 

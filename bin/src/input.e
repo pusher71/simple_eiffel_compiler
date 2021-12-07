@@ -29,6 +29,8 @@ class O
     N
     redefine
       f8
+    select
+      f5
     end
     A
     rename
