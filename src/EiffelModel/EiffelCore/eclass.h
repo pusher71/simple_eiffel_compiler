@@ -47,6 +47,9 @@ protected:
     virtual void _defineParents() = 0;
     virtual void _defineCreators() = 0;
     virtual void _defineFeatures() = 0;
+
+private:
+    void _checkRenameAndSelectDuplicates() const;
     void _defineFeaturesTable();
 
 public:

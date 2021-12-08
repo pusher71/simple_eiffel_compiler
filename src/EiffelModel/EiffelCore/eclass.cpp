@@ -7,6 +7,52 @@ EClass::EClass()
     :  _featuresTableState(NOT_SETUP)
 {}
 
+void EClass::_initSelf() {
+    this->_defineParents();
+    this->_checkRenameAndSelectDuplicates();
+
+    this->_defineCreators();
+    this->_defineFeatures();
+    this->_defineFeaturesTable();
+}
+
+void EClass::_checkRenameAndSelectDuplicates() const {
+    // Setup lambda expression for extracting string duplicates from vector
+    auto getStrDuplicates = [](std::vector<std::string> vec) {
+        std::vector<std::string> duplicates;
+        std::sort(vec.begin(), vec.end());
+        std::set<std::string> vecUnique(vec.begin(), vec.end());
+        std::set_difference(vec.begin(), vec.end(), vecUnique.begin(), vecUnique.end(), std::back_inserter(duplicates));
+
+        return std::set<std::string>(duplicates.begin(), duplicates.end());
+    };
+
+    for (const auto& parentInfo : this->_parents) {
+        // Check rename duplicates
+        std::vector<std::string> renameFirstNames;
+        std::for_each(parentInfo.second.renameSeq.begin(), parentInfo.second.renameSeq.end(), [&](const auto& renameInfo){ renameFirstNames.push_back(renameInfo.first); });
+
+        std::set<std::string> renameDuplicates = getStrDuplicates(renameFirstNames);
+
+        for (const std::string& renameFirstName : renameDuplicates) {
+            std::string errorMessage = "class \"" + this->name() + "\" ";
+            errorMessage += ":: feature \"" + renameFirstName + "\" of parent class \"" + parentInfo.first + "\" was renamed more than once";
+
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__TWO_OR_MORE_RENAMES_OF_SAME_FEATURE, errorMessage));
+        }
+
+        // Check select duplicates
+        std::set<std::string> selectDuplicates = getStrDuplicates(parentInfo.second.selectSeq);
+
+        for (const std::string& selectName : selectDuplicates) {
+            std::string errorMessage = "class \"" + this->name() + "\" ";
+            errorMessage += ":: select clause for feature \"" + selectName + "\" of parent class \"" + parentInfo.first + "\" was repeated";
+
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__SELECT_CLAUSE_FEATURE_DUPLICATED, errorMessage));
+        }
+    }
+}
+
 void EClass::_defineFeaturesTable() {
     if (this->_parents.empty()) { this->_featuresTableState = DONE; }
 
@@ -29,15 +75,6 @@ void EClass::_defineFeaturesTable() {
         }
     }
 }
-
-void EClass::_initSelf() {
-    this->_defineParents();
-    this->_defineCreators();
-    this->_defineFeatures();
-    this->_defineFeaturesTable();
-}
-
-#include <iostream>
 
 void EClass::setupAcceptableFeaturesTable(const std::vector<std::string>& classInheritPath) {
     if (this->_featuresTableState == DONE) {
@@ -122,7 +159,7 @@ bool EClass::_checkOnlyExistFeaturesAreSelected() {
             int count = std::count_if(this->_featuresTable.begin(), this->_featuresTable.end(), [&](const auto& featureMetaInfo){ return (selectInfo == featureMetaInfo.finalName() && parentInfo.first == featureMetaInfo.parentClassName()); });
             if (count == 0) {
                 std::string errorMessage = "class \"" + this->name() + "\" ";
-                errorMessage += ":: select of unknown feature \"" + selectInfo + "\"";
+                errorMessage += ":: select of unknown feature \"" + selectInfo + "\" of parent class \"" + parentInfo.first + "\" is the only version to select from";
 
                 EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__SELECT_UNKNOWN_FEATURE, errorMessage));
 
