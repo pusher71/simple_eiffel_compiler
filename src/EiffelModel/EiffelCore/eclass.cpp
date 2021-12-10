@@ -117,6 +117,13 @@ void EClass::setupAcceptableFeaturesTable(const std::vector<std::string>& classI
     for (const auto& parentInfo : this->_parents) {
         EClass* parentClass = EProgram::current->getClassBy(parentInfo.first);
 
+        if (parentClass == nullptr) {
+            std::string errorMessage = "class \""+ this->name() + "\" has unknown parent with name \"" + parentInfo.first + "\"";
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::INHERITANCE__UNKNOWN_PARENT, errorMessage));
+
+            continue;
+        }
+
         // Setup parent features table if parent hasn't setup it
         if (parentClass->_featuresTableState != DONE) {
             std::vector<std::string> newClassInheritPath(classInheritPath.begin(), classInheritPath.end());
@@ -298,7 +305,6 @@ void EClass::_resolveSelects() {
 
                 if (std::count(parentOfFeatureSelects.begin(), parentOfFeatureSelects.end(), featureMetaInfo->finalName())) {
                     selectedFeaturesInfo.push_back(featureMetaInfo);
-                    break;
                 }
             }
 

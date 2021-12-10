@@ -67,10 +67,12 @@ std::string SemanticError::errorReason() const {
 
         // Third semantic stage error codes ...
         // ... Global error codes
+        case INHERITANCE__UNKNOWN_PARENT:
+            result += "NAME OF UNKNOWN PARENT";
+            break;
         case INHERITANCE__INHERIT_CYCLE:
             result += "INHERITANCE CYCLE";
             break;
-
         case FEATURES__NAME_CLASHES_WITH_NAME_OF_INHERITED_FEATURE:
             result += "FEATURE NAME CLASHES WITH NAME OF INHERITED FEATURE";
             break;

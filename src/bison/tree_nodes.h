@@ -215,4 +215,6 @@ struct expr_strct {
 
     struct expr_strct*  expr_left;
     struct expr_strct*  expr_right;
+
+    struct type_strct*  result_type;
 };

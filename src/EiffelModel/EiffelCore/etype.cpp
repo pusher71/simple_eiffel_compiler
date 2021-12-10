@@ -81,7 +81,44 @@ bool EType::isExpanded() const {
     return result;
 }
 
-bool EType::operator==(const EType& other) const { return (this->descriptor() == other.descriptor()); }
+bool EType::operator==(const EType& other) const {
+    bool result = false;
+
+    if (other._type == nullptr) {
+        return (this->_type == nullptr);
+    }
+    else if (this->_type == nullptr) {
+        return (other._type == nullptr);
+    }
+
+    // Convert first type to its the lowest array element type If first type is a multidimensional array
+    type_strct* firstTypeArrElemType = this->_type;
+    short firstTypeArrLevel = 0;
+
+    while (firstTypeArrElemType->type == dtype_array) {
+        firstTypeArrElemType = firstTypeArrElemType->arrayelem_type;
+        firstTypeArrLevel++;
+    }
+
+    // Convert second type to its the lowest array element type If second type is a multidimensional array
+    type_strct* secondTypeArrElemType = other._type;
+    short secondTypeArrLevel = 0;
+
+    while (secondTypeArrElemType->type == dtype_array) {
+        secondTypeArrElemType = secondTypeArrElemType->arrayelem_type;
+        secondTypeArrLevel++;
+    }
+
+    // Compare got types
+    if (firstTypeArrElemType->type == secondTypeArrElemType->type && firstTypeArrLevel == secondTypeArrLevel) {
+        if (firstTypeArrElemType->type == dtype_user_defined && std::string(firstTypeArrElemType->id_name) == std::string(secondTypeArrElemType->id_name)) {
+            result = true;
+        }
+    }
+
+    return result;
+}
+
 bool EType::operator!=(const EType& other) const { return (this->descriptor() != other.descriptor()); }
 
 bool EType::canCastTo(const EType& other) const {

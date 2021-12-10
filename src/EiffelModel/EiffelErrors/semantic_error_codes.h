@@ -26,6 +26,7 @@ enum SemanticErrorCode {
 
     // Third semantic stage error codes ...
     // ... Global error codes
+    INHERITANCE__UNKNOWN_PARENT,
     INHERITANCE__INHERIT_CYCLE,
     FEATURES__NAME_CLASHES_WITH_NAME_OF_INHERITED_FEATURE,
 
