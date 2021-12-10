@@ -26,11 +26,18 @@ public:
     bool isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) const;
 
     std::string descriptor() const;
+    bool isExpanded() const;
 
     // ---------------- comparison ----------------
 public:
     bool operator==(const EType& other) const;
     bool operator!=(const EType& other) const;
+
+    bool canCastTo(const EType& other) const;
+
+    // ---------------- additional ----------------
+public:
+    std::string toString() const;
 };
 
 #endif // EDATATYPE_H

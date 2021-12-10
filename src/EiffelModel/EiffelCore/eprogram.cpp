@@ -19,6 +19,7 @@ EProgram::EProgram(const program_strct* programNode) {
     if (EProgram::semanticErrors.empty()) { this->runSemanticStage_1(); }   // Validate attributes and routines names and data types
     if (EProgram::semanticErrors.empty()) { this->runSemanticStage_2(); }   // Collect features information for each class
     if (EProgram::semanticErrors.empty()) { this->runSemanticStage_3(); }   // Examine locals and bodies of each method of user classes
+    if (EProgram::semanticErrors.empty()) { this->runSemanticStage_4(); }   // Check that classes initializes their attributes
 }
 
 EClass* EProgram::getClassBy(const std::string& className) {
@@ -38,7 +39,7 @@ void EProgram::runSemanticStage_0(const program_strct* programNode) {
     class_decl_seq_strct* classDeclSeqElem = programNode->class_decl_seq;
     while (classDeclSeqElem != NULL && EProgram::semanticErrors.empty()) {
         if (this->_classes.count(classDeclSeqElem->value->id_name) != 0) {
-            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CLASSES__NAME_CLASHES_WITH_USER_CLASS_NAME, std::string("class \"") + classDeclSeqElem->value->id_name + "\""));
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CLASSES__NAME_CLASHES_WITH_OTHER_CLASS_NAME, std::string("class \"") + classDeclSeqElem->value->id_name + "\""));
             break;
         }
 
@@ -47,11 +48,11 @@ void EProgram::runSemanticStage_0(const program_strct* programNode) {
     }
 }
 
+#include <iostream>
+
 void EProgram::runSemanticStage_1() {
     for (const auto& classInfo : this->_classes) {
-        for (const auto& featureInfo : classInfo.second.get()->features()) {
-            featureInfo.second.get()->validate();
-        }
+        classInfo.second.get()->validateSelfFeatures();
     }
 }
 
@@ -62,6 +63,9 @@ void EProgram::runSemanticStage_2() {
 }
 
 void EProgram::runSemanticStage_3() {
+}
+
+void EProgram::runSemanticStage_4() {
 }
 
 bool EProgram::compileToJVM(const std::string& jvmFilepath) {

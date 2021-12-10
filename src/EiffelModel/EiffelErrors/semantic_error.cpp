@@ -12,11 +12,8 @@ std::string SemanticError::errorReason() const {
 
     switch (this->_errorCode) {
         // First semantic stage error codes
-        case CLASSES__NAME_CLASHES_WITH_USER_CLASS_NAME:
-            result += "CLASS NAME CLASHES WITH NAME OF OTHER USER CLASS";
-            break;
-        case CLASSES__NAME_CLASHES_WITH_RTL_CLASS_NAME:
-            result += "CLASS NAME CLASHES WITH NAME OF RTL CLASS";
+        case CLASSES__NAME_CLASHES_WITH_OTHER_CLASS_NAME:
+            result += "CLASS NAME CLASHES WITH NAME OF OTHER CLASS";
             break;
 
         // Second semantic stage error codes ...
@@ -77,35 +74,32 @@ std::string SemanticError::errorReason() const {
         case FEATURES__NAME_CLASHES_WITH_NAME_OF_INHERITED_FEATURE:
             result += "FEATURE NAME CLASHES WITH NAME OF INHERITED FEATURE";
             break;
-        case FEATURES__FORMAL_PARAM_NAME_CLASHES_WITH_NAME_OF_INHERITED_FEATURE:
-            result += "FORMAL PARAMETER NAME CLASHES WITH NAME OF INHERITED FEATURE";
-            break;
-        case FEATURES__LOCAL_VAR_NAME_CLASHES_WITH_NAME_OF_INHERITED_FEATURE:
-            result += "LOCAL VARIABLE NAME CLASHES WITH NAME OF INHERITED FEATURE";
-            break;
 
         // ... Rename error codes
-        case INHERITANCE__RENAME_OF_UKNOWN_FEATURE:
-            result += "RENAME OF UKNOWN FEATURE";
+        case INHERITANCE__RENAME_UKNOWN_FEATURE:
+            result += "RENAME UKNOWN FEATURE";
             break;
         case INHERITANCE__TWO_OR_MORE_RENAMES_OF_SAME_FEATURE:
             result += "SEVERAL RENAMES OF ONE FEATURE";
             break;
 
         // ... Redefine error codes
+        case INHERITANCE__REDEFINE_CLAUSE_FEATURE_DUPLICATED:
+            result += "REDEFINE CLAUSE IS DUPLICATED";
+            break;
         case INHERITANCE__REDEFINE_UNKNOWN_FEATURE:
             result += "REDEFINE UKNOWN FEATURE";
             break;
         case INHERITANCE__REDEFINE_WITHOUT_REDEFINING_IN_CLASS:
             result += "DON\'T REDEFINE FEATURE WHICH IS MARKED TO BE REDEFINED";
             break;
-        case INHERITANCE__INCONFORMING_REDEFINE:
+        case INHERITANCE__NONCONFORMING_REDEFINE:
             result += "NON-CONFORMING REDEFINE";
             break;
 
         // ... Select error codes
-        case INHERITANCE__REPEATEDLY_INHERITED_FEATURE_VERSIONS_CONFLICT:
-            result += "CONFLICT BETWEEN VERSIONS OF A REPEATEDLY INHERITED FEATURE";
+        case INHERITANCE__SELECT_CLAUSE_FEATURE_DUPLICATED:
+            result += "SELECT CLAUSE IS DUPLICATED";
             break;
         case INHERITANCE__SELECT_UNKNOWN_FEATURE:
             result += "SELECT UKNOWN FEATURE";
@@ -113,8 +107,8 @@ std::string SemanticError::errorReason() const {
         case INHERITANCE__IMPROPER_SELECT:
             result += "IMPROPER SELECT";
             break;
-        case INHERITANCE__SELECT_CLAUSE_FEATURE_DUPLICATED:
-            result += "SELECT CLAUSE IS DUPLICATED";
+        case INHERITANCE__REPEATEDLY_INHERITED_FEATURE_VERSIONS_CONFLICT:
+            result += "CONFLICT BETWEEN VERSIONS OF A REPEATEDLY INHERITED FEATURE";
             break;
     }
     result += " :: " + this->_errorMessage;

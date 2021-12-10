@@ -29,22 +29,22 @@ class O
     N
     redefine
       f8
-    select
-      f5
     end
     A
     rename
       f as f7
     end
   feature
-    f6
+    f6(fp : ANY) : N
     do
-      io.put_string("O::f6()%N")
     end
+
     f8
     do
       io.put_string("O::f8()%N")
     end
+
+    field : INTEGER
 end
 -- EOF
 
@@ -122,7 +122,7 @@ class A
     do
       io.put_string("A::f4()%N")
     end
-    f5
+    f5(obj : ANY) : N
     do
       io.put_string("A::f5()%N")
     end

@@ -37,13 +37,26 @@ private:
 public:
     EFeatureType featureType() const override;
 
+    const EInnerVariable* getInnerVar(short index) const;
+    unsigned short formalParamsCount() const;
+
     // ----------------- contract -----------------
 public:
-    void validate() const override;
+    void validateDataTypes() const override;
+    void checkOnNameClashingAfterInherit() const override;
 
 private:
-    void _validateFormalParams() const;
-    void _validateLocalVars() const;
+    void _validateFormalParamDataTypes() const;
+    void _validateLocalVarDataTypes() const;
+
+    void _checkOnFormalParamNameClashing() const;
+    void _checkOnLocalVarNameClashing() const;
+
+    bool isConformingTo(const EFeature& other) const override;
+
+    // ---------------- additional ----------------
+public:
+    std::string toString() const override;
 };
 
 #endif // EMETHOD_H

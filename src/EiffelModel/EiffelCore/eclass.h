@@ -8,10 +8,14 @@
 
 #include "econstanttable.h"
 #include "efeature.h"
+#include "../EiffelFeatureInfo/eroutine.h"
 #include "efeaturemetainfo.h"
 #include "../../bison/tree_nodes.h"
 
 class EClass {
+    // ================ MY FRIENDS ================
+    friend ERoutine;
+
     // ================= SUBTYPES =================
 protected:
     struct EParentInfo {
@@ -30,9 +34,12 @@ private:
     // ================ ATTRIBUTES ================
 protected:
     std::map<std::string, EParentInfo>                  _parents;
-    std::vector<std::string>                            _creators;
+    std::map<std::string, EFeature*>                    _creators;
+
+private:
     std::map<std::string, std::shared_ptr<EFeature>>    _features;
 
+protected:
     std::vector<EFeatureMetaInfo>       _featuresTable;
     EFeatureTableState                  _featuresTableState;
 
@@ -40,6 +47,7 @@ protected:
     // ----------------- creating -----------------
 public:
     EClass();
+    void validateSelfFeatures() const;
 
 protected:
     void _initSelf();
@@ -49,13 +57,16 @@ protected:
     virtual void _defineFeatures() = 0;
 
 private:
-    void _checkRenameAndSelectDuplicates() const;
+    void _checkRenameRedefineSelectDuplicates() const;
     void _defineFeaturesTable();
 
 public:
     void setupAcceptableFeaturesTable(const std::vector<std::string>& classInheritPath = {});
 
 private:
+    bool _validateRenamesForParent(const EClass* parent, const EParentInfo& parentInfo) const;
+    bool _validateRedefinesForParent(const EClass* parent, const EParentInfo& parentInfo) const;
+
     void _fillSelfFeaturesTableUsingParent(const EClass* parent, const EParentInfo& parentInfo);
     bool _checkOnlyExistFeaturesAreSelected();
     void _resolveSelects();
@@ -68,6 +79,14 @@ public:
 
     const std::map<std::string, EParentInfo> parents() const;
     const std::map<std::string, std::shared_ptr<EFeature>> features() const;
+
+protected:
+    void _addFeature(std::shared_ptr<EFeature> feature);
+    const EFeature* _getSelfFeature(const std::string& featureName) const;
+
+    // ----------------- contract -----------------
+public:
+    bool isDescendantTo(const EClass* other) const;
 };
 
 #endif // ECLASSINFO_H

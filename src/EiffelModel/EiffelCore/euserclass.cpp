@@ -58,7 +58,7 @@ void EUserClass::_defineCreators() {
         identifiers_comma_seq_strct* identifiersCommaSeqElem = creatorsSeqElem->value;
 
         while (identifiersCommaSeqElem != NULL) {
-            this->_creators.push_back(identifiersCommaSeqElem->value);
+            this->_creators[identifiersCommaSeqElem->value] = nullptr;
             identifiersCommaSeqElem = identifiersCommaSeqElem->next;
         }
 
@@ -76,10 +76,10 @@ void EUserClass::_defineFeatures() {
             identifiers_comma_seq_strct* featureNameSeqElem = featureDeclSeqElem->value->identifiers_comma_seq;
             while (featureNameSeqElem != NULL) {
                 if (featureDeclSeqElem->value->routine_body != nullptr) {
-                    this->_features[featureNameSeqElem->value] = std::make_shared<ERoutine>(ERoutine(featureNameSeqElem->value, this, featureDeclSeqElem->value));
+                    this->_addFeature(std::make_shared<ERoutine>(ERoutine(featureNameSeqElem->value, this, featureDeclSeqElem->value)));
                 }
                 else {
-                    this->_features[featureNameSeqElem->value] = std::make_shared<EAttribute>(EAttribute(featureNameSeqElem->value, this, featureDeclSeqElem->value));
+                    this->_addFeature(std::make_shared<EAttribute>(EAttribute(featureNameSeqElem->value, this, featureDeclSeqElem->value)));
                 }
 
                 featureNameSeqElem = featureNameSeqElem->next;

@@ -34,6 +34,7 @@ private:
     void runSemanticStage_1();
     void runSemanticStage_2();
     void runSemanticStage_3();
+    void runSemanticStage_4();
 
 public:
     bool compileToJVM(const std::string& jvmFilepath);

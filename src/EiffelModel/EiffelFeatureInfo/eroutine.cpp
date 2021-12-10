@@ -1,8 +1,6 @@
 #include "eroutine.h"
 #include "../EiffelCore/eprogram.h"
 
-#include <iostream>
-
 ERoutine::ERoutine(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl),
       _routineBody(featureDecl->routine_body),
@@ -113,14 +111,80 @@ ERoutine::~ERoutine() {}
 
 EFeature::EFeatureType ERoutine::featureType() const { return efeature_routine; }
 
-void ERoutine::validate() const {
-    EFeature::validate();
+const EInnerVariable* ERoutine::getInnerVar(short index) const {
+    if (index < 0 || index > this->_formalParameters.size() + this->_localVariables.size()) {
+        return nullptr;
+    }
+    else if (index == 0) {
+        return &this->_current;
+    }
+    else {
+        EInnerVariable* result = nullptr;
 
-    this->_validateFormalParams();  // Validate formal parameters
-    this->_validateLocalVars();     // Validate local variables
+        std::map<std::string, EInnerVariable> innerVariables(_formalParameters.begin(), _formalParameters.end());
+        innerVariables.insert(this->_localVariables.begin(), this->_localVariables.end());
+
+        for (const auto& innerVarInfo : innerVariables) {
+            if (innerVarInfo.second.index() == index) {
+                result = (EInnerVariable*)&innerVarInfo.second;
+            }
+        }
+
+        return result;
+    }
 }
 
-void ERoutine::_validateFormalParams() const {
+unsigned short ERoutine::formalParamsCount() const { return this->_formalParameters.size(); }
+
+void ERoutine::validateDataTypes() const {
+    EFeature::validateDataTypes();
+
+    this->_validateFormalParamDataTypes();
+    this->_validateLocalVarDataTypes();
+}
+
+void ERoutine::checkOnNameClashingAfterInherit() const {
+    EFeature::checkOnNameClashingAfterInherit();
+
+    this->_checkOnFormalParamNameClashing();
+    this->_checkOnLocalVarNameClashing();
+}
+
+void ERoutine::_validateFormalParamDataTypes() const {
+    // Validate formal parameters
+    std::string invalidUserTypeName;
+    for (const auto& formalParamInfo : this->_formalParameters) {
+        // Validate data type
+        invalidUserTypeName = "";
+
+        if (!formalParamInfo.second.type().isUserDefinedSubtypeValid(invalidUserTypeName)) {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+            errorMessage += ":: no user defined subtype \"" + invalidUserTypeName + "\" ";
+            errorMessage += "for formal parameter <" + std::to_string(formalParamInfo.second.index() - 1) + ">";
+
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FORMAL_PARAM_INVALID_TYPE, errorMessage));
+        }
+    }
+}
+
+void ERoutine::_validateLocalVarDataTypes() const {
+    // Validate local variables
+    std::string invalidUserTypeName;
+    for (const auto& localVarInfo : this->_localVariables) {
+        // Validate data type
+        invalidUserTypeName = "";
+
+        if (!localVarInfo.second.type().isUserDefinedSubtypeValid(invalidUserTypeName) && localVarInfo.first != "result") {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+            errorMessage += ":: no user defined subtype \"" + invalidUserTypeName + "\" ";
+            errorMessage += "for local variable <" + std::to_string(localVarInfo.second.index() - this->_formalParameters.size() - 1) + ">";
+
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__LOCAL_VAR_INVALID_TYPE, errorMessage));
+        }
+    }
+}
+
+void ERoutine::_checkOnFormalParamNameClashing() const {
     // Validate formal parameters
     std::string invalidUserTypeName;
     for (const auto& formalParamInfo : this->_formalParameters) {
@@ -145,31 +209,20 @@ void ERoutine::_validateFormalParams() const {
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FORMAL_PARAM_NAME_CLASHES_WITH_NAME_OF_SELF_FEATURE, errorMessage));
         }
 
-        // ... With same class feature
-        for (const auto& featureInfo : EProgram::current->getClassBy(this->_ownerClassName)->features()) {
-            if (formalParamName == featureInfo.second->name() && featureInfo.second->name() != this->_name) {
+        // ... With feature in the class features table
+        for (const auto& featureMetaInfo : EProgram::current->getClassBy(this->_ownerClassName)->_featuresTable) {
+            if (formalParamName == featureMetaInfo.finalName() && featureMetaInfo.finalName() != this->_name) {
                 std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
                 errorMessage += ":: formal parameter <" + std::to_string(formalParamInfo.second.index() - 1) + "> clashes ";
-                errorMessage += "with feature \"" + featureInfo.second->ownerClassName() + "::" + featureInfo.second->name() + "\"";
+                errorMessage += "with feature \"" + featureMetaInfo.finalName() + "\" of parent \"" + featureMetaInfo.parentClassName() + "\"";
 
                 EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FORMAL_PARAM_NAME_CLASHES_WITH_NAME_OF_SAME_CLASS_FEATURE, errorMessage));
             }
         }
-
-        // Validate data type
-        invalidUserTypeName = "";
-
-        if (!formalParamInfo.second.type().isUserDefinedSubtypeValid(invalidUserTypeName)) {
-            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
-            errorMessage += ":: no user defined subtype \"" + invalidUserTypeName + "\" ";
-            errorMessage += "for formal parameter <" + std::to_string(formalParamInfo.second.index() - 1) + ">";
-
-            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FORMAL_PARAM_INVALID_TYPE, errorMessage));
-        }
     }
 }
 
-void ERoutine::_validateLocalVars() const {
+void ERoutine::_checkOnLocalVarNameClashing() const {
     // Validate local variables
     std::string invalidUserTypeName;
     for (const auto& localVarInfo : this->_localVariables) {
@@ -195,11 +248,11 @@ void ERoutine::_validateLocalVars() const {
         }
 
         // ... With same class feature
-        for (const auto& featureInfo : EProgram::current->getClassBy(this->_ownerClassName)->features()) {
-            if (localVarName == featureInfo.second->name() && featureInfo.second->name() != this->_name) {
+        for (const auto& featureMetaInfo : EProgram::current->getClassBy(this->_ownerClassName)->_featuresTable) {
+            if (localVarName == featureMetaInfo.finalName() && featureMetaInfo.finalName() != this->_name) {
                 std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
                 errorMessage += ":: local variable <" + std::to_string(localVarInfo.second.index() - this->_formalParameters.size() - 1) + "> clashes ";
-                errorMessage += "with feature \"" + featureInfo.second->ownerClassName() + "::" + featureInfo.second->name() + "\"";
+                errorMessage += "with feature \"" + featureMetaInfo.finalName() + "\" of parent \"" + featureMetaInfo.parentClassName() + "\"";
 
                 EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__LOCAL_VAR_NAME_CLASHES_WITH_NAME_OF_SAME_CLASS_FEATURE, errorMessage));
             }
@@ -215,16 +268,44 @@ void ERoutine::_validateLocalVars() const {
                 EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__LOCAL_VAR_NAME_CLASHES_WITH_NAME_OF_FORMAL_PARAM, errorMessage));
             }
         }
+    }
+}
 
-        // Validate data type
-        invalidUserTypeName = "";
+bool ERoutine::isConformingTo(const EFeature& other) const {
+    bool result = false;
 
-        if (!localVarInfo.second.type().isUserDefinedSubtypeValid(invalidUserTypeName)) {
-            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
-            errorMessage += ":: no user defined subtype \"" + invalidUserTypeName + "\" ";
-            errorMessage += "for local variable <" + std::to_string(localVarInfo.second.index() - this->_formalParameters.size() - 1) + ">";
+    ERoutine* otherRoutine = dynamic_cast<ERoutine*>((EFeature*)(&other));
+    if (otherRoutine != nullptr) {
+        if (this->_returnType.canCastTo(otherRoutine->_returnType) &&
+            this->_returnType.isExpanded() == otherRoutine->_returnType.isExpanded())
+        {
+            bool areFormalParamsConforming = (this->_formalParameters.size() == otherRoutine->_formalParameters.size());
 
-            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__LOCAL_VAR_INVALID_TYPE, errorMessage));
+            for (int i=0; i<this->_formalParameters.size() && areFormalParamsConforming; i++) {
+                areFormalParamsConforming &= this->getInnerVar(i+1)->type().canCastTo(otherRoutine->getInnerVar(i+1)->type());
+                areFormalParamsConforming &= this->getInnerVar(i+1)->type().isExpanded() == otherRoutine->getInnerVar(i+1)->type().isExpanded();
+            }
+
+            result = areFormalParamsConforming;
         }
     }
+
+    return result;
+}
+
+std::string ERoutine::toString() const {
+    std::string result = EFeature::toString() + "(";
+
+    // for (const auto& formalTypeInfo : this->_formalParameters) {
+    for (int i=1; i<=this->_formalParameters.size(); i++) {
+        result += this->getInnerVar(i)->type().toString() + ", ";
+    }
+
+    if (!this->_formalParameters.empty()) {
+        result = result.substr(0, result.size()-2);
+    }
+
+    result += ")";
+
+    return result;
 }

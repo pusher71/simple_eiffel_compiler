@@ -33,6 +33,11 @@ protected:
 public:
     virtual ~EFeature() = 0;
 
+    virtual void validateDataTypes() const = 0;
+
+    void checkOnNameClashingWithClass() const;
+    virtual void checkOnNameClashingAfterInherit() const = 0;
+
     // ---------------- attributes ----------------
 public:
     virtual EFeatureType featureType() const = 0;
@@ -44,7 +49,11 @@ public:
 
     // ----------------- contract -----------------
 public:
-    virtual void validate() const = 0;
+    virtual bool isConformingTo(const EFeature& other) const = 0;
+
+    // ---------------- additional ----------------
+public:
+    virtual std::string toString() const = 0;
 };
 
 #endif // EFEATURE_H

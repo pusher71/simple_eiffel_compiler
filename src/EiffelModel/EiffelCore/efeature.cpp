@@ -19,20 +19,7 @@ EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, con
 
 EFeature::~EFeature() {}
 
-void EFeature::validate() const {
-    // Validate on name clashing
-    // ... Check that feature name doesn't clashes with class names
-    if (EProgram::current->getClassBy(this->_name) != nullptr) {
-        std::string errorMessage = "feature \""+ this->_ownerClassName + "::" + this->_name + "\" -> class \"" + this->_name + "\"";
-        EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__NAME_CLASHES_WITH_CLASS_NAME, errorMessage));
-    }
-    // ... Check that feature name doesn't clashes with names of features of the owner class
-    else if (EProgram::current->getClassBy(this->_ownerClassName)->features().count(this->_name) > 1) {
-        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\"";
-        EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__NAME_CLASHES_WITH_NAME_OF_SAME_CLASS_FEATURE, errorMessage));
-    }
-
-    // Validate type of feature
+void EFeature::validateDataTypes() const {
     if (this->_returnType != EType::voidType()) {
         std::string invalidUserTypeName;
 
@@ -43,6 +30,20 @@ void EFeature::validate() const {
     }
 }
 
+void EFeature::checkOnNameClashingWithClass() const {
+    if (EProgram::current->getClassBy(this->name()) != nullptr) {
+        std::string errorMessage = "feature \""+ this->_ownerClassName + "::" + this->name() + "\" -> class \"" + this->name() + "\"";
+        EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__NAME_CLASHES_WITH_CLASS_NAME, errorMessage));
+    }
+}
+
+void EFeature::checkOnNameClashingAfterInherit() const {}
+
 std::string EFeature::name() const { return this->_name; }
 EType EFeature::returnType() const { return this->_returnType; }
 std::string EFeature::ownerClassName() const { return this->_ownerClassName; }
+
+std::string EFeature::toString() const {
+    std::string result = this->_returnType.toString() + " " + this->_name;
+    return result;
+}

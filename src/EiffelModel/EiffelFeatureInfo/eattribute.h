@@ -18,7 +18,14 @@ public:
 
     // ----------------- contract -----------------
 public:
-    void validate() const override;
+    void validateDataTypes() const override;
+    void checkOnNameClashingAfterInherit() const override;
+
+    bool isConformingTo(const EFeature& other) const override;
+
+    // ---------------- additional ----------------
+public:
+    std::string toString() const override;
 };
 
 #endif // EFIELD_H
