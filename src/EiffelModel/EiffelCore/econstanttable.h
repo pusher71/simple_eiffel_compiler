@@ -16,16 +16,18 @@ public:
         std::pair<short, short> jvm_methodRef;
 
         JvmConstant();
+
+        bool operator==(const JvmConstant& other) const;
     };
 
     enum JvmConstantType {
-        jvm_invalid,
-        jvm_utf8,
-        jvm_string,
-        jvm_class,
-        jvm_nameAndType,
-        jvm_fieldRef,
-        jvm_methodRef
+        jvm_invalid         = -1,
+        jvm_utf8            = 1,
+        jvm_string          = 8,
+        jvm_class           = 7,
+        jvm_nameAndType     = 12,
+        jvm_fieldRef        = 9,
+        jvm_methodRef       = 10
     };
 
     // ============== ATTRIBUTES ==============
@@ -35,14 +37,19 @@ private:
     // ============== OPERATIONS ==============
     // -------- contract --------
 public:
-    std::pair<JvmConstantType, JvmConstant> getConstant(int constantIndex);
+    int size() const;
 
-    void appendUtf8(const std::string& stringUtf8);
-    void appendString(short utf8Link_string);
-    void appendConstClass(short utf8Link_string);
-    void appendNameAndType(const std::pair<short, short>& utf8Links_nameAndType);
-    void appendFieldRef(const std::pair<short, short>& utf8Links_fieldRef);
-    void appendMethodRef(const std::pair<short, short>& utf8Links_methodRef);
+    std::pair<JvmConstantType, JvmConstant> getConstant(int constantIndex) const;
+    short searchConstant(const std::pair<JvmConstantType, JvmConstant>& constant) const;
+    short searchClassConstBy(const std::string& classFullName) const;
+    short searchUtf8By(const std::string& stringUtf8) const;
+
+    short appendUtf8(const std::string& stringUtf8);
+    short appendString(short utf8Link_string);
+    short appendConstClass(short utf8Link_string);
+    short appendNameAndType(const std::pair<short, short>& utf8Links_nameAndType);
+    short appendFieldRef(const std::pair<short, short>& utf8Links_fieldRef);
+    short appendMethodRef(const std::pair<short, short>& utf8Links_methodRef);
 };
 
 #endif // ECONSTANTTABLE_H

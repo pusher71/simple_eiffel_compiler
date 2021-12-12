@@ -16,6 +16,11 @@ class EClass {
     // ================ MY FRIENDS ================
     friend ERoutine;
 
+    // ================== STATIC ==================
+public:
+    static std::string javaObjectFullName();
+    static std::string javaStringFullName();
+
     // ================= SUBTYPES =================
 protected:
     struct EParentInfo {
@@ -35,11 +40,8 @@ private:
 protected:
     std::map<std::string, EParentInfo>                  _parents;
     std::map<std::string, EFeature*>                    _creators;
-
-private:
     std::map<std::string, std::shared_ptr<EFeature>>    _features;
 
-protected:
     std::vector<EFeatureMetaInfo>       _featuresTable;
     EFeatureTableState                  _featuresTableState;
 
@@ -76,9 +78,12 @@ private:
 public:
     virtual std::string name() const = 0;
     virtual std::string javaPackageName() const = 0;
+    std::string fullName() const;
 
     const std::map<std::string, EParentInfo> parents() const;
     const std::map<std::string, std::shared_ptr<EFeature>> features() const;
+    const std::map<std::string, std::shared_ptr<EFeature>> attributes() const;
+    const std::map<std::string, std::shared_ptr<EFeature>> routines() const;
 
 protected:
     void _addFeature(std::shared_ptr<EFeature> feature);

@@ -637,7 +637,6 @@ redefine        { debug_moveCursorToNextCharacter(yyleng); return REDEFINE; }
 select          { debug_moveCursorToNextCharacter(yyleng); return SELECT; }
 local           { debug_moveCursorToNextCharacter(yyleng); return LOCAL; }
 current         { debug_moveCursorToNextCharacter(yyleng); return CURRENT; }
-void            { debug_moveCursorToNextCharacter(yyleng); return LITER_VOID; }
 
 if              { debug_moveCursorToNextCharacter(yyleng); return IF; }
 then            { debug_moveCursorToNextCharacter(yyleng); return THEN; }
@@ -682,7 +681,7 @@ xor     { debug_moveCursorToNextCharacter(yyleng); return XOR; }
     char* id_name = (char*)malloc(yyleng+1);
 
     strcpy(id_name, yytext);
-    for (int i=0; i<yyleng; i++) { id_name[i] = tolower(id_name[i]); }
+    for (int i=0; i<yyleng; i++) { id_name[i] = toupper(id_name[i]); }
 
     yylval.id_field = id_name;
 

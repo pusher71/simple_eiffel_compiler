@@ -3,12 +3,15 @@
 #include <set>
 #include "eprogram.h"
 
+std::string EClass::javaObjectFullName() { return "java/lang/Object"; }
+std::string EClass::javaStringFullName() { return "java/lang/String"; }
+
 EClass::EClass()
     :  _featuresTableState(NOT_SETUP)
 {}
 
 void EClass::validateSelfFeatures() const {
-    for (const auto& featureInfo : this->_features) {
+    for (auto& featureInfo : this->_features) {
         featureInfo.second.get()->validateDataTypes();
         featureInfo.second.get()->checkOnNameClashingWithClass();
     }
@@ -401,10 +404,34 @@ void EClass::_validateSelfFeaturesTable() const {
     }
 }
 
+std::string EClass::fullName() const { return this->javaPackageName() + "/" + this->name(); }
+
 const std::map<std::string, EClass::EParentInfo> EClass::parents() const { return this->_parents; }
 const std::map<std::string, std::shared_ptr<EFeature>> EClass::features() const { return this->_features; }
 
-#include <iostream>
+const std::map<std::string, std::shared_ptr<EFeature>> EClass::attributes() const {
+    std::map<std::string, std::shared_ptr<EFeature>> result;
+
+    for (const auto& featureInfo : this->_features) {
+        if (featureInfo.second.get()->featureType() == EFeature::efeature_attribute) {
+            result[featureInfo.first] = featureInfo.second;
+        }
+    }
+
+    return result;
+}
+
+const std::map<std::string, std::shared_ptr<EFeature>> EClass::routines() const {
+    std::map<std::string, std::shared_ptr<EFeature>> result;
+
+    for (const auto& featureInfo : this->_features) {
+        if (featureInfo.second.get()->featureType() == EFeature::efeature_routine) {
+            result[featureInfo.first] = featureInfo.second;
+        }
+    }
+
+    return result;
+}
 
 void EClass::_addFeature(std::shared_ptr<EFeature> feature) {
     if (!this->_features.count(feature->name())) {

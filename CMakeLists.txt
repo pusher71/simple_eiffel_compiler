@@ -41,18 +41,24 @@ set(SOURCE_FILES
 
     src/EiffelModel/EiffelCore/eprogram.cpp
     src/EiffelModel/EiffelCore/eclass.cpp
-    src/EiffelModel/EiffelCore/euserclass.cpp
-    src/EiffelModel/EiffelCore/RTL/eclassrtl.cpp
-    src/EiffelModel/EiffelCore/RTL/eclassany.cpp
-    src/EiffelModel/EiffelCore/RTL/eclassconsoleio.cpp
     src/EiffelModel/EiffelCore/econstanttable.cpp
     src/EiffelModel/EiffelCore/efeature.cpp
     src/EiffelModel/EiffelCore/efeaturemetainfo.cpp
     src/EiffelModel/EiffelCore/etype.cpp
+
+    src/EiffelModel/EiffelCore/EiffelClasses/euserclass.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/eclassrtl.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/eclassany.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/eclassconsoleio.cpp
+
     src/EiffelModel/EiffelFeatureInfo/eattribute.cpp
     src/EiffelModel/EiffelFeatureInfo/eroutine.cpp
     src/EiffelModel/EiffelFeatureInfo/einnervariable.cpp
+
+    src/EiffelModel/EiffelCompilation/bytecode.cpp
+
     src/EiffelModel/EiffelErrors/semantic_error.cpp
+    src/EiffelModel/EiffelErrors/compile_error.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})

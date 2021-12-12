@@ -1,15 +1,26 @@
 #include "euserclass.h"
-#include "../EiffelFeatureInfo/eattribute.h"
-#include "../EiffelFeatureInfo/eroutine.h"
+#include "eclassany.h"
+#include "../../EiffelFeatureInfo/eattribute.h"
+#include "../../EiffelFeatureInfo/eroutine.h"
+#include "../../EiffelCompilation/bytecode.h"
+
+#include <filesystem>
+#include <fstream>
 
 EUserClass::EUserClass(const class_decl_strct* classNode)
     : _name(classNode->id_name),
       _classNode((class_decl_strct*)classNode)
 {
     this->_initSelf();
+    this->_initConstantTable();
+}
 
-    this->_constants.appendUtf8(this->_name);
-    this->_constants.appendConstClass(1);
+void EUserClass::_initConstantTable() {
+    this->_constants.appendUtf8("Code");                        // "Code" attribute
+    this->_constants.appendUtf8(this->fullName());              // Self full name
+    this->_constants.appendConstClass(2);                       // Class constant of self
+    this->_constants.appendUtf8(EClass::javaObjectFullName());  // Java object full name
+    this->_constants.appendConstClass(4);                       // Class constant of self
 }
 
 void EUserClass::_defineParents() {
@@ -46,7 +57,7 @@ void EUserClass::_defineParents() {
 
     // Set ANY class as parent if user class hasn't got any parents
     if (this->_parents.empty()) {
-        this->_parents["any"] = {};
+        this->_parents[ EClassANY::classRTLname() ] = {};
     }
 }
 
@@ -95,5 +106,35 @@ void EUserClass::_defineFeatures() {
 std::string EUserClass::name() const { return this->_name; }
 std::string EUserClass::javaPackageName() const { return "eiffel"; }
 
-void EUserClass::compile() {
+EConstantTable& EUserClass::constants() { return this->_constants; }
+
+void EUserClass::resolveRoutines() {
+    for (const auto& featureInfo : this->_features) {
+        if (featureInfo.second.get()->featureType() == EFeature::efeature_routine) {
+            ((ERoutine*)featureInfo.second.get())->resolveBody();
+        }
+    }
+}
+
+void EUserClass::compile(const std::string& outputDirectoryPath) {
+    // Create user class file at its java package ...
+    // Create java package
+    std::filesystem::path javaPackagePath = outputDirectoryPath;
+    javaPackagePath /= this->javaPackageName();
+
+    if (!std::filesystem::exists(javaPackagePath)) {
+        std::filesystem::create_directory(javaPackagePath);
+    }
+
+    // Create class file
+    std::filesystem::path outputClassFilePath = javaPackagePath;
+    outputClassFilePath /= this->name() + ".class";
+
+    std::ofstream outputClassFile(outputClassFilePath);
+
+    // Generate byte code for user class
+    ByteCode byteCode(this);
+
+    // Write byte code to file
+    byteCode.writeToFile(outputClassFile);
 }

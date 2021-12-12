@@ -8,7 +8,12 @@
 #include "einnervariable.h"
 #include "../../bison/tree_nodes.h"
 
+class ByteCode;
+
 class ERoutine : public EFeature {
+    // ================ MY FRIENDS ================
+    friend ByteCode;
+
     // ================ ATTRIBUTES ================
 private:
     instruction_seq_strct*      _routineBody;
@@ -20,7 +25,7 @@ private:
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:
-    ERoutine(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+    ERoutine(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl);
     ERoutine(const std::string&                                 featureName,
              const EClass*                                      ownerClass,
              const EType&                                       returnType,
@@ -42,8 +47,10 @@ public:
 
     // ----------------- contract -----------------
 public:
-    void validateDataTypes() const override;
+    void validateDataTypes() override;
     void checkOnNameClashingAfterInherit() const override;
+
+    void resolveBody();
 
 private:
     void _validateFormalParamDataTypes() const;

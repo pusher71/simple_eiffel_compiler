@@ -69,7 +69,8 @@ int main(int argc, char** argv) {
 
     // Perform compilation
     if (EProgram::semanticErrors.empty()) {
-        eiffelProgram.compileToJVM("program.class");
+        eiffelProgram.compileToJVM("out");
+        int a = 3;
     }
 
     return 0;

@@ -6,6 +6,7 @@
 #include "etype.h"
 
 class EClass;
+class EUserClass;
 
 class EFeature {
     // ================= SUBTYPES =================
@@ -21,19 +22,21 @@ protected:
 
     std::string _name;
     EType       _returnType;
-
     std::string _ownerClassName;
+
+    short _name_utf8Link;
+    short _descriptor_utf8Link;
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 protected:
-    EFeature(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+    EFeature(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl);
     EFeature(const std::string& featureName, const EClass* ownerClass, const EType& returnType);
 
 public:
     virtual ~EFeature() = 0;
 
-    virtual void validateDataTypes() const = 0;
+    virtual void validateDataTypes() = 0;
 
     void checkOnNameClashingWithClass() const;
     virtual void checkOnNameClashingAfterInherit() const = 0;
@@ -46,6 +49,9 @@ public:
     EType returnType() const;
 
     std::string ownerClassName() const;
+
+    short name_utf8Link() const;
+    short descriptor_utf8Link() const;
 
     // ----------------- contract -----------------
 public:

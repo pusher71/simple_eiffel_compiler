@@ -8,7 +8,7 @@ class EAttribute : public EFeature {
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:
-    EAttribute(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl);
+    EAttribute(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl);
     EAttribute(const std::string& featureName, const EClass* ownerClass, const EType& returnType);
     ~EAttribute() override;
 
@@ -18,7 +18,7 @@ public:
 
     // ----------------- contract -----------------
 public:
-    void validateDataTypes() const override;
+    void validateDataTypes() override;
     void checkOnNameClashingAfterInherit() const override;
 
     bool isConformingTo(const EFeature& other) const override;

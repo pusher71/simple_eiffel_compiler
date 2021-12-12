@@ -3,10 +3,16 @@
 
 #include <string>
 
-#include "eclass.h"
-#include "../../bison/tree_nodes.h"
+#include "../eclass.h"
+#include "../../../bison/tree_nodes.h"
+
+class ByteCode;
 
 class EUserClass : public EClass {
+    // ================ MY FRIENDS ================
+    friend ByteCode;
+    friend ERoutine;
+
     // ================ ATTRIBUTES ================
 private:
     class_decl_strct* _classNode;
@@ -19,6 +25,9 @@ private:
 public:
     EUserClass(const class_decl_strct* classNode);
 
+private:
+    void _initConstantTable();
+
 protected:
     void _defineParents() override;
     void _defineCreators() override;
@@ -29,9 +38,12 @@ public:
     std::string name() const override;
     std::string javaPackageName() const override;
 
+    EConstantTable& constants();
+
     // ----------------- contract -----------------
 public:
-    void compile();
+    void resolveRoutines();
+    void compile(const std::string& outputDirectoryPath);
 };
 
 #endif // EUSERCLASS_H

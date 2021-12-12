@@ -3,7 +3,9 @@
 #include "eclass.h"
 #include "etype.h"
 
-EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl)
+#include "EiffelClasses/euserclass.h"
+
+EFeature::EFeature(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl)
     : _name(featureName),
       _ownerClassName(ownerClass->name()),
       _node(featureDecl),
@@ -19,7 +21,7 @@ EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, con
 
 EFeature::~EFeature() {}
 
-void EFeature::validateDataTypes() const {
+void EFeature::validateDataTypes() {
     if (this->_returnType != EType::voidType()) {
         std::string invalidUserTypeName;
 
@@ -27,6 +29,11 @@ void EFeature::validateDataTypes() const {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: no user defined subtype \"" + invalidUserTypeName + "\"";
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FEATURE_INVALID_TYPE, errorMessage));
         }
+    }
+
+    EUserClass* ownerClass = dynamic_cast<EUserClass*>(EProgram::current->getClassBy(this->_ownerClassName));
+    if (ownerClass != nullptr) {
+        this->_name_utf8Link = ownerClass->constants().appendUtf8(this->_name);
     }
 }
 
@@ -42,6 +49,9 @@ void EFeature::checkOnNameClashingAfterInherit() const {}
 std::string EFeature::name() const { return this->_name; }
 EType EFeature::returnType() const { return this->_returnType; }
 std::string EFeature::ownerClassName() const { return this->_ownerClassName; }
+
+short EFeature::name_utf8Link() const { return this->_name_utf8Link; }
+short EFeature::descriptor_utf8Link() const { return this->_descriptor_utf8Link; }
 
 std::string EFeature::toString() const {
     std::string result = this->_returnType.toString() + " " + this->_name;

@@ -1,7 +1,9 @@
 #include "eroutine.h"
 #include "../EiffelCore/eprogram.h"
 
-ERoutine::ERoutine(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl)
+#include "../EiffelCore/EiffelClasses/euserclass.h"
+
+ERoutine::ERoutine(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl),
       _routineBody(featureDecl->routine_body),
       _current(EInnerVariable(0, EType(ownerClass->name())))
@@ -13,7 +15,7 @@ ERoutine::ERoutine(const std::string& featureName, const EClass* ownerClass, fea
     this->_defineLocalVariables(featureDecl->local_variables);
 
     // Add "result" local variable
-    if (this->_returnType != nullptr) {
+    if (this->_returnType != EType::voidType()) {
         short resultLocalIndex = this->_formalParameters.size() + this->_localVariables.size() + 1;
         this->_localVariables.insert({"result", EInnerVariable(resultLocalIndex, this->_returnType)});
     }
@@ -136,11 +138,23 @@ const EInnerVariable* ERoutine::getInnerVar(short index) const {
 
 unsigned short ERoutine::formalParamsCount() const { return this->_formalParameters.size(); }
 
-void ERoutine::validateDataTypes() const {
+void ERoutine::validateDataTypes() {
     EFeature::validateDataTypes();
 
     this->_validateFormalParamDataTypes();
     this->_validateLocalVarDataTypes();
+
+    // Add descriptor of method to class constant table
+    EUserClass* ownerClass = dynamic_cast<EUserClass*>(EProgram::current->getClassBy(this->_ownerClassName));
+    if (ownerClass != nullptr) {
+        std::string routineDescriptor = "(";
+        for (const auto& formalParamInfo : this->_formalParameters) {
+            routineDescriptor += formalParamInfo.second.type().descriptor();
+        }
+        routineDescriptor += ")" + this->_returnType.descriptor();
+
+        this->_descriptor_utf8Link = ownerClass->constants().appendUtf8(routineDescriptor);
+    }
 }
 
 void ERoutine::checkOnNameClashingAfterInherit() const {
@@ -268,6 +282,39 @@ void ERoutine::_checkOnLocalVarNameClashing() const {
                 EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__LOCAL_VAR_NAME_CLASHES_WITH_NAME_OF_FORMAL_PARAM, errorMessage));
             }
         }
+    }
+}
+
+#include <iostream>
+
+void ERoutine::resolveBody() {
+    EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
+
+    instruction_seq_strct* instructionSeqElem = this->_routineBody;
+    instructionSeqElem = instructionSeqElem->next; // First instruction is NULL instruction
+
+    std::cout << ownerClass->fullName() << "::" << this->name() << std::endl;
+
+    while (instructionSeqElem != NULL) {
+        switch (instructionSeqElem->value->type) {
+            case instruction_create:
+                std::cout << "   * CREATE" << std::endl;
+                break;
+            case instruction_assign:
+                std::cout << "   * ASSIGN" << std::endl;
+                break;
+            case instruction_if:
+                std::cout << "   * IF" << std::endl;
+                break;
+            case instruction_loop:
+                std::cout << "   * LOOP" << std::endl;
+                break;
+            case instruction_expr:
+                std::cout << "   * AS EXPR" << std::endl;
+                break;
+        }
+
+        instructionSeqElem = instructionSeqElem->next;
     }
 }
 

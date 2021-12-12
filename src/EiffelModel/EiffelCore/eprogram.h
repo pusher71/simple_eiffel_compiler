@@ -6,13 +6,15 @@
 
 #include "eclass.h"
 #include "../EiffelErrors/semantic_error.h"
+#include "../EiffelErrors/compile_error.h"
 #include "../../bison/tree_nodes.h"
 
 class EProgram {
     // ================ STATIC ================
 public:
     static EProgram* current;
-    static std::vector<SemanticError> semanticErrors;
+    static std::vector<SemanticError>   semanticErrors;
+    static std::vector<CompileError>    compileErrors;
 
     // ============== ATTRIBUTES ==============
 private:

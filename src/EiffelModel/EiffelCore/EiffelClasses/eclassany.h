@@ -4,6 +4,10 @@
 #include "eclassrtl.h"
 
 class EClassANY : public EClassRTL {
+    // ================ STATIC ================
+public:
+    static std::string classRTLname();
+
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:

@@ -57,13 +57,19 @@ std::string EType::descriptor() const {
         typeLevel = typeLevel->arrayelem_type;
     }
 
+    EClass* classInfo = nullptr;
+
+    if (typeLevel->type == dtype_user_defined) {
+        classInfo = EProgram::current->getClassBy(typeLevel->id_name);
+    }
+
     switch (typeLevel->type) {
         case dtype_boolean:         result += "Z"; break;
         case dtype_character:       result += "C"; break;
         case dtype_integer:         result += "I"; break;
         case dtype_natural:         result += "I"; break;
-        case dtype_string:          result += "Lrtl/string;"; break;
-        case dtype_user_defined:    result += std::string("L") + typeLevel->id_name + ";"; break;
+        case dtype_string:          result += "L" + EClass::javaStringFullName() + ";"; break;
+        case dtype_user_defined:    result += "L" + classInfo->fullName() + ";"; break;
 
         default: break;
     }
@@ -119,7 +125,7 @@ bool EType::operator==(const EType& other) const {
     return result;
 }
 
-bool EType::operator!=(const EType& other) const { return (this->descriptor() != other.descriptor()); }
+bool EType::operator!=(const EType& other) const { return !(*this == other); }
 
 bool EType::canCastTo(const EType& other) const {
     if (*this == other) {

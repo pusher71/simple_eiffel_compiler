@@ -23,11 +23,16 @@ class
 inherit
     I1
     rename
-        f as f2
+        f as f6
     end
     I2
     rename
-        f as f3
+        f as f5,
+        f3 as f7
+    redefine
+        f7
+    select
+        f7
     end
     B
     rename
@@ -38,6 +43,11 @@ inherit
 
 feature
     f
+    do
+        io.put_string("Hello%N");
+    end
+
+    f7(fp0 : A; fp1 : A) : A
     do
     end
 
@@ -60,6 +70,14 @@ class
 
 inherit
     B
+    redefine
+        f3
+    end
+
+feature
+    f3(fp0 : I1; fp1 : ANY) : A
+    do
+    end
 
 end
 -- EOF
@@ -69,7 +87,11 @@ class
     B
 
 feature
-    f : NATURAL
+    f : ANY
+    f2 : B
+    f3(fp0, fp1 : ANY) : ANY
+    do
+    end
 
 end
 -- EOF

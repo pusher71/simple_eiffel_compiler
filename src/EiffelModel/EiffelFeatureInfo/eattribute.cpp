@@ -3,9 +3,12 @@
 #include "../EiffelCore/eprogram.h"
 #include "eroutine.h"
 
-EAttribute::EAttribute(const std::string& featureName, const EClass* ownerClass, feature_decl_strct* featureDecl)
+#include "../EiffelCore/EiffelClasses/euserclass.h"
+
+EAttribute::EAttribute(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl)
-{}
+{
+}
 
 EAttribute::EAttribute(const std::string& featureName, const EClass* ownerClass, const EType& returnType)
     : EFeature(featureName, ownerClass, returnType)
@@ -15,7 +18,14 @@ EAttribute::~EAttribute() {}
 
 EFeature::EFeatureType EAttribute::featureType() const { return efeature_attribute; }
 
-void EAttribute::validateDataTypes() const { EFeature::validateDataTypes(); }
+void EAttribute::validateDataTypes() {
+    EFeature::validateDataTypes();
+
+    EUserClass* ownerClass = dynamic_cast<EUserClass*>(EProgram::current->getClassBy(this->_ownerClassName));
+    if (ownerClass != nullptr) {
+        this->_descriptor_utf8Link = ownerClass->constants().appendUtf8(this->_returnType.descriptor());
+    }
+}
 void EAttribute::checkOnNameClashingAfterInherit() const { EFeature::checkOnNameClashingAfterInherit(); }
 
 bool EAttribute::isConformingTo(const EFeature& other) const {

@@ -417,10 +417,6 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             fprintf(dot_file, "%u[label=\"expr :: str <%s>\"];\n", expr->_node_index, chaartostr(expr->liter_str));
             break;
 
-        case expr_liter_void:
-            fprintf(dot_file, "%u[label=\"expr :: VOID\"];\n", expr->_node_index);
-            break;
-
         case expr_current:
             fprintf(dot_file, "%u[label=\"expr :: CURRENT\"];\n", expr->_node_index);
             break;
