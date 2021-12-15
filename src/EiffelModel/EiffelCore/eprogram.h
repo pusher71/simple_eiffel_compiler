@@ -29,6 +29,7 @@ public:
     // ------- attributes -------
 public:
     EClass* getClassBy(const std::string& className);
+    std::vector<EClass*> classes() const;
 
     // -------- contract --------
 private:

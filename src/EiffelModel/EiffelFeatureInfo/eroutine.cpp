@@ -136,6 +136,8 @@ const EInnerVariable* ERoutine::getInnerVar(short index) const {
     }
 }
 
+std::map<std::string, EInnerVariable> ERoutine::formalParameters() const { return this->_formalParameters; }
+
 unsigned short ERoutine::formalParamsCount() const { return this->_formalParameters.size(); }
 
 void ERoutine::validateDataTypes() {
@@ -143,25 +145,6 @@ void ERoutine::validateDataTypes() {
 
     this->_validateFormalParamDataTypes();
     this->_validateLocalVarDataTypes();
-
-    // Add descriptor of method to class constant table
-    EUserClass* ownerClass = dynamic_cast<EUserClass*>(EProgram::current->getClassBy(this->_ownerClassName));
-    if (ownerClass != nullptr) {
-        std::string routineDescriptor = "(";
-        for (const auto& formalParamInfo : this->_formalParameters) {
-            routineDescriptor += formalParamInfo.second.type().descriptor();
-        }
-        routineDescriptor += ")" + this->_returnType.descriptor();
-
-        this->_descriptor_utf8Link = ownerClass->constants().appendUtf8(routineDescriptor);
-    }
-}
-
-void ERoutine::checkOnNameClashingAfterInherit() const {
-    EFeature::checkOnNameClashingAfterInherit();
-
-    this->_checkOnFormalParamNameClashing();
-    this->_checkOnLocalVarNameClashing();
 }
 
 void ERoutine::_validateFormalParamDataTypes() const {
@@ -196,6 +179,11 @@ void ERoutine::_validateLocalVarDataTypes() const {
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__LOCAL_VAR_INVALID_TYPE, errorMessage));
         }
     }
+}
+
+void ERoutine::checkOnInnerVarsNameClashing() const {
+    this->_checkOnFormalParamNameClashing();
+    this->_checkOnLocalVarNameClashing();
 }
 
 void ERoutine::_checkOnFormalParamNameClashing() const {
@@ -285,32 +273,23 @@ void ERoutine::_checkOnLocalVarNameClashing() const {
     }
 }
 
-#include <iostream>
-
 void ERoutine::resolveBody() {
     EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
 
     instruction_seq_strct* instructionSeqElem = this->_routineBody;
     instructionSeqElem = instructionSeqElem->next; // First instruction is NULL instruction
 
-    std::cout << ownerClass->fullName() << "::" << this->name() << std::endl;
-
     while (instructionSeqElem != NULL) {
         switch (instructionSeqElem->value->type) {
             case instruction_create:
-                std::cout << "   * CREATE" << std::endl;
                 break;
             case instruction_assign:
-                std::cout << "   * ASSIGN" << std::endl;
                 break;
             case instruction_if:
-                std::cout << "   * IF" << std::endl;
                 break;
             case instruction_loop:
-                std::cout << "   * LOOP" << std::endl;
                 break;
             case instruction_expr:
-                std::cout << "   * AS EXPR" << std::endl;
                 break;
         }
 
@@ -336,6 +315,16 @@ bool ERoutine::isConformingTo(const EFeature& other) const {
             result = areFormalParamsConforming;
         }
     }
+
+    return result;
+}
+
+std::string ERoutine::descriptor() const {
+    std::string result = "(";
+    for (const auto& formalParamInfo : this->_formalParameters) {
+        result += formalParamInfo.second.type().descriptor();
+    }
+    result += ")" + this->_returnType.descriptor();
 
     return result;
 }

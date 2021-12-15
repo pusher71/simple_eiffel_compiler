@@ -479,7 +479,10 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -502,7 +505,10 @@ struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int)
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -525,7 +531,10 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -548,7 +557,10 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -571,7 +583,10 @@ struct expr_strct* create_expr_current(unsigned int node_index) {
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -598,7 +613,10 @@ struct expr_strct* create_expr_call(unsigned int                 node_index,
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -624,7 +642,10 @@ struct expr_strct* create_expr_precursorcall(unsigned int                 node_i
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -651,13 +672,16 @@ struct expr_strct* create_expr_subcall(unsigned int                 node_index,
     result->expr_left       = expr;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
 
 struct expr_strct* create_expr_creation(unsigned int                 node_index,
-                                        char*                        class_id_name,
+                                        struct type_strct*           create_type,
                                         char*                        method_id_name,
                                         struct argument_seq_strct*   argument_seq)
 {
@@ -666,7 +690,7 @@ struct expr_strct* create_expr_creation(unsigned int                 node_index,
     result->type                = expr_create;
     result->is_parenthesized    = 0;
 
-    result->class_id_name   = class_id_name;
+    result->class_id_name   = NULL;
     result->method_id_name  = method_id_name;
     result->argument_seq    = argument_seq;
 
@@ -678,7 +702,10 @@ struct expr_strct* create_expr_creation(unsigned int                 node_index,
     result->expr_left       = NULL;
     result->expr_right      = NULL;
 
-    result->result_type     = NULL;
+    result->create_type     = create_type;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }
@@ -705,7 +732,10 @@ struct expr_strct* create_expr_operation(unsigned int node_index,
     result->expr_left       = expr_left;
     result->expr_right      = expr_right;
 
-    result->result_type     = NULL;
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
 
     return result;
 }

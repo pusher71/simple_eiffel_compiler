@@ -308,10 +308,10 @@ expr: LITER_BOOLEAN                             { $$ = create_expr_liter_bool(cu
     | expr '.' ID '(' ')'						{ $$ = create_expr_subcall(curr_node_index++, $1, $3, NULL); }
     | expr '.' ID '(' argument_seq ')'          { $$ = create_expr_subcall(curr_node_index++, $1, $3, $5); }
 
-    | CREATE '{' ID '}'                                 { $$ = create_expr_creation(curr_node_index++, $3, NULL, NULL); }
-    | CREATE '{' ID '}' '.' ID                          { $$ = create_expr_creation(curr_node_index++, $3, $6, NULL); }
-    | CREATE '{' ID '}' '.' ID '(' ')'                  { $$ = create_expr_creation(curr_node_index++, $3, $6, NULL); }
-    | CREATE '{' ID '}' '.' ID '(' argument_seq ')'     { $$ = create_expr_creation(curr_node_index++, $3, $6, $8); }
+    | CREATE '{' type '}'                                 { $$ = create_expr_creation(curr_node_index++, $3, NULL, NULL); }
+    | CREATE '{' type '}' '.' ID                          { $$ = create_expr_creation(curr_node_index++, $3, $6, NULL); }
+    | CREATE '{' type '}' '.' ID '(' ')'                  { $$ = create_expr_creation(curr_node_index++, $3, $6, NULL); }
+    | CREATE '{' type '}' '.' ID '(' argument_seq ')'     { $$ = create_expr_creation(curr_node_index++, $3, $6, $8); }
 
     | expr '@' expr                             { $$ = create_expr_operation(curr_node_index++, expr_arrelem, $1, $3); }
     | expr '+' expr                             { $$ = create_expr_operation(curr_node_index++, expr_plus, $1, $3); }

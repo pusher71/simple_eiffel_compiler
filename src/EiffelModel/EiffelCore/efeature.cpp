@@ -30,28 +30,24 @@ void EFeature::validateDataTypes() {
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__FEATURE_INVALID_TYPE, errorMessage));
         }
     }
-
-    EUserClass* ownerClass = dynamic_cast<EUserClass*>(EProgram::current->getClassBy(this->_ownerClassName));
-    if (ownerClass != nullptr) {
-        this->_name_utf8Link = ownerClass->constants().appendUtf8(this->_name);
-    }
 }
 
-void EFeature::checkOnNameClashingWithClass() const {
+void EFeature::checkOnNameClashingWithClasses() const {
     if (EProgram::current->getClassBy(this->name()) != nullptr) {
         std::string errorMessage = "feature \""+ this->_ownerClassName + "::" + this->name() + "\" -> class \"" + this->name() + "\"";
         EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::FEATURES__NAME_CLASHES_WITH_CLASS_NAME, errorMessage));
     }
 }
 
-void EFeature::checkOnNameClashingAfterInherit() const {}
-
 std::string EFeature::name() const { return this->_name; }
 EType EFeature::returnType() const { return this->_returnType; }
 std::string EFeature::ownerClassName() const { return this->_ownerClassName; }
 
-short EFeature::name_utf8Link() const { return this->_name_utf8Link; }
-short EFeature::descriptor_utf8Link() const { return this->_descriptor_utf8Link; }
+short EFeature::linkUtf8_name() const { return this->_linkUtf8_name; }
+short EFeature::linkUtf8_descriptor() const { return this->_linkUtf8_descriptor; }
+
+void EFeature::setLinkUtf8_name(short linkUtf8_name) { this->_linkUtf8_name = linkUtf8_name; }
+void EFeature::setLinkUtf8_descriptor(short linkUtf8_descriptor) { this->_linkUtf8_descriptor = linkUtf8_descriptor; }
 
 std::string EFeature::toString() const {
     std::string result = this->_returnType.toString() + " " + this->_name;

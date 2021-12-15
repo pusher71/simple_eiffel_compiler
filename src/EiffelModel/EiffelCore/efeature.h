@@ -24,8 +24,8 @@ protected:
     EType       _returnType;
     std::string _ownerClassName;
 
-    short _name_utf8Link;
-    short _descriptor_utf8Link;
+    short _linkUtf8_name;
+    short _linkUtf8_descriptor;
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
@@ -38,8 +38,7 @@ public:
 
     virtual void validateDataTypes() = 0;
 
-    void checkOnNameClashingWithClass() const;
-    virtual void checkOnNameClashingAfterInherit() const = 0;
+    void checkOnNameClashingWithClasses() const;
 
     // ---------------- attributes ----------------
 public:
@@ -50,8 +49,13 @@ public:
 
     std::string ownerClassName() const;
 
-    short name_utf8Link() const;
-    short descriptor_utf8Link() const;
+    short linkUtf8_name() const;
+    short linkUtf8_descriptor() const;
+
+    void setLinkUtf8_name(short linkUtf8_name);
+    void setLinkUtf8_descriptor(short linkUtf8_descriptor);
+
+    virtual std::string descriptor() const = 0;
 
     // ----------------- contract -----------------
 public:

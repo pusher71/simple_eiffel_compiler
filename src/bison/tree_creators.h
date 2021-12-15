@@ -136,7 +136,7 @@ struct expr_strct* create_expr_subcall(unsigned int                 node_index,
                                        struct argument_seq_strct*   argument_seq);
 
 struct expr_strct* create_expr_creation(unsigned int                 node_index,
-                                        char*                        class_id_name,
+                                        struct type_strct*           create_type,
                                         char*                        method_id_name,
                                         struct argument_seq_strct*   argument_seq);
 

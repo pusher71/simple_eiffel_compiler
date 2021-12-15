@@ -26,7 +26,10 @@ public:
     EUserClass(const class_decl_strct* classNode);
 
 private:
-    void _initConstantTable();
+    void _fillConstantTableWithSelf();
+
+public:
+    void fillConstantTableWithSelfFeatures();
 
 protected:
     void _defineParents() override;
@@ -42,7 +45,9 @@ public:
 
     // ----------------- contract -----------------
 public:
+    void addFeaturesTableInfoToConstantTable();
     void resolveRoutines();
+
     void compile(const std::string& outputDirectoryPath);
 };
 

@@ -1,5 +1,6 @@
 #include "etype.h"
 #include "eprogram.h"
+#include "EiffelClasses/eclassany.h"
 
 extern "C" {
     struct type_strct* create_type(unsigned int         node_index,
@@ -154,7 +155,7 @@ bool EType::canCastTo(const EType& other) const {
     }
 
     // Compare got types
-    if (secondTypeArrElemType->type == dtype_user_defined && std::string(secondTypeArrElemType->id_name) == "any" && firstTypeArrLevel >= secondTypeArrLevel) {
+    if (secondTypeArrElemType->type == dtype_user_defined && std::string(secondTypeArrElemType->id_name) == EClassANY::classRTLname() && firstTypeArrLevel >= secondTypeArrLevel) {
         return true;
     }
 

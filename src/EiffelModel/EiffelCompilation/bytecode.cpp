@@ -3,40 +3,45 @@
 
 ByteCode::ByteCode() {}
 
-#include <iostream>
-
-ByteCode::ByteCode(const EUserClass* userClass) {
+ByteCode::ByteCode(const EUserClass& userClass) {
     // Main bytecode values
     this->_appendFourBytes(0xCAFEBABE);     // "Magic" java constant
     this->_appendTwoBytes(0x0000);          // Minor version of java
     this->_appendTwoBytes(0x003C);          // Major version of java
 
     // Bytecode of constant table
-    ByteCode constantTableByteCode(userClass->_constants);
+    ByteCode constantTableByteCode(userClass._constants);
     this->_append(constantTableByteCode);
 
     // Self class info
     this->_appendTwoBytes(0x0001);          // Access flags (0x0001 - PUBLIC class)
-    this->_appendTwoBytes(userClass->_constants.searchClassConstBy(userClass->fullName())); // Link to self constant class in constant table
-    this->_appendTwoBytes(userClass->_constants.searchClassConstBy(EClass::javaObjectFullName())); // Link to parent constantn class in constant table (java.lang.Object is parent)
+    this->_appendTwoBytes(userClass._constants.searchClassConstBy(userClass.fullName())); // Link to self constant class in constant table
+    this->_appendTwoBytes(userClass._constants.searchClassConstBy(EClass::javaObjectFullName())); // Link to parent constantn class in constant table (java.lang.Object is parent)
     this->_appendTwoBytes(0x0000);          // Count of interfaces which class implements
 
     // Fields info
-    const auto& userClassAttributesInfo = userClass->attributes();
+    const auto& userClassAttributesInfo = userClass.attributes();
     this->_appendTwoBytes(userClassAttributesInfo.size());
 
     for (const auto& attributeInfo : userClassAttributesInfo) {
-        ByteCode attributeByteCode(userClass->_constants, (EAttribute*)attributeInfo.second.get());
+        ByteCode attributeByteCode(userClass._constants, *(EAttribute*)attributeInfo.second.get());
         this->_append(attributeByteCode);
     }
 
     // Methods info
-    const auto& userClassRoutinesInfo = userClass->routines();
-    this->_appendTwoBytes(userClassRoutinesInfo.size());
+    const auto& userClassRoutinesInfo = userClass.routines();
+    this->_appendTwoBytes(userClassRoutinesInfo.size() + userClass._featuresTable.size());
 
+    // ... Compile methods to bytecode
     for (const auto& routineInfo : userClassRoutinesInfo) {
-        ByteCode routineByteCode(userClass->_constants, (ERoutine*)routineInfo.second.get());
+        ByteCode routineByteCode(userClass._constants, *(ERoutine*)routineInfo.second.get());
         this->_append(routineByteCode);
+    }
+
+    // ... Compile feature table methods to bytecode
+    for (const auto& featureMetaInfo : userClass._featuresTable) {
+        ByteCode featureMetaInfoByteCode(userClass._constants, featureMetaInfo);
+        this->_append(featureMetaInfoByteCode);
     }
 
     // Class attributes info
@@ -91,29 +96,29 @@ ByteCode::ByteCode(const EConstantTable& classConstantTable) {
     }
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const EAttribute* classAttribute) {
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const EAttribute& classAttribute) {
     this->_appendTwoBytes(0x0001);
-    this->_appendTwoBytes(classAttribute->name_utf8Link());
-    this->_appendTwoBytes(classAttribute->descriptor_utf8Link());
+    this->_appendTwoBytes(classAttribute.linkUtf8_name());
+    this->_appendTwoBytes(classAttribute.linkUtf8_descriptor());
     this->_appendTwoBytes(0x0000);
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const ERoutine* classRoutine) {
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const ERoutine& classRoutine) {
     this->_appendTwoBytes(0x0001);
-    this->_appendTwoBytes(classRoutine->name_utf8Link());
-    this->_appendTwoBytes(classRoutine->descriptor_utf8Link());
+    this->_appendTwoBytes(classRoutine.linkUtf8_name());
+    this->_appendTwoBytes(classRoutine.linkUtf8_descriptor());
     this->_appendTwoBytes(0x0001);
 
     // "Code" attribute of method
     ByteCode codeAttribute;
     codeAttribute._appendTwoBytes(0x1000);
-    codeAttribute._appendTwoBytes((short)classRoutine->_formalParameters.size() + (short)classRoutine->_localVariables.size() + 1);
+    codeAttribute._appendTwoBytes((short)classRoutine._formalParameters.size() + (short)classRoutine._localVariables.size() + 1);
 
-    ByteCode routineBodyCode(userClassConstants, classRoutine->_routineBody);
+    ByteCode routineBodyCode(userClassConstants, classRoutine._routineBody);
 
     codeAttribute._appendFourBytes((unsigned long)routineBodyCode._bytes.size());
     codeAttribute._append(routineBodyCode);
-    codeAttribute._appendTwoBytes(0x0000);
+    codeAttribute._appendFourBytes(0x00000000);
 
     this->_appendTwoBytes(0x0001);
     this->_appendFourBytes((unsigned long)codeAttribute._bytes.size());
@@ -121,7 +126,58 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const ERoutine* cla
 }
 
 ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody) {
-    this->_appendByte(0xB1);
+    this->_append(ByteCode::return_());
+}
+
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
+    this->_appendTwoBytes(0x0002);
+    this->_appendTwoBytes(featureMetaInfo.featureMark_utf8Link());
+    this->_appendTwoBytes(featureMetaInfo.descriptor_utf8Link());
+    this->_appendTwoBytes(0x0001);
+
+    // "Code" attribute of method
+    ByteCode codeAttribute;
+    codeAttribute._appendTwoBytes(0x1000);
+
+    short formalParamsCount = 0;
+    if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
+        formalParamsCount = ((ERoutine*)featureMetaInfo.implementation())->_formalParameters.size();
+    }
+
+    codeAttribute._appendTwoBytes(2 + formalParamsCount);
+
+    ByteCode featureMetaInfoBodyCode;
+    for (const auto& polymorphicFeatureInfo : featureMetaInfo._polymorphicImplementations) {
+        featureMetaInfoBodyCode._append(ByteCode::aload(0x01));
+        featureMetaInfoBodyCode._append(ByteCode::instanceof(polymorphicFeatureInfo.first));
+
+        ByteCode ifBlock;
+        ifBlock._append(ByteCode::aload(1));
+        for (short i=1; i<=formalParamsCount; i++) {
+            ifBlock._append(ByteCode::aload(i+1));
+        }
+
+        if (polymorphicFeatureInfo.second.first == EFeature::efeature_attribute) {
+            ifBlock._append(ByteCode::getfield(polymorphicFeatureInfo.second.second));
+            ifBlock._append(ByteCode::areturn());
+        }
+        else {
+            ifBlock._append(ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount, false));
+            ifBlock._append(ByteCode::areturn());
+        }
+
+        featureMetaInfoBodyCode._append(ByteCode::ifeq(0x03 + ifBlock._bytes.size()));
+        featureMetaInfoBodyCode._append(ifBlock);
+    }
+    featureMetaInfoBodyCode._append(ByteCode::return_());
+
+    codeAttribute._appendFourBytes((unsigned long)featureMetaInfoBodyCode._bytes.size());
+    codeAttribute._append(featureMetaInfoBodyCode);
+    codeAttribute._appendFourBytes(0x00000000);
+
+    this->_appendTwoBytes(0x0001);
+    this->_appendFourBytes((unsigned long)codeAttribute._bytes.size());
+    this->_append(codeAttribute);
 }
 
 ByteCode& ByteCode::_appendByte(unsigned char value) {
@@ -168,6 +224,390 @@ bool ByteCode::writeToFile(std::ofstream& outputClassFile) const {
     else {
         return false;
     }
+}
+
+ByteCode ByteCode::iconst(signed char i) {
+    ByteCode result;
+
+    if ( i < -1 || i > 5) { throw "Invalid parameter for \"iconst\" command (must be an integer in [-1; 5])"; }
+
+    result._appendByte(i+3);
+    return result;
+}
+
+ByteCode ByteCode::bipush(char s1) {
+    ByteCode result;
+    result._appendByte(0x10);
+    result._appendByte(s1);
+
+    return result;
+}
+
+ByteCode ByteCode::sipush(short int s2) {
+    ByteCode result;
+    result._appendByte(0x11);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::ldc(char u1) {
+    ByteCode result;
+    result._appendByte(0x12);
+    result._appendByte(u1);
+
+    return result;
+}
+
+ByteCode ByteCode::ldc_w(short int u2) {
+    ByteCode result;
+    result._appendByte(0x13);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::iload(char u1) {
+    ByteCode result;
+    result._appendByte(0x15);
+    result._appendByte(u1);
+
+    return result;
+}
+
+ByteCode ByteCode::aload(char u1) {
+    ByteCode result;
+    result._appendByte(0x19);
+    result._appendByte(u1);
+
+    return result;
+}
+
+ByteCode ByteCode::istore(char u1) {
+    ByteCode result;
+    result._appendByte(0x36);
+    result._appendByte(u1);
+
+    return result;
+}
+
+ByteCode ByteCode::astore(char u1) {
+    ByteCode result;
+    result._appendByte(0x3A);
+    result._appendByte(u1);
+
+    return result;
+}
+
+ByteCode ByteCode::pop() {
+    ByteCode result;
+    result._appendByte(0x57);
+
+    return result;
+}
+
+ByteCode ByteCode::dup() {
+    ByteCode result;
+    result._appendByte(0x59);
+
+    return result;
+}
+
+ByteCode ByteCode::dup2() {
+    ByteCode result;
+    result._appendByte(0x5C);
+
+    return result;
+}
+
+ByteCode ByteCode::iadd() {
+    ByteCode result;
+    result._appendByte(0x60);
+
+    return result;
+}
+
+ByteCode ByteCode::imul() {
+    ByteCode result;
+    result._appendByte(0x68);
+
+    return result;
+}
+
+ByteCode ByteCode::isub() {
+    ByteCode result;
+    result._appendByte(0x64);
+
+    return result;
+}
+
+ByteCode ByteCode::ineg() {
+    ByteCode result;
+    result._appendByte(0x74);
+
+    return result;
+}
+
+ByteCode ByteCode::idiv() {
+    ByteCode result;
+    result._appendByte(0x6C);
+
+    return result;
+}
+
+ByteCode ByteCode::iinc(char u1, signed char i) {
+    ByteCode result;
+    result._appendByte(0x84);
+    result._appendByte(u1);
+    result._appendByte(i);
+
+    return result;
+}
+
+ByteCode ByteCode::if_icmpeq(short int s2) {
+    ByteCode result;
+    result._appendByte(0x9F);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_icmpne(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA0);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_icmplt(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA1);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_icmpge(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA2);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_icmpgt(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA3);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_icmple(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA4);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::ifeq(short int s2) {
+    ByteCode result;
+    result._appendByte(0x99);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::ifne(short int s2) {
+    ByteCode result;
+    result._appendByte(0x9A);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::iflt(short int s2) {
+    ByteCode result;
+    result._appendByte(0x9B);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::ifle(short int s2) {
+    ByteCode result;
+    result._appendByte(0x9E);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::ifgt(short int s2) {
+    ByteCode result;
+    result._appendByte(0x9D);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::ifge(short int s2) {
+    ByteCode result;
+    result._appendByte(0x9C);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_acmpeq(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA5);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::if_acmpne(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA6);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::goto_(short int s2) {
+    ByteCode result;
+    result._appendByte(0xA7);
+    result._appendTwoBytes(s2);
+
+    return result;
+}
+
+ByteCode ByteCode::newarray(char u1) {
+    ByteCode result;
+    result._appendByte(0xBC);
+    result._appendByte(u1);
+
+    return result;
+}
+
+ByteCode ByteCode::anewarray(short int u2) {
+    ByteCode result;
+    result._appendByte(0xBD);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::arraylength() {
+    ByteCode result;
+    result._appendByte(0xBE);
+
+    return result;
+}
+
+ByteCode ByteCode::iaload() {
+    ByteCode result;
+    result._appendByte(0x2E);
+
+    return result;
+}
+
+ByteCode ByteCode::aaload() {
+    ByteCode result;
+    result._appendByte(0x32);
+
+    return result;
+}
+
+ByteCode ByteCode::iastore() {
+    ByteCode result;
+    result._appendByte(0x4F);
+    return result;
+}
+
+ByteCode ByteCode::aastore() {
+    ByteCode result;
+    result._appendByte(0x53);
+    return result;
+}
+
+ByteCode ByteCode::new_(short int u2) {
+    ByteCode result;
+    result._appendByte(0xBB);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::getfield(short int u2) {
+    ByteCode result;
+    result._appendByte(0xB4);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::putfield(short int u2) {
+    ByteCode result;
+    result._appendByte(0xB5);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::instanceof(short int u2) {
+    ByteCode result;
+    result._appendByte(0xC1);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::invokevirtual(short int u2, short int argCount, bool isVoid) {
+    ByteCode result;
+    result._appendByte(0xB6);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::invokespecial(short int u2, short int argCount, bool isVoid) {
+    ByteCode result;
+    result._appendByte(0xB7);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::invokestatic(short int u2, short int argCount, bool isVoid) {
+    ByteCode result;
+    result._appendByte(0xB8);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::ireturn() {
+    ByteCode result;
+    result._appendByte(0xAC);
+
+    return result;
+}
+
+ByteCode ByteCode::areturn() {
+    ByteCode result;
+    result._appendByte(0xB0);
+
+    return result;
+}
+
+ByteCode ByteCode::return_() {
+    ByteCode result;
+    result._appendByte(0xB1);
+
+    return result;
 }
 
 /*

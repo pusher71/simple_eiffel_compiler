@@ -19,12 +19,52 @@ EProgram::EProgram(const program_strct* programNode) {
     EProgram::current = this;
 
     std::cout << "START [SEMANTIC PART]" << std::endl;
-    this->runSemanticStage_0(programNode); // Create classes with their attributes and routines
 
-    if (EProgram::semanticErrors.empty()) { this->runSemanticStage_1(); }   // Validate attributes and routines names and data types
-    if (EProgram::semanticErrors.empty()) { this->runSemanticStage_2(); }   // Collect features information for each class
-    if (EProgram::semanticErrors.empty()) { this->runSemanticStage_3(); }   // Examine locals and bodies of each method of user classes
-    if (EProgram::semanticErrors.empty()) { this->runSemanticStage_4(); }   // Check that classes initializes their attributes
+    // Start semantic analysis stages ...
+    // ... STAGE 0 : Create classes with their attributes and routines
+    if (EProgram::semanticErrors.empty()) {
+        std::cout << " - Start semantic stage 0 (define classes) ... ";
+        this->runSemanticStage_0(programNode);
+
+        if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
+        else                                    { std::cout << "Failed!" << std::endl; }
+    }
+
+    // ... STAGE 1 : Validate attributes and routines names and data types
+    if (EProgram::semanticErrors.empty()) {
+        std::cout << " - Start semantic stage 1 (validate classes components) ... ";
+        this->runSemanticStage_1();
+
+        if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
+        else                                    { std::cout << "Failed!" << std::endl; }
+    }
+
+    // ... STAGE 2 : Collect features information for each class
+    if (EProgram::semanticErrors.empty()) {
+        std::cout << " - Start semantic stage 2 (resolve inheritance of classes) ... ";
+        this->runSemanticStage_2();
+
+        if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
+        else                                    { std::cout << "Failed!" << std::endl; }
+    }
+
+    // ... STAGE 3 : Examine locals and bodies of each method of user classes
+    if (EProgram::semanticErrors.empty()) {
+        std::cout << " - Start semantic stage 3 (resolve routine bodies of user classes) ... ";
+        this->runSemanticStage_3();
+
+        if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
+        else                                    { std::cout << "Failed!" << std::endl; }
+    }
+
+    // ... STAGE 4 : Check that classes initializes their attributes
+    if (EProgram::semanticErrors.empty()) {
+        std::cout << " - Start semantic stage 4 (check attributes initialization) ... ";
+        this->runSemanticStage_4();
+
+        if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
+        else                                    { std::cout << "Failed!" << std::endl; }
+    }
 
     std::cout << "END [SEMANTIC PART]" << std::endl << std::endl;
 }
@@ -34,9 +74,16 @@ EClass* EProgram::getClassBy(const std::string& className) {
     return (resultIterator != this->_classes.end() ? resultIterator->second.get() : nullptr);
 }
 
-void EProgram::runSemanticStage_0(const program_strct* programNode) {
-    std::cout << " - Start 1st semantic stage (define classes) ... ";
+std::vector<EClass*> EProgram::classes() const {
+    std::vector<EClass*> result;
+    for (const auto& classInfo : this->_classes) {
+        result.push_back(classInfo.second.get());
+    }
 
+    return result;
+}
+
+void EProgram::runSemanticStage_0(const program_strct* programNode) {
     // Add RTL classes
     EClassANY classANY              = EClassANY();
     EClassCONSOLEIO classCONSOLEIO  = EClassCONSOLEIO();
@@ -56,51 +103,48 @@ void EProgram::runSemanticStage_0(const program_strct* programNode) {
         classDeclSeqElem = classDeclSeqElem->next;
     }
 
-    if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
-    else                                    { std::cout << "Failed!" << std::endl; }
 }
 
 void EProgram::runSemanticStage_1() {
-    std::cout << " - Start 2nd semantic stage (validate types of components of classes) ... ";
-
     for (const auto& classInfo : this->_classes) {
         classInfo.second.get()->validateSelfFeatures();
-    }
+        classInfo.second.get()->checkThatAllParentsAreExist();
 
-    if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
-    else                                    { std::cout << "Failed!" << std::endl; }
+        EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
+        if (userClass) {
+            userClass->fillConstantTableWithSelfFeatures();
+        }
+    }
 }
 
 void EProgram::runSemanticStage_2() {
-    std::cout << " - Start 3rd semantic stage (resolve inheritance of classes) ... ";
-
     for (auto& classInfo : this->_classes) {
-        classInfo.second.get()->setupAcceptableFeaturesTable();
-    }
+        classInfo.second.get()->setupFeaturesTable();
+        classInfo.second.get()->setupCreators();
 
-    if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
-    else                                    { std::cout << "Failed!" << std::endl; }
+        EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
+        if (userClass) {
+            userClass->addFeaturesTableInfoToConstantTable();
+        }
+    }
 }
 
 void EProgram::runSemanticStage_3() {
-    std::cout << " - Start 4th semantic stage () ... ";
-
     for (auto& classInfo : this->_classes) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
         if (userClass) {
             userClass->resolveRoutines();
         }
     }
-
-    if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
-    else                                    { std::cout << "Failed!" << std::endl; }
 }
 
 void EProgram::runSemanticStage_4() {
-    std::cout << " - Start 5th semantic stage () ... ";
-
-    if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
-    else                                    { std::cout << "Failed!" << std::endl; }
+    for (auto& classInfo : this->_classes) {
+        EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
+        if (userClass) {
+            userClass->resolveRoutines();
+        }
+    }
 }
 
 bool EProgram::compileToJVM(const std::string& jvmFilepath) {
@@ -114,6 +158,7 @@ bool EProgram::compileToJVM(const std::string& jvmFilepath) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
         if (userClass) {
             std::cout << " - Compiling class \"" << userClass->name() << "\" ... ";
+
             userClass->compile(outputDirectoryPath);
 
             if (EProgram::compileErrors.empty())    { std::cout << "Done!" << std::endl; }

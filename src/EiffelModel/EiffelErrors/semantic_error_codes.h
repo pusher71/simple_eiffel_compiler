@@ -46,6 +46,10 @@ enum SemanticErrorCode {
     INHERITANCE__IMPROPER_SELECT,
     INHERITANCE__REPEATEDLY_INHERITED_FEATURE_VERSIONS_CONFLICT,
 
+    // ... Creators error codes
+    CREATORS__UNKNOWN_CREATOR,
+    CREATORS__SEVERAL_CREATORS_WITH_SAME_NAME,
+
     // Fourth semantic stage error codes
 };
 

@@ -112,6 +112,14 @@ std::string SemanticError::errorReason() const {
         case INHERITANCE__REPEATEDLY_INHERITED_FEATURE_VERSIONS_CONFLICT:
             result += "CONFLICT BETWEEN VERSIONS OF A REPEATEDLY INHERITED FEATURE";
             break;
+
+        // ... Creators error codes
+        case CREATORS__UNKNOWN_CREATOR:
+            result += "NAME OF UNKNOWN CREATOR";
+            break;
+        case CREATORS__SEVERAL_CREATORS_WITH_SAME_NAME:
+            result += "SEVERAL CREATORS WITH SAME NAME";
+            break;
     }
     result += " :: " + this->_errorMessage;
 

@@ -19,9 +19,10 @@ public:
     // ----------------- contract -----------------
 public:
     void validateDataTypes() override;
-    void checkOnNameClashingAfterInherit() const override;
 
     bool isConformingTo(const EFeature& other) const override;
+
+    std::string descriptor() const override;
 
     // ---------------- additional ----------------
 public:

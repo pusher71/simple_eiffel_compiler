@@ -215,5 +215,9 @@ struct expr_strct {
     struct expr_strct*  expr_left;
     struct expr_strct*  expr_right;
 
+    struct type_strct*  create_type;
+
+    // Semantic analysis additional data
     struct type_strct*  result_type;
+    int inner_var_number;
 };

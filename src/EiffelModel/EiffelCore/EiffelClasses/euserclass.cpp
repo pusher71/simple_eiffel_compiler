@@ -3,6 +3,7 @@
 #include "../../EiffelFeatureInfo/eattribute.h"
 #include "../../EiffelFeatureInfo/eroutine.h"
 #include "../../EiffelCompilation/bytecode.h"
+#include "../../EiffelCore/eprogram.h"
 
 #include <filesystem>
 #include <fstream>
@@ -12,15 +13,22 @@ EUserClass::EUserClass(const class_decl_strct* classNode)
       _classNode((class_decl_strct*)classNode)
 {
     this->_initSelf();
-    this->_initConstantTable();
+    this->_fillConstantTableWithSelf();
 }
 
-void EUserClass::_initConstantTable() {
+void EUserClass::_fillConstantTableWithSelf() {
     this->_constants.appendUtf8("Code");                        // "Code" attribute
     this->_constants.appendUtf8(this->fullName());              // Self full name
     this->_constants.appendConstClass(2);                       // Class constant of self
     this->_constants.appendUtf8(EClass::javaObjectFullName());  // Java object full name
     this->_constants.appendConstClass(4);                       // Class constant of self
+}
+
+void EUserClass::fillConstantTableWithSelfFeatures() {
+    for (auto& featureInfo : this->_features) {
+        featureInfo.second.get()->setLinkUtf8_name( this->_constants.appendUtf8(featureInfo.second.get()->name()) );
+        featureInfo.second.get()->setLinkUtf8_descriptor( this->_constants.appendUtf8(featureInfo.second.get()->descriptor()) );
+    }
 }
 
 void EUserClass::_defineParents() {
@@ -51,13 +59,13 @@ void EUserClass::_defineParents() {
             selectSeqElem = selectSeqElem->next;
         }
 
-        this->_parents[parentSeqElem->value->id_name] = parentInfo;
+        this->_parents.push_back({parentSeqElem->value->id_name, parentInfo});
         parentSeqElem = parentSeqElem->next;
     }
 
     // Set ANY class as parent if user class hasn't got any parents
     if (this->_parents.empty()) {
-        this->_parents[ EClassANY::classRTLname() ] = {};
+        this->_parents.push_back({EClassANY::classRTLname(), {}});
     }
 }
 
@@ -69,7 +77,7 @@ void EUserClass::_defineCreators() {
         identifiers_comma_seq_strct* identifiersCommaSeqElem = creatorsSeqElem->value;
 
         while (identifiersCommaSeqElem != NULL) {
-            this->_creators[identifiersCommaSeqElem->value] = nullptr;
+            this->_creators.push_back({identifiersCommaSeqElem->value, nullptr});
             identifiersCommaSeqElem = identifiersCommaSeqElem->next;
         }
 
@@ -108,6 +116,58 @@ std::string EUserClass::javaPackageName() const { return "eiffel"; }
 
 EConstantTable& EUserClass::constants() { return this->_constants; }
 
+void EUserClass::addFeaturesTableInfoToConstantTable() {
+    for (auto& featureMetaInfo : this->_featuresTable) {
+        std::string featureMarkStr = featureMetaInfo.featureMark().first + ":" + featureMetaInfo.featureMark().second;
+        featureMetaInfo.setFeatureMark_utf8Link(this->_constants.appendUtf8(featureMarkStr));
+
+        std::string descriptorStr = "(L" + EClass::javaObjectFullName() + ";";
+        if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
+            for (const auto& formalParamInfo : ((ERoutine*)featureMetaInfo.implementation())->formalParameters()) {
+                descriptorStr += formalParamInfo.second.type().descriptor();
+            }
+        }
+        descriptorStr += ")" + featureMetaInfo.implementation()->returnType().descriptor();
+
+        featureMetaInfo.setDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
+
+        for (EClass* classInfo : EProgram::current->classes()) {
+            if (this == classInfo || classInfo->isDescendantTo(this)) {
+                EFeature* featureWithSameMark = nullptr;
+                for (const auto& otherFeatureMetaInfo : classInfo->_featuresTable) {
+                    if (featureMetaInfo.featureMark() == otherFeatureMetaInfo.featureMark()) {
+                        featureWithSameMark = otherFeatureMetaInfo.implementation();
+                    }
+                }
+
+                if (featureWithSameMark != nullptr) {
+                    short otherClassNameLink = this->_constants.appendUtf8(classInfo->fullName());
+                    short otherConstClassLink = this->_constants.appendConstClass(otherClassNameLink);
+
+                    EClass* ownerClass = EProgram::current->getClassBy(featureWithSameMark->ownerClassName());
+                    short classNameLink = this->_constants.appendUtf8(ownerClass->fullName());
+                    short constClassLink = this->_constants.appendConstClass(classNameLink);
+
+                    short featureNameLink = this->_constants.appendUtf8(featureWithSameMark->name());
+                    short featureDescriptorLink = this->_constants.appendUtf8(featureWithSameMark->descriptor());
+                    short featureNameAndTypeLink = this->_constants.appendNameAndType({featureNameLink, featureDescriptorLink});
+
+                    short fieldOrMethodRef = 0;
+
+                    if (featureWithSameMark->featureType() == EFeature::efeature_attribute) {
+                        fieldOrMethodRef = this->_constants.appendFieldRef({constClassLink, featureNameAndTypeLink});
+                    }
+                    else {
+                        fieldOrMethodRef = this->_constants.appendMethodRef({constClassLink, featureNameAndTypeLink});
+                    }
+
+                    featureMetaInfo.addPolymorphicImplementation(otherConstClassLink, {featureWithSameMark->featureType(), fieldOrMethodRef});
+                }
+            }
+        }
+    }
+}
+
 void EUserClass::resolveRoutines() {
     for (const auto& featureInfo : this->_features) {
         if (featureInfo.second.get()->featureType() == EFeature::efeature_routine) {
@@ -133,7 +193,7 @@ void EUserClass::compile(const std::string& outputDirectoryPath) {
     std::ofstream outputClassFile(outputClassFilePath);
 
     // Generate byte code for user class
-    ByteCode byteCode(this);
+    ByteCode byteCode(*this);
 
     // Write byte code to file
     byteCode.writeToFile(outputClassFile);

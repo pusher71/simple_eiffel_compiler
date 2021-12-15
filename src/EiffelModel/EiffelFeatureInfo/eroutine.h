@@ -43,12 +43,16 @@ public:
     EFeatureType featureType() const override;
 
     const EInnerVariable* getInnerVar(short index) const;
+    std::map<std::string, EInnerVariable> formalParameters() const;
+
     unsigned short formalParamsCount() const;
+
+    std::string descriptor() const override;
 
     // ----------------- contract -----------------
 public:
     void validateDataTypes() override;
-    void checkOnNameClashingAfterInherit() const override;
+    void checkOnInnerVarsNameClashing() const;
 
     void resolveBody();
 

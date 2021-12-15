@@ -14,6 +14,7 @@
 
 class EClass {
     // ================ MY FRIENDS ================
+    friend EUserClass;
     friend ERoutine;
 
     // ================== STATIC ==================
@@ -38,8 +39,8 @@ private:
 
     // ================ ATTRIBUTES ================
 protected:
-    std::map<std::string, EParentInfo>                  _parents;
-    std::map<std::string, EFeature*>                    _creators;
+    std::vector<std::pair<std::string, EParentInfo>>    _parents;
+    std::vector<std::pair<std::string, EFeature*>>      _creators;
     std::map<std::string, std::shared_ptr<EFeature>>    _features;
 
     std::vector<EFeatureMetaInfo>       _featuresTable;
@@ -47,32 +48,37 @@ protected:
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
-public:
-    EClass();
-    void validateSelfFeatures() const;
-
+    // -- Stage 0 functionality -------
 protected:
     void _initSelf();
-
     virtual void _defineParents() = 0;
     virtual void _defineCreators() = 0;
     virtual void _defineFeatures() = 0;
 
 private:
-    void _checkRenameRedefineSelectDuplicates() const;
-    void _defineFeaturesTable();
+    void _checkInheritClausesDuplicates() const;
+    void _checkCreatorClausesDuplicates() const;
+    void _fillFeaturesTableWithSelfFeatures();
 
+    // -- Stage 1 functionality -------
 public:
-    void setupAcceptableFeaturesTable(const std::vector<std::string>& classInheritPath = {});
+    void validateSelfFeatures() const;
+    void checkThatAllParentsAreExist() const;
+
+    // -- Stage 2 functionality -------
+public:
+    void setupFeaturesTable(const std::vector<std::string>& classInheritPath = {});
+    void setupCreators();
 
 private:
-    bool _validateRenamesForParent(const EClass* parent, const EParentInfo& parentInfo) const;
-    bool _validateRedefinesForParent(const EClass* parent, const EParentInfo& parentInfo) const;
+    void _fillFeaturesTableUsingParent(const EClass* parent, const EParentInfo& parentInfo, int parentIndex);
+    void _checkOnlyExistFeaturesAreRenamed(const EClass* parent, const EParentInfo& parentInfo) const;
+    void _checkOnlyExistFeaturesAreTrulyRedefined(const EClass* parent, const EParentInfo& parentInfo) const;
+    void _checkOnlyExistFeaturesAreSelected(const EClass* parent, const EParentInfo& parentInfo) const;
 
-    void _fillSelfFeaturesTableUsingParent(const EClass* parent, const EParentInfo& parentInfo);
-    bool _checkOnlyExistFeaturesAreSelected();
     void _resolveSelects();
-    void _validateSelfFeaturesTable() const;
+    void _checkOnFeaturesNameClashing() const;
+    void _checkOnFeaturesRepeatInheritConflict() const;
 
     // ---------------- attributes ----------------
 public:
@@ -80,7 +86,7 @@ public:
     virtual std::string javaPackageName() const = 0;
     std::string fullName() const;
 
-    const std::map<std::string, EParentInfo> parents() const;
+    const std::vector<std::pair<std::string, EParentInfo>> parents() const;
     const std::map<std::string, std::shared_ptr<EFeature>> features() const;
     const std::map<std::string, std::shared_ptr<EFeature>> attributes() const;
     const std::map<std::string, std::shared_ptr<EFeature>> routines() const;

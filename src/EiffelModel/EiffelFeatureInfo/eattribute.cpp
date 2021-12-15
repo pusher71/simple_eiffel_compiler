@@ -18,15 +18,7 @@ EAttribute::~EAttribute() {}
 
 EFeature::EFeatureType EAttribute::featureType() const { return efeature_attribute; }
 
-void EAttribute::validateDataTypes() {
-    EFeature::validateDataTypes();
-
-    EUserClass* ownerClass = dynamic_cast<EUserClass*>(EProgram::current->getClassBy(this->_ownerClassName));
-    if (ownerClass != nullptr) {
-        this->_descriptor_utf8Link = ownerClass->constants().appendUtf8(this->_returnType.descriptor());
-    }
-}
-void EAttribute::checkOnNameClashingAfterInherit() const { EFeature::checkOnNameClashingAfterInherit(); }
+void EAttribute::validateDataTypes() { EFeature::validateDataTypes(); }
 
 bool EAttribute::isConformingTo(const EFeature& other) const {
     bool result = false;
@@ -51,6 +43,10 @@ bool EAttribute::isConformingTo(const EFeature& other) const {
     }
 
     return result;
+}
+
+std::string EAttribute::descriptor() const {
+    return this->_returnType.descriptor();
 }
 
 std::string EAttribute::toString() const {
