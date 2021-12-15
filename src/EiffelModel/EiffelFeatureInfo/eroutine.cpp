@@ -274,7 +274,7 @@ void ERoutine::_checkOnLocalVarNameClashing() const {
 }
 
 void ERoutine::resolveBody() {
-    EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
+    EUserClass* ownerClass = (EUserClass*)EProgram::current->getClassBy(this->_ownerClassName);
 
     instruction_seq_strct* instructionSeqElem = this->_routineBody;
     instructionSeqElem = instructionSeqElem->next; // First instruction is NULL instruction
@@ -282,19 +282,41 @@ void ERoutine::resolveBody() {
     while (instructionSeqElem != NULL) {
         switch (instructionSeqElem->value->type) {
             case instruction_create:
+                this->_resolveCreateInstruction(*ownerClass, instructionSeqElem);
                 break;
             case instruction_assign:
+                this->_resolveAssignInstruction(*ownerClass, instructionSeqElem);
                 break;
             case instruction_if:
+                this->_resolveIfInstruction(*ownerClass, instructionSeqElem);
                 break;
             case instruction_loop:
+                this->_resolveLoopInstruction(*ownerClass, instructionSeqElem);
                 break;
             case instruction_expr:
+                this->_resolveInstructionAsExpr(*ownerClass, instructionSeqElem);
                 break;
         }
 
         instructionSeqElem = instructionSeqElem->next;
     }
+}
+
+void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_seq_strct* createInstruction) {
+}
+
+void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_seq_strct* assignInstruction) {
+    // Resolve name of left variable
+    // userClass._featuresTable.
+}
+
+void ERoutine::_resolveIfInstruction(EUserClass& userClass, instruction_seq_strct* ifInstruction) {
+}
+
+void ERoutine::_resolveLoopInstruction(EUserClass& userClass, instruction_seq_strct* loopInstruction) {
+}
+
+void ERoutine::_resolveInstructionAsExpr(EUserClass& userClass, instruction_seq_strct* instructionAsExpr) {
 }
 
 bool ERoutine::isConformingTo(const EFeature& other) const {

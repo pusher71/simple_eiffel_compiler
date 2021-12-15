@@ -51,6 +51,7 @@ enum SemanticErrorCode {
     CREATORS__SEVERAL_CREATORS_WITH_SAME_NAME,
 
     // Fourth semantic stage error codes
+    INSTRUCTION__,
 };
 
 #endif // ERROR_CODES_H

@@ -156,6 +156,11 @@ struct instruction_strct {
     struct instruction_seq_strct* body;
 
     struct expr_strct* instruction_as_expr;
+
+    // Semantic analysis additional data
+    short const_class;
+    short field_ref;
+    short inner_var_number;
 };
 
 struct argument_seq_strct {
@@ -219,5 +224,5 @@ struct expr_strct {
 
     // Semantic analysis additional data
     struct type_strct*  result_type;
-    int inner_var_number;
+    short inner_var_number;
 };

@@ -142,7 +142,7 @@ void EProgram::runSemanticStage_4() {
     for (auto& classInfo : this->_classes) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
         if (userClass) {
-            userClass->resolveRoutines();
+            // userClass->resolveRoutines();
         }
     }
 }

@@ -54,8 +54,6 @@ public:
     void validateDataTypes() override;
     void checkOnInnerVarsNameClashing() const;
 
-    void resolveBody();
-
 private:
     void _validateFormalParamDataTypes() const;
     void _validateLocalVarDataTypes() const;
@@ -63,6 +61,17 @@ private:
     void _checkOnFormalParamNameClashing() const;
     void _checkOnLocalVarNameClashing() const;
 
+public:
+    void resolveBody();
+
+private:
+    void _resolveCreateInstruction(EUserClass& userClass, instruction_seq_strct* createInstruction);
+    void _resolveAssignInstruction(EUserClass& userClass, instruction_seq_strct* assignInstruction);
+    void _resolveIfInstruction(EUserClass& userClass, instruction_seq_strct* ifInstruction);
+    void _resolveLoopInstruction(EUserClass& userClass, instruction_seq_strct* loopInstruction);
+    void _resolveInstructionAsExpr(EUserClass& userClass, instruction_seq_strct* instructionAsExpr);
+
+public:
     bool isConformingTo(const EFeature& other) const override;
 
     // ---------------- additional ----------------
