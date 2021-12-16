@@ -266,7 +266,7 @@ void print_type(FILE* dot_file, struct type_strct* type) {
             fprintf(dot_file, "%u[label=\"dtype <STR>\"];\n", type->_node_index);
             break;
         case dtype_array:
-            fprintf(dot_file, "%u[label=\"dtype <STR>\"];\n", type->_node_index);
+            fprintf(dot_file, "%u[label=\"dtype <ARRAY>\"];\n", type->_node_index);
 
             print_type(dot_file, type->arrayelem_type);
             fprintf(dot_file, "%u -> %u[label=\"elem type\"];\n", type->_node_index, type->arrayelem_type->_node_index);
@@ -417,10 +417,6 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             fprintf(dot_file, "%u[label=\"expr :: str <%s>\"];\n", expr->_node_index, chaartostr(expr->liter_str));
             break;
 
-        case expr_liter_void:
-            fprintf(dot_file, "%u[label=\"expr :: VOID\"];\n", expr->_node_index);
-            break;
-
         case expr_current:
             fprintf(dot_file, "%u[label=\"expr :: CURRENT\"];\n", expr->_node_index);
             break;
@@ -493,11 +489,14 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
 
         case expr_create:
             if (expr->method_id_name == NULL) {
-                fprintf(dot_file, "%u[label=\"expr :: basic create of class <%s>\"];\n", expr->_node_index, expr->class_id_name);
+                fprintf(dot_file, "%u[label=\"expr :: basic create\"];\n", expr->_node_index);
             }
             else {
-                fprintf(dot_file, "%u[label=\"expr :: create of class <%s> with method <%s>\"];\n", expr->_node_index, expr->class_id_name, expr->method_id_name);
+                fprintf(dot_file, "%u[label=\"expr :: create with method <%s>\"];\n", expr->_node_index, expr->class_id_name);
             }
+
+            print_type(dot_file, expr->create_type);
+            fprintf(dot_file, "%u -> %u;\n", expr->_node_index, expr->create_type->_node_index);
 
             {
                 struct argument_seq_strct* curr = expr->argument_seq;
@@ -667,5 +666,10 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             print_expr(dot_file, expr->expr_right);
             fprintf(dot_file, "%u -> %u;\n", expr->_node_index, expr->expr_right->_node_index);
             break;
+    }
+
+    if (expr->result_type != NULL) {
+        print_type(dot_file, expr->result_type);
+        fprintf(dot_file, "%u -> %u[label=\"result type\"];\n", expr->_node_index, expr->result_type->_node_index);
     }
 }

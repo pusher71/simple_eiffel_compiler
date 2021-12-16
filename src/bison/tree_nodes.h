@@ -156,6 +156,11 @@ struct instruction_strct {
     struct instruction_seq_strct* body;
 
     struct expr_strct* instruction_as_expr;
+
+    // Semantic analysis additional data
+    short const_class;
+    short field_ref;
+    short inner_var_number;
 };
 
 struct argument_seq_strct {
@@ -170,7 +175,6 @@ enum expr_type {
     expr_liter_int,
     expr_liter_char,
     expr_liter_str,
-    expr_liter_void,
 
     expr_current,
     expr_call_method_or_var,
@@ -215,4 +219,10 @@ struct expr_strct {
 
     struct expr_strct*  expr_left;
     struct expr_strct*  expr_right;
+
+    struct type_strct*  create_type;
+
+    // Semantic analysis additional data
+    struct type_strct*  result_type;
+    short inner_var_number;
 };

@@ -1,69 +1,51 @@
-class MAIN
-inherit
-    A
-        select a, b, c, d
-    end;
-    B
-        rename ID as ID, hello as what
-    end;
-    C
-create ID, A
-create D, A
-feature
-    a, b : INTEGER
-feature
-    c, d : CHARACTER
-end
+-- main.e
+class
+    MAIN
 
-class BIG_CLASS
-inherit
-    A
-        rename ID as ID, hello as what
-        redefine a, b, c
-    end;
-    B
-    C;
+create
+    make
+
 feature
-    a_, b_ : ARRAY[INTEGER]
+    make
+    do
+        obj := create {O}
+        obj.f
+        obj.f4
+        obj.f5
+    end
+end
+-- EOF
+
+class
+    A
+
+feature
+    f
     local
-        local_0, local_1 : INTEGER; local_2 : ARRAY[STRING]
+        arr : ARRAY[INTEGER]
     do
-        if (true) then io.put_string("Hello, World%N"); end
+        arr := create {ARRAY[INTEGER]}
     end
 
-    c_, d_ : STRING
 end
 
-class BIG_CLASS
-create D
-create b
-create F
-end
+class
+    B
 
-class WHAT
 inherit
     A
-        select hello, a, b, c
+    rename
+        f as f2
+    redefine
+        f2
+    select
+        f2
     end
-feature
-    a__, b__ : ARRAY[ARRAY[ID]]
-feature
-    c__, d__ : ARRAY[ARRAY[ARRAY[STRING]]]
-    local
-        s_local_0 : CHARACTER s_local_2 : ARRAY[MAIN]
-    do
-        s_local_2 := create{ID}.make(3, 4);
-    end
+    A
 
 feature
-    e__, f__ : STRING
+    f2
     do
     end
-end
 
-class A_CLASS
-inherit
-    A;
-    B;
-    C;
 end

@@ -6,33 +6,38 @@
 
 #include "eclass.h"
 #include "../EiffelErrors/semantic_error.h"
+#include "../EiffelErrors/compile_error.h"
 #include "../../bison/tree_nodes.h"
 
 class EProgram {
     // ================ STATIC ================
 public:
     static EProgram* current;
-    static std::vector<SemanticError> semanticErrors;
+    static std::vector<SemanticError>   semanticErrors;
+    static std::vector<CompileError>    compileErrors;
 
     // ============== ATTRIBUTES ==============
 private:
-    std::map<std::string, EClass*> _classes;
+    std::map<std::string, std::shared_ptr<EClass>> _classes;
 
     // ============== OPERATIONS ==============
     // -------- creating --------
 public:
     EProgram();
-    static EProgram* create(const program_strct* program_node);
+    EProgram(const program_strct* program_node);
 
     // ------- attributes -------
 public:
     EClass* getClassBy(const std::string& className);
+    std::vector<EClass*> classes() const;
 
     // -------- contract --------
 private:
     void runSemanticStage_0(const program_strct* programNode);
     void runSemanticStage_1();
     void runSemanticStage_2();
+    void runSemanticStage_3();
+    void runSemanticStage_4();
 
 public:
     bool compileToJVM(const std::string& jvmFilepath);

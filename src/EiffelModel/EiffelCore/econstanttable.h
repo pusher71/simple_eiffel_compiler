@@ -1,11 +1,55 @@
 #ifndef ECONSTANTTABLE_H
 #define ECONSTANTTABLE_H
 
+#include <string>
+#include <vector>
 
-class EConstantTable
-{
+class EConstantTable {
+    // ============== INNER CLASSES ===========
 public:
-    EConstantTable();
+    union JvmConstant {
+        std::string* jvm_utf8 = nullptr;
+        short jvm_string;
+        short jvm_class;
+        std::pair<short, short> jvm_nameAndType;
+        std::pair<short, short> jvm_fieldRef;
+        std::pair<short, short> jvm_methodRef;
+
+        JvmConstant();
+
+        bool operator==(const JvmConstant& other) const;
+    };
+
+    enum JvmConstantType {
+        jvm_invalid         = -1,
+        jvm_utf8            = 1,
+        jvm_string          = 8,
+        jvm_class           = 7,
+        jvm_nameAndType     = 12,
+        jvm_fieldRef        = 9,
+        jvm_methodRef       = 10
+    };
+
+    // ============== ATTRIBUTES ==============
+private:
+    std::vector<std::pair<JvmConstantType, JvmConstant>> _constants;
+
+    // ============== OPERATIONS ==============
+    // -------- contract --------
+public:
+    int size() const;
+
+    std::pair<JvmConstantType, JvmConstant> getConstant(int constantIndex) const;
+    short searchConstant(const std::pair<JvmConstantType, JvmConstant>& constant) const;
+    short searchClassConstBy(const std::string& classFullName) const;
+    short searchUtf8By(const std::string& stringUtf8) const;
+
+    short appendUtf8(const std::string& stringUtf8);
+    short appendString(short utf8Link_string);
+    short appendConstClass(short utf8Link_string);
+    short appendNameAndType(const std::pair<short, short>& utf8Links_nameAndType);
+    short appendFieldRef(const std::pair<short, short>& utf8Links_fieldRef);
+    short appendMethodRef(const std::pair<short, short>& utf8Links_methodRef);
 };
 
 #endif // ECONSTANTTABLE_H

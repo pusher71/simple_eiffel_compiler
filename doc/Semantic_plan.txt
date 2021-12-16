@@ -3,16 +3,16 @@
 ====================================================================================
 
 * EProgram :: class:
-	- userClasses : std::map<std::string, EClass;
+    - userClasses : std::map<std::string, EClass;
 
 * EClass :: class:
-	- name 		: short									// UTF8 link to constant table
-	- constants : EConstantTable 						// Constants of class
-	- parents	: std::map<std::string, EParentInfo>	// Rename, redefine, select directives of each class parent
-	- creators	: std::vector<std::string>				// Names of creators
-    - fields	: std::map<short, EField>				// Fields table
-    - methods	: std::map<short, EMethod>				// Method table
-    - allFeatures : std::vector<MetaFeatureInfo>        // Table of all class features including inherited features
+    - name                  : short                                 // UTF8 link to constant table
+    - constants             : EConstantTable                        // Constants of class
+    - parents               : std::map<std::string, EParentInfo>    // Rename, redefine, select directives of each class parent
+    - creators              : std::vector<std::string>              // Names of creators
+    - attributes            : std::map<short, EField>               // Fields table
+    - routines              : std::map<short, EMethod>              // Method table
+    - acceptableFeatures    : std::vector<MetaFeatureInfo>          // Table of all class features including inherited features
 
 * MetaFeatureInfo :: class:
     - featureID     : std::string       // <name of defined class> + ':' + <final name of feature in defined class>
@@ -20,43 +20,43 @@
     - realization   : EMethod*          // Realization of feature
 
 * EConstantTable :: class:
-	- constants : std::vector<std::pair<JvmConstantType, JvmConstantValue>>
+    - constants : std::vector<std::pair<JvmConstantType, JvmConstantValue>>
 
 * JvmConstantType :: enum:
-	- jvm_utf8
-	- jvm_string
-	- jvm_class
-	- jvm_nameAndType
-	- jvm_fieldRef
-	- jvm_methodRef
+    - jvm_utf8
+    - jvm_string
+    - jvm_class
+    - jvm_nameAndType
+    - jvm_fieldRef
+    - jvm_methodRef
 
 * JvmConstantValue :: union:
     - jvm_utf8          : std::string
-    - jvm_string        : short 		// UTF8 link to constant table
-    - jvm_class         : short		    // UTF8 link to constant table
-    - jvm_nameAndType   : short[2]	    // UTF8 links to constant table
-    - jvm_fieldRef      : short[2]		// UTF8 links to constant table
-    - jvm_methodRef     : short[2]		// UTF8 links to constant table
+    - jvm_string        : short         // UTF8 link to constant table
+    - jvm_class         : short         // UTF8 link to constant table
+    - jvm_nameAndType   : short[2]      // UTF8 links to constant table
+    - jvm_fieldRef      : short[2]      // UTF8 links to constant table
+    - jvm_methodRef     : short[2]      // UTF8 links to constant table
 
 * EParentInfo :: class:
-	- renameSeq 	: std::vector<std::pair<std::string, std::string>>
-	- redefineSeq 	: std::vector<std::string>
-	- selectSeq 	: std::vector<std::string>
+    - renameSeq     : std::vector<std::pair<std::string, std::string>>
+    - redefineSeq   : std::vector<std::string>
+    - selectSeq     : std::vector<std::string>
 
-* EField :: class:
-	- name : short // UTF8 link to constant table
-	- type : short // UTF8 link to constant table (descriptor)
+* EAttribute :: class:
+    - name : short // UTF8 link to constant table
+    - type : short // UTF8 link to constant table (descriptor)
 
-* EMethod :: class:
-    - name              : short 										// UTF8 link to constant table
-    - returnType        : EType 										// UTF8 link to constant table (descriptor)
-    - formalParameters  : std::vector<std::string, EInnerVariable*> 	// Formal parameters of the method
+* ERoutine :: class:
+    - name              : short                                         // UTF8 link to constant table
+    - returnType        : EType                                         // UTF8 link to constant table (descriptor)
+    - formalParameters  : std::vector<std::string, EInnerVariable*>     // Formal parameters of the method
     - localVariables    : std::map<std::string, EInnerVariable*>        // Local variables of the method
-    - routineBody       : EInstructionSeq						        // Instruction sequence
+    - routineBody       : EInstructionSeq                               // Instruction sequence
 
 * EInnerVariable :: class:
-    - id    : short        // UTF8 link to local table
-    - type  : EType
+    - index  : short
+    - type   : EType
 
 * EType :: class:
     - type : type_strct* // Type as node in syntax tree
@@ -80,12 +80,12 @@
         1.2. Записать информацию о родителях
 
 Этап 2. Общий проход по пользовательским классам;
-	* Цель
-	
+    * Цель
+
     Собрать информацию о feature пользовательских классах.
 
-	* Шаги выполнения
-	
+    * Шаги выполнения
+
     1. Для каждого класса
         1.1. Записать информацию о полях класса
         1.2. Записать информацию о методах класса
@@ -112,16 +112,23 @@
         5. Добавить данный метод в множество всех доступных feature текущего класса
 
 Этап 3. Проход по блокам наследования.
-	* Цель
-	
+    * Цель
+
     Определить наличие циклов в наследовании.
     Составить пространство всех полей и методов каждого класса с учётом директив наследования.
 
-	* Шаги выполнения
+    * Шаги выполнения
 
     1. Для каждого класса
-        1.1. Составить таблицу всех доступных feature, включая наследованные feature
-        (Ошибка: обнаружен цикл в цепочке наследования)
+        1.1. Если таблица для данного класса не полностью составлена
+            1.1.1. Дополнить таблицу доступных feature данного класса
+                1.1.1.1. Составить таблицы родителей, если они не составлены
+                (Ошибка: обнаружен цикл в цепочке наследования)
+
+                1.1.1.2. Дополнить свою таблицу доступных feature наследованными
+                feature родительских классов, используя их таблицы feature и директивы
+                наследования (rename, redefine, select)
+                (Ошибка: ошибки в директивах наследования)
 
         Ошибки в директивах наследования:
         1) rename
@@ -130,6 +137,7 @@
 
         2) redefine
         (Ошибка: переопределение несуществующего у своих родителей feature)
+        (Ошибка: отсутствие переопределения у feature, который указан как переопределяемый)
         (Ошибка: переопределение feature в "неконвертируемый" feature)
 
         3) select
@@ -139,18 +147,18 @@
         (Ошибка: выбор уже выбранного feature в другом select)
 
 Этап 4. Проход по полям и методам классов
-	* Цель
+    * Цель
 
     0) Добавить поля и методы для взаимодействия с консолью;
     1) Расставить типы данных у полей и методов;
-	2) Преобразовать узлы синтаксического дерева;
+    2) Преобразовать узлы синтаксического дерева;
     3) Расставить типы данных внутри методов классов.
 
     * Шаги выполнения
 
     1. Для каждого класса
         1.0. Добавить поле io класса CONSOLEIO в текущий класс
-        1.1. Для каждого creator.
+        1.1. Для каждого creator
             1.1.1. Связать creator с данным feature по имени с помощью таблиц всех feature
             (Ошибка: creator указан повторно)
             (Ошибка: creator указан на аттрибут)
