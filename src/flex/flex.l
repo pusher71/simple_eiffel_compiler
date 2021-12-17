@@ -623,6 +623,8 @@ false  { debug_moveCursorToNextCharacter(yyleng); yylval.liter_boolean_field = 0
     debug_moveCursorToNextCharacter(yyleng);
 }
 
+void            { debug_moveCursorToNextCharacter(yyleng); return LITER_VOID; }
+
 class           { debug_moveCursorToNextCharacter(yyleng); return CLASS; }
 create          { debug_moveCursorToNextCharacter(yyleng); return CREATE; }
 precursor       { debug_moveCursorToNextCharacter(yyleng); return PRECURSOR; }

@@ -175,6 +175,7 @@ enum expr_type {
     expr_liter_int,
     expr_liter_char,
     expr_liter_str,
+    expr_liter_void,
 
     expr_current,
     expr_call_method_or_var,

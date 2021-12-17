@@ -68,19 +68,20 @@
      LITER_INTEGER = 284,
      LITER_CHAR = 285,
      LITER_STRING = 286,
-     INHERIT = 287,
-     RENAME = 288,
-     UNDEFINE = 289,
-     REDEFINE = 290,
-     SELECT = 291,
-     AS = 292,
-     CREATE = 293,
-     FEATURE = 294,
-     LOCAL = 295,
-     DO = 296,
-     CURRENT = 297,
-     RESULT = 298,
-     PRECURSOR = 299
+     LITER_VOID = 287,
+     INHERIT = 288,
+     RENAME = 289,
+     UNDEFINE = 290,
+     REDEFINE = 291,
+     SELECT = 292,
+     AS = 293,
+     CREATE = 294,
+     FEATURE = 295,
+     LOCAL = 296,
+     DO = 297,
+     CURRENT = 298,
+     RESULT = 299,
+     PRECURSOR = 300
    };
 #endif
 /* Tokens.  */
@@ -113,19 +114,20 @@
 #define LITER_INTEGER 284
 #define LITER_CHAR 285
 #define LITER_STRING 286
-#define INHERIT 287
-#define RENAME 288
-#define UNDEFINE 289
-#define REDEFINE 290
-#define SELECT 291
-#define AS 292
-#define CREATE 293
-#define FEATURE 294
-#define LOCAL 295
-#define DO 296
-#define CURRENT 297
-#define RESULT 298
-#define PRECURSOR 299
+#define LITER_VOID 287
+#define INHERIT 288
+#define RENAME 289
+#define UNDEFINE 290
+#define REDEFINE 291
+#define SELECT 292
+#define AS 293
+#define CREATE 294
+#define FEATURE 295
+#define LOCAL 296
+#define DO 297
+#define CURRENT 298
+#define RESULT 299
+#define PRECURSOR 300
 
 
 
@@ -175,7 +177,7 @@ typedef union YYSTYPE
     char*       id_field;
 }
 /* Line 1529 of yacc.c.  */
-#line 179 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
+#line 181 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

@@ -565,6 +565,32 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
     return result;
 }
 
+struct expr_strct* create_expr_liter_void(unsigned int node_index) {
+    struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
+    result->_node_index         = node_index;
+    result->type                = expr_liter_void;
+    result->is_parenthesized    = 0;
+
+    result->class_id_name   = NULL;
+    result->method_id_name  = NULL;
+    result->argument_seq    = NULL;
+
+    result->liter_bool      = 0;
+    result->liter_int       = 0;
+    result->liter_char      = 0;
+    result->liter_str       = NULL;
+
+    result->expr_left       = NULL;
+    result->expr_right      = NULL;
+
+    result->create_type     = NULL;
+
+    result->result_type         = NULL;
+    result->inner_var_number    = -1;
+
+    return result;
+}
+
 struct expr_strct* create_expr_current(unsigned int node_index) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
     result->_node_index         = node_index;

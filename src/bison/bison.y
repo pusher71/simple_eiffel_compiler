@@ -98,6 +98,7 @@
 %token<liter_integer_field> LITER_INTEGER
 %token<liter_char_field>    LITER_CHAR
 %token<liter_string_field>  LITER_STRING
+%token                      LITER_VOID
 
 // -------------- CLASS TOKENS --------------
 // Inheritance block
@@ -292,6 +293,7 @@ expr: LITER_BOOLEAN                             { $$ = create_expr_liter_bool(cu
     | LITER_INTEGER                             { $$ = create_expr_liter_int (curr_node_index++, $1); }
     | LITER_CHAR                                { $$ = create_expr_liter_char(curr_node_index++, $1); }
     | LITER_STRING                              { $$ = create_expr_liter_str (curr_node_index++, $1); }
+    | LITER_VOID                                { $$ = create_expr_liter_void(curr_node_index++); }
 
     | '(' expr ')'                              { $$ = $2; $$->is_parenthesized = 1; }
     | CURRENT									{ $$ = create_expr_current(curr_node_index++); }
