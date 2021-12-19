@@ -118,51 +118,59 @@ EConstantTable& EUserClass::constants() { return this->_constants; }
 
 void EUserClass::addFeaturesTableInfoToConstantTable() {
     for (auto& featureMetaInfo : this->_featuresTable) {
-        std::string featureMarkStr = featureMetaInfo.featureMark().first + ":" + featureMetaInfo.featureMark().second;
-        featureMetaInfo.setFeatureMark_utf8Link(this->_constants.appendUtf8(featureMarkStr));
+        this->_addFeatureInfoFromMetaToConstantTable(featureMetaInfo);
+        this->_addPolyMethodInfoFromMetaToConstantTable(featureMetaInfo);
+    }
+}
 
-        std::string descriptorStr = "(L" + EClass::javaObjectFullName() + ";";
-        if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
-            for (const auto& formalParamInfo : ((ERoutine*)featureMetaInfo.implementation())->formalParameters()) {
-                descriptorStr += formalParamInfo.second.type().descriptor();
-            }
+void EUserClass::_addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
+    featureMetaInfo.setFeatureName_utf8Link(this->_constants.appendUtf8(featureMetaInfo.finalName()));
+    featureMetaInfo.setFeatureDescriptor_utf8Link(this->_constants.appendUtf8(featureMetaInfo.implementation()->descriptor()));
+}
+
+#include <iostream>
+
+void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
+    std::string featureMarkStr = featureMetaInfo.featureMark().first + ":" + featureMetaInfo.featureMark().second;
+    featureMetaInfo.setPolyMethodName_utf8Link(this->_constants.appendUtf8(featureMarkStr));
+
+    std::string descriptorStr = "(";
+    if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
+        for (const auto& formalParamInfo : ((ERoutine*)featureMetaInfo.implementation())->formalParameters()) {
+            descriptorStr += formalParamInfo.second.type().descriptor();
         }
-        descriptorStr += ")" + featureMetaInfo.implementation()->returnType().descriptor();
+    }
+    descriptorStr += ")" + featureMetaInfo.implementation()->returnType().descriptor();
 
-        featureMetaInfo.setDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
+    featureMetaInfo.setPolyMethodDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
 
-        for (EClass* classInfo : EProgram::current->classes()) {
-            if (this == classInfo || classInfo->isDescendantTo(this)) {
-                EFeature* featureWithSameMark = nullptr;
-                for (const auto& otherFeatureMetaInfo : classInfo->_featuresTable) {
-                    if (featureMetaInfo.featureMark() == otherFeatureMetaInfo.featureMark()) {
-                        featureWithSameMark = otherFeatureMetaInfo.implementation();
-                    }
+    for (EClass* classInfo : EProgram::current->classes()) {
+        if (this == classInfo || classInfo->isDescendantTo(this)) {
+            EFeature* featureWithSameMark = nullptr;
+            for (const auto& otherFeatureMetaInfo : classInfo->_featuresTable) {
+                if (featureMetaInfo.featureMark() == otherFeatureMetaInfo.featureMark()) {
+                    featureWithSameMark = otherFeatureMetaInfo.implementation();
+                }
+            }
+
+            if (featureWithSameMark != nullptr) {
+                short classNameLink = this->_constants.appendUtf8(classInfo->fullName());
+                short constClassLink = this->_constants.appendConstClass(classNameLink);
+
+                short featureNameLink = this->_constants.appendUtf8(featureWithSameMark->name());
+                short featureDescriptorLink = this->_constants.appendUtf8(featureWithSameMark->descriptor());
+                short featureNameAndTypeLink = this->_constants.appendNameAndType({featureNameLink, featureDescriptorLink});
+
+                short fieldOrMethodRef = 0;
+
+                if (featureWithSameMark->featureType() == EFeature::efeature_attribute) {
+                    fieldOrMethodRef = this->_constants.appendFieldRef({constClassLink, featureNameAndTypeLink});
+                }
+                else {
+                    fieldOrMethodRef = this->_constants.appendMethodRef({constClassLink, featureNameAndTypeLink});
                 }
 
-                if (featureWithSameMark != nullptr) {
-                    short otherClassNameLink = this->_constants.appendUtf8(classInfo->fullName());
-                    short otherConstClassLink = this->_constants.appendConstClass(otherClassNameLink);
-
-                    EClass* ownerClass = EProgram::current->getClassBy(featureWithSameMark->ownerClassName());
-                    short classNameLink = this->_constants.appendUtf8(ownerClass->fullName());
-                    short constClassLink = this->_constants.appendConstClass(classNameLink);
-
-                    short featureNameLink = this->_constants.appendUtf8(featureWithSameMark->name());
-                    short featureDescriptorLink = this->_constants.appendUtf8(featureWithSameMark->descriptor());
-                    short featureNameAndTypeLink = this->_constants.appendNameAndType({featureNameLink, featureDescriptorLink});
-
-                    short fieldOrMethodRef = 0;
-
-                    if (featureWithSameMark->featureType() == EFeature::efeature_attribute) {
-                        fieldOrMethodRef = this->_constants.appendFieldRef({constClassLink, featureNameAndTypeLink});
-                    }
-                    else {
-                        fieldOrMethodRef = this->_constants.appendMethodRef({constClassLink, featureNameAndTypeLink});
-                    }
-
-                    featureMetaInfo.addPolymorphicImplementation(otherConstClassLink, {featureWithSameMark->featureType(), fieldOrMethodRef});
-                }
+                featureMetaInfo.addPolyMethodImplementation(constClassLink, {featureWithSameMark->featureType(), fieldOrMethodRef});
             }
         }
     }

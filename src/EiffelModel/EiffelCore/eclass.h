@@ -88,8 +88,9 @@ public:
 
     const std::vector<std::pair<std::string, EParentInfo>> parents() const;
     const std::map<std::string, std::shared_ptr<EFeature>> features() const;
-    const std::map<std::string, std::shared_ptr<EFeature>> attributes() const;
-    const std::map<std::string, std::shared_ptr<EFeature>> routines() const;
+
+    const std::vector<const EFeatureMetaInfo*> attributesMetaInfo() const;
+    const std::vector<const EFeatureMetaInfo*> routinesMetaInfo() const;
 
 protected:
     void _addFeature(std::shared_ptr<EFeature> feature);

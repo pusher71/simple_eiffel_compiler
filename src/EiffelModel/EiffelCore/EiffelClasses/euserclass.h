@@ -46,6 +46,9 @@ public:
     // ----------------- contract -----------------
 public:
     void addFeaturesTableInfoToConstantTable();
+    void _addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo);
+    void _addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo);
+
     void resolveRoutines();
 
     void compile(const std::string& outputDirectoryPath);

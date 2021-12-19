@@ -3,6 +3,8 @@
 
 ByteCode::ByteCode() {}
 
+#include <iostream>
+
 ByteCode::ByteCode(const EUserClass& userClass) {
     // Main bytecode values
     this->_appendFourBytes(0xCAFEBABE);     // "Magic" java constant
@@ -20,28 +22,26 @@ ByteCode::ByteCode(const EUserClass& userClass) {
     this->_appendTwoBytes(0x0000);          // Count of interfaces which class implements
 
     // Fields info
-    const auto& userClassAttributesInfo = userClass.attributes();
-    this->_appendTwoBytes(userClassAttributesInfo.size());
+    const auto& userClassAttributesMetaInfo = userClass.attributesMetaInfo();
+    this->_appendTwoBytes(userClassAttributesMetaInfo.size());
 
-    for (const auto& attributeInfo : userClassAttributesInfo) {
-        ByteCode attributeByteCode(userClass._constants, *(EAttribute*)attributeInfo.second.get());
-        this->_append(attributeByteCode);
+    for (const auto& attributeMetaInfo : userClassAttributesMetaInfo) {
+        this->_append(ByteCode::attributesMetaByteCode(userClass._constants, *attributeMetaInfo));
     }
 
     // Methods info
-    const auto& userClassRoutinesInfo = userClass.routines();
-    this->_appendTwoBytes(userClassRoutinesInfo.size() + userClass._featuresTable.size());
+    const auto& userClassRoutinesMetaInfo = userClass.routinesMetaInfo();
+    this->_appendTwoBytes(userClassRoutinesMetaInfo.size() + userClass._featuresTable.size());
+    // this->_appendTwoBytes(0x0);
 
     // ... Compile methods to bytecode
-    for (const auto& routineInfo : userClassRoutinesInfo) {
-        ByteCode routineByteCode(userClass._constants, *(ERoutine*)routineInfo.second.get());
-        this->_append(routineByteCode);
+    for (const auto& routineMetaInfo : userClassRoutinesMetaInfo) {
+        this->_append(ByteCode::routinesMetaByteCode(userClass._constants, *routineMetaInfo));
     }
 
     // ... Compile feature table methods to bytecode
     for (const auto& featureMetaInfo : userClass._featuresTable) {
-        ByteCode featureMetaInfoByteCode(userClass._constants, featureMetaInfo);
-        this->_append(featureMetaInfoByteCode);
+        this->_append(ByteCode::polyMethodByteCode(userClass._constants, featureMetaInfo));
     }
 
     // Class attributes info
@@ -96,44 +96,50 @@ ByteCode::ByteCode(const EConstantTable& classConstantTable) {
     }
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const EAttribute& classAttribute) {
-    this->_appendTwoBytes(0x0001);
-    this->_appendTwoBytes(classAttribute.linkUtf8_name());
-    this->_appendTwoBytes(classAttribute.linkUtf8_descriptor());
-    this->_appendTwoBytes(0x0000);
+ByteCode ByteCode::attributesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
+    ByteCode result;
+    result._appendTwoBytes(0x0001);
+    result._appendTwoBytes(featureMetaInfo.featureName_utf8Link());
+    result._appendTwoBytes(featureMetaInfo.featureDescriptor_utf8Link());
+    result._appendTwoBytes(0x0000);
+
+    return result;
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const ERoutine& classRoutine) {
-    this->_appendTwoBytes(0x0001);
-    this->_appendTwoBytes(classRoutine.linkUtf8_name());
-    this->_appendTwoBytes(classRoutine.linkUtf8_descriptor());
-    this->_appendTwoBytes(0x0001);
+ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
+    ERoutine* classRoutine = (ERoutine*)featureMetaInfo.implementation();
+
+    ByteCode result;
+    result._appendTwoBytes(0x0001);
+    result._appendTwoBytes(featureMetaInfo.featureName_utf8Link());
+    result._appendTwoBytes(featureMetaInfo.featureDescriptor_utf8Link());
+    result._appendTwoBytes(0x0001);
 
     // "Code" attribute of method
     ByteCode codeAttribute;
     codeAttribute._appendTwoBytes(0x1000);
-    codeAttribute._appendTwoBytes((short)classRoutine._formalParameters.size() + (short)classRoutine._localVariables.size() + 1);
+    codeAttribute._appendTwoBytes((short)classRoutine->_formalParameters.size() + (short)classRoutine->_localVariables.size() + 1);
 
-    ByteCode routineBodyCode(userClassConstants, classRoutine._routineBody);
+    ByteCode routineBodyCode(userClassConstants, classRoutine->_routineBody);
 
     codeAttribute._appendFourBytes((unsigned long)routineBodyCode._bytes.size());
     codeAttribute._append(routineBodyCode);
     codeAttribute._appendFourBytes(0x00000000);
 
-    this->_appendTwoBytes(0x0001);
-    this->_appendFourBytes((unsigned long)codeAttribute._bytes.size());
-    this->_append(codeAttribute);
+    result._appendTwoBytes(0x0001);
+    result._appendFourBytes((unsigned long)codeAttribute._bytes.size());
+    result._append(codeAttribute);
+
+    return result;
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody) {
-    this->_append(ByteCode::return_());
-}
+ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
+    ByteCode result;
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
-    this->_appendTwoBytes(0x0002);
-    this->_appendTwoBytes(featureMetaInfo.featureMark_utf8Link());
-    this->_appendTwoBytes(featureMetaInfo.descriptor_utf8Link());
-    this->_appendTwoBytes(0x0001);
+    result._appendTwoBytes(0x0001);
+    result._appendTwoBytes(featureMetaInfo.polyMethodName_utf8Link());
+    result._appendTwoBytes(featureMetaInfo.polyMethodDescriptor_utf8Link());
+    result._appendTwoBytes(0x0001);
 
     // "Code" attribute of method
     ByteCode codeAttribute;
@@ -144,40 +150,49 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const EFeatureMetaI
         formalParamsCount = ((ERoutine*)featureMetaInfo.implementation())->_formalParameters.size();
     }
 
-    codeAttribute._appendTwoBytes(2 + formalParamsCount);
+    codeAttribute._appendTwoBytes(1 + formalParamsCount);
 
     ByteCode featureMetaInfoBodyCode;
-    for (const auto& polymorphicFeatureInfo : featureMetaInfo._polymorphicImplementations) {
-        featureMetaInfoBodyCode._append(ByteCode::aload(0x01));
+    for (const auto& polymorphicFeatureInfo : featureMetaInfo.polyMethodImplementations()) {
+        featureMetaInfoBodyCode._append(ByteCode::aload(0x0));
         featureMetaInfoBodyCode._append(ByteCode::instanceof(polymorphicFeatureInfo.first));
 
+        std::vector<ByteCode> ifElseBlocks;
+
         ByteCode ifBlock;
-        ifBlock._append(ByteCode::aload(1));
-        for (short i=1; i<=formalParamsCount; i++) {
+        ifBlock._append(ByteCode::aload(0));
+        for (short i=0; i<formalParamsCount; i++) {
             ifBlock._append(ByteCode::aload(i+1));
         }
 
-        if (polymorphicFeatureInfo.second.first == EFeature::efeature_attribute) {
-            ifBlock._append(ByteCode::getfield(polymorphicFeatureInfo.second.second));
-            ifBlock._append(ByteCode::areturn());
-        }
-        else {
-            ifBlock._append(ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount, false));
-            ifBlock._append(ByteCode::areturn());
+        ifBlock._append((polymorphicFeatureInfo.second.first == EFeature::efeature_attribute
+                         ? ByteCode::getfield(polymorphicFeatureInfo.second.second)
+                         : ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount, false)));
+
+        switch (featureMetaInfo.returnType()) {
+            case EFeatureMetaInfo::ereturntype_void:    ifBlock._append(ByteCode::_return()); break;
+            case EFeatureMetaInfo::ereturntype_integer: ifBlock._append(ByteCode::ireturn()); break;
+            case EFeatureMetaInfo::ereturntype_object:  ifBlock._append(ByteCode::areturn()); break;
         }
 
         featureMetaInfoBodyCode._append(ByteCode::ifeq(0x03 + ifBlock._bytes.size()));
         featureMetaInfoBodyCode._append(ifBlock);
     }
-    featureMetaInfoBodyCode._append(ByteCode::return_());
+    featureMetaInfoBodyCode._append(ByteCode::_return());
 
     codeAttribute._appendFourBytes((unsigned long)featureMetaInfoBodyCode._bytes.size());
     codeAttribute._append(featureMetaInfoBodyCode);
     codeAttribute._appendFourBytes(0x00000000);
 
-    this->_appendTwoBytes(0x0001);
-    this->_appendFourBytes((unsigned long)codeAttribute._bytes.size());
-    this->_append(codeAttribute);
+    result._appendTwoBytes(0x0001);
+    result._appendFourBytes((unsigned long)codeAttribute._bytes.size());
+    result._append(codeAttribute);
+
+    return result;
+}
+
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody) {
+    this->_append(ByteCode::_return());
 }
 
 ByteCode& ByteCode::_appendByte(unsigned char value) {
@@ -603,7 +618,7 @@ ByteCode ByteCode::areturn() {
     return result;
 }
 
-ByteCode ByteCode::return_() {
+ByteCode ByteCode::_return() {
     ByteCode result;
     result._appendByte(0xB1);
 

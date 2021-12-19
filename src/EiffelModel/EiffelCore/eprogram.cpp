@@ -121,11 +121,6 @@ void EProgram::runSemanticStage_2() {
     for (auto& classInfo : this->_classes) {
         classInfo.second.get()->setupFeaturesTable();
         classInfo.second.get()->setupCreators();
-
-        EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
-        if (userClass) {
-            userClass->addFeaturesTableInfoToConstantTable();
-        }
     }
 }
 
@@ -133,6 +128,7 @@ void EProgram::runSemanticStage_3() {
     for (auto& classInfo : this->_classes) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
         if (userClass) {
+            userClass->addFeaturesTableInfoToConstantTable();
             userClass->resolveRoutines();
         }
     }

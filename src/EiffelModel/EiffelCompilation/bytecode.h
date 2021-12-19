@@ -18,10 +18,12 @@ public:
     ByteCode();
     ByteCode(const EUserClass& userClass);
     ByteCode(const EConstantTable& classConstantTable);
-    ByteCode(const EConstantTable& userClassConstants, const EAttribute& classAttribute);
-    ByteCode(const EConstantTable& userClassConstants, const ERoutine& classRoutine);
+    // ByteCode(const EConstantTable& userClassConstants, const EAttribute& classAttribute);
+    // ByteCode(const EConstantTable& userClassConstants, const ERoutine& classRoutine);
+    static ByteCode attributesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
+    static ByteCode routinesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
+    static ByteCode polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
     ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody);
-    ByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
 
 private:
     ByteCode& _appendByte(unsigned char value);
@@ -96,7 +98,7 @@ private:
     static ByteCode invokestatic(short int u2, short int argCount, bool isVoid);
     static ByteCode ireturn();
     static ByteCode areturn();
-    static ByteCode return_();
+    static ByteCode _return();
 };
 
 #endif // BYTECODE_H

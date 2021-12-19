@@ -7,8 +7,13 @@
 class ByteCode;
 
 class EFeatureMetaInfo {
-    // ================ MY FRIENDS ================
-    friend ByteCode;
+    // =============== SUBTYPES ===============
+public:
+    enum EReturnType {
+        ereturntype_void,
+        ereturntype_integer,
+        ereturntype_object
+    };
 
     // ============== ATTRIBUTES ==============
 private:
@@ -17,39 +22,57 @@ private:
     EFeature*                           _implementation;
     std::string                         _parentClassName;
     int                                 _parentClassIndex;
+    EFeature::EFeatureType              _featureType;
+    EReturnType                         _returnType;
 
-    short                               _featureMark_utf8Link;
-    short                               _descriptor_utf8Link;
+    short                               _featureName_utf8Link;
+    short                               _featureDescriptor_utf8Link;
+    short                               _polyMethodName_utf8Link;
+    short                               _polyMethodDescriptor_utf8Link;
 
-    std::map<short, std::pair<EFeature::EFeatureType, short>> _polymorphicImplementations; // Constant class -> field or method ref
+    std::map<short, std::pair<EFeature::EFeatureType, short>> _polyMethodImplementations; // Constant class -> field or method ref
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:
-    EFeatureMetaInfo(const std::string& finalName, const std::pair<std::string, std::string>& featureMark, EFeature* implementation);
+    EFeatureMetaInfo(const std::string& finalName,
+                     const std::pair<std::string, std::string>& featureMark,
+                     EFeature* implementation,
+                     EFeature::EFeatureType featureType);
 
-    // ----------------- contract -----------------
+    // ---------------- attributes ----------------
 public:
-    void setFinalName(const std::string& finalName);
-    void setFeatureMark(const std::string& className, const std::string& finalName);
-    void setImplementation(EFeature* implementation);
-    void setParentClassName(const std::string& parentClassName);
-    void setParentClassIndex(int parentClassIndex);
-
-    void setFeatureMark_utf8Link(short featureMark_utf8Link);
-    void setDescriptor_utf8Link(short descriptor_utf8Link);
-    void addPolymorphicImplementation(short constClassLink, const std::pair<EFeature::EFeatureType, short>& fieldOrMethodRef);
-
+    // Main parameters
     std::string finalName() const;
     std::pair<std::string, std::string> featureMark() const;
     EFeature* implementation() const;
+    EFeature::EFeatureType featureType() const;
+    EReturnType returnType() const;
 
+    void setFinalName(const std::string& finalName);
+    void setFeatureMark(const std::string& className, const std::string& finalName);
+    void setImplementation(EFeature* implementation);
+    void setReturnType(EReturnType returnType);
+
+    // Parent info
     std::string parentClassName() const;
     int parentClassIndex() const;
 
-    short featureMark_utf8Link() const;
-    short descriptor_utf8Link() const;
-    std::map<short, std::pair<EFeature::EFeatureType, short>> polymorphicImplementations() const;
+    void setParentClassName(const std::string& parentClassName);
+    void setParentClassIndex(int parentClassIndex);
+
+    // Constant table info
+    short featureName_utf8Link() const;
+    short featureDescriptor_utf8Link() const;
+    short polyMethodName_utf8Link() const;
+    short polyMethodDescriptor_utf8Link() const;
+    std::map<short, std::pair<EFeature::EFeatureType, short>> polyMethodImplementations() const;
+
+    void setFeatureName_utf8Link(short featureName_utf8Link);
+    void setFeatureDescriptor_utf8Link(short featureDescriptor_utf8Link);
+    void setPolyMethodName_utf8Link(short polyMethodName_utf8Link);
+    void setPolyMethodDescriptor_utf8Link(short polyMethodDescriptor_utf8Link);
+    void addPolyMethodImplementation(short constClassLink, const std::pair<EFeature::EFeatureType, short>& fieldOrMethodRef);
 
     // ----------------- contract -----------------
 public:

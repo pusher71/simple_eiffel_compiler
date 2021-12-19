@@ -8,7 +8,7 @@ create
 feature
     make
     do
-        obj := create {O}
+        obj := void
         obj.f
         obj.f4
         obj.f5

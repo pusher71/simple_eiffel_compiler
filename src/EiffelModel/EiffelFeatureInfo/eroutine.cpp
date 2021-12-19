@@ -2,6 +2,9 @@
 #include "../EiffelCore/eprogram.h"
 
 #include "../EiffelCore/EiffelClasses/euserclass.h"
+#include "../../bison/tree_creators.h"
+
+extern "C" unsigned int curr_node_index;
 
 ERoutine::ERoutine(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl),
@@ -311,6 +314,7 @@ void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_seq_
 }
 
 void ERoutine::_resolveIfInstruction(EUserClass& userClass, instruction_seq_strct* ifInstruction) {
+
 }
 
 void ERoutine::_resolveLoopInstruction(EUserClass& userClass, instruction_seq_strct* loopInstruction) {

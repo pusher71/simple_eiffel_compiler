@@ -97,7 +97,18 @@ void EClass::_fillFeaturesTableWithSelfFeatures() {
 
         // Add feature to feature table if it was defined in the class
         if (std::find(allRedefines.begin(), allRedefines.end(), featureInfo.first) == allRedefines.end()) {
-            this->_featuresTable.push_back(EFeatureMetaInfo(featureInfo.first, {this->name(), featureInfo.first}, featureInfo.second.get()));
+            EFeatureMetaInfo featureMetaInfo(featureInfo.first, {this->name(), featureInfo.first}, featureInfo.second.get(), featureInfo.second.get()->featureType());
+            if (featureInfo.second.get()->returnType() == EType::voidType()) {
+                featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_void);
+            }
+            else if (featureInfo.second.get()->returnType() == EType::intType()) {
+                featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_integer);
+            }
+            else {
+                featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_object);
+            }
+
+            this->_featuresTable.push_back(featureMetaInfo);
         }
     }
 }
@@ -394,24 +405,24 @@ std::string EClass::fullName() const { return this->javaPackageName() + "/" + th
 const std::vector<std::pair<std::string, EClass::EParentInfo>> EClass::parents() const { return this->_parents; }
 const std::map<std::string, std::shared_ptr<EFeature>> EClass::features() const { return this->_features; }
 
-const std::map<std::string, std::shared_ptr<EFeature>> EClass::attributes() const {
-    std::map<std::string, std::shared_ptr<EFeature>> result;
+const std::vector<const EFeatureMetaInfo*> EClass::attributesMetaInfo() const {
+    std::vector<const EFeatureMetaInfo*> result;
 
-    for (const auto& featureInfo : this->_features) {
-        if (featureInfo.second.get()->featureType() == EFeature::efeature_attribute) {
-            result[featureInfo.first] = featureInfo.second;
+    for (const auto& featureMetaInfo : this->_featuresTable) {
+        if (featureMetaInfo.featureType() == EFeature::efeature_attribute) {
+            result.push_back(&featureMetaInfo);
         }
     }
 
     return result;
 }
 
-const std::map<std::string, std::shared_ptr<EFeature>> EClass::routines() const {
-    std::map<std::string, std::shared_ptr<EFeature>> result;
+const std::vector<const EFeatureMetaInfo*> EClass::routinesMetaInfo() const {
+    std::vector<const EFeatureMetaInfo*> result;
 
-    for (const auto& featureInfo : this->_features) {
-        if (featureInfo.second.get()->featureType() == EFeature::efeature_routine) {
-            result[featureInfo.first] = featureInfo.second;
+    for (const auto& featureMetaInfo : this->_featuresTable) {
+        if (featureMetaInfo.featureType() == EFeature::efeature_routine) {
+            result.push_back(&featureMetaInfo);
         }
     }
 
