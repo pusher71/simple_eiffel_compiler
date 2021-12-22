@@ -120,6 +120,19 @@ std::string SemanticError::errorReason() const {
         case CREATORS__SEVERAL_CREATORS_WITH_SAME_NAME:
             result += "SEVERAL CREATORS WITH SAME NAME";
             break;
+        case CREATORS__CREATOR_HAS_RETURN_VALUE:
+            result += "CREATOR HAS RETURN VALUE";
+            break;
+        case CREATORS__ATTRIBUTE_IS_CREATOR:
+            result += "ATTRIBUTE IS CREATOR";
+            break;
+        case CREATORS__MAIN_CLASS_WITHOUT_MAIN_FUNCTION:
+            result += "MAIN CLASS WITHOUT MAIN FUNCTION";
+            break;
+
+        case PROGRAM__MAIN_CLASS_ISNT_SET:
+            result += "MAIN CLASS ISN\'T SET";
+            break;
     }
     result += " :: " + this->_errorMessage;
 

@@ -1,5 +1,7 @@
 #include "bytecode.h"
 #include "../EiffelCore/eclass.h"
+#include "../EiffelCore/EiffelClasses/eclassconsoleio.h"
+#include "../EiffelCore/eprogram.h"
 
 ByteCode::ByteCode() {}
 
@@ -31,17 +33,25 @@ ByteCode::ByteCode(const EUserClass& userClass) {
 
     // Methods info
     const auto& userClassRoutinesMetaInfo = userClass.routinesMetaInfo();
-    this->_appendTwoBytes(userClassRoutinesMetaInfo.size() + userClass._featuresTable.size());
-    // this->_appendTwoBytes(0x0);
+    this->_appendTwoBytes(userClassRoutinesMetaInfo.size() + userClass._featuresTable.size() + 1 + userClass.isMainClass());
+    // this->_appendTwoBytes(userClassRoutinesMetaInfo.size() + 1);
+
+    // ... Compile default constructor to bytecode
+    this->_append(ByteCode::defaultConstructorByteCode(userClass._constants, userClass));
 
     // ... Compile methods to bytecode
     for (const auto& routineMetaInfo : userClassRoutinesMetaInfo) {
         this->_append(ByteCode::routinesMetaByteCode(userClass._constants, *routineMetaInfo));
     }
 
-    // ... Compile feature table methods to bytecode
+    // ... Compile polymethods to bytecode
     for (const auto& featureMetaInfo : userClass._featuresTable) {
         this->_append(ByteCode::polyMethodByteCode(userClass._constants, featureMetaInfo));
+    }
+
+    // ... Compile main function to bytecode if user class is the main class
+    if (userClass.isMainClass()) {
+        this->_append(ByteCode::mainFunctionByteCode(userClass._constants, userClass));
     }
 
     // Class attributes info
@@ -133,6 +143,43 @@ ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants
     return result;
 }
 
+ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass) {
+    ByteCode result;
+    result._appendTwoBytes(0x0009);
+    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaMainFunctionName()));
+    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaMainFunctionDescriptor()));
+    result._appendTwoBytes(0x0001);
+
+    // "Code" attribute of method
+    ByteCode codeAttribute;
+    codeAttribute._appendTwoBytes(0x1000);
+    codeAttribute._appendTwoBytes(0x02);
+
+    // ByteCode routineBodyCode(userClassConstants, routineInfo->_routineBody);
+    ByteCode routineBodyCode;
+    // Create main class
+    routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy(mainClass.fullName())));
+    routineBodyCode._append(ByteCode::dup());
+    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor()), 0, 0));
+    routineBodyCode._append(ByteCode::astore(0x01));
+
+    // Run main method of main class
+    routineBodyCode._append(ByteCode::aload(0x01));
+    routineBodyCode._append(ByteCode::invokevirtual(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::eiffelMainFunctionName(), EProgram::javaDefaultConstructorDescriptor()), 0, 0));
+
+    routineBodyCode._append(ByteCode::_return());
+
+    codeAttribute._appendFourBytes((unsigned long)routineBodyCode._bytes.size());
+    codeAttribute._append(routineBodyCode);
+    codeAttribute._appendFourBytes(0x00000000);
+
+    result._appendTwoBytes(0x0001);
+    result._appendFourBytes((unsigned long)codeAttribute._bytes.size());
+    result._append(codeAttribute);
+
+    return result;
+}
+
 ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
     ByteCode result;
 
@@ -153,11 +200,10 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
     codeAttribute._appendTwoBytes(1 + formalParamsCount);
 
     ByteCode featureMetaInfoBodyCode;
+
     for (const auto& polymorphicFeatureInfo : featureMetaInfo.polyMethodImplementations()) {
         featureMetaInfoBodyCode._append(ByteCode::aload(0x0));
         featureMetaInfoBodyCode._append(ByteCode::instanceof(polymorphicFeatureInfo.first));
-
-        std::vector<ByteCode> ifElseBlocks;
 
         ByteCode ifBlock;
         ifBlock._append(ByteCode::aload(0));
@@ -170,7 +216,7 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
                          : ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount, false)));
 
         switch (featureMetaInfo.returnType()) {
-            case EFeatureMetaInfo::ereturntype_void:    ifBlock._append(ByteCode::_return()); break;
+            case EFeatureMetaInfo::ereturntype_void:                                          break;
             case EFeatureMetaInfo::ereturntype_integer: ifBlock._append(ByteCode::ireturn()); break;
             case EFeatureMetaInfo::ereturntype_object:  ifBlock._append(ByteCode::areturn()); break;
         }
@@ -178,7 +224,20 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
         featureMetaInfoBodyCode._append(ByteCode::ifeq(0x03 + ifBlock._bytes.size()));
         featureMetaInfoBodyCode._append(ifBlock);
     }
-    featureMetaInfoBodyCode._append(ByteCode::_return());
+
+    switch (featureMetaInfo.returnType()) {
+        case EFeatureMetaInfo::ereturntype_void:
+            featureMetaInfoBodyCode._append(ByteCode::_return());
+            break;
+        case EFeatureMetaInfo::ereturntype_integer:
+            featureMetaInfoBodyCode._append(ByteCode::iconst(0));
+            featureMetaInfoBodyCode._append(ByteCode::ireturn());
+            break;
+        case EFeatureMetaInfo::ereturntype_object:
+            featureMetaInfoBodyCode._append(ByteCode::iconst_null());
+            featureMetaInfoBodyCode._append(ByteCode::areturn());
+            break;
+    }
 
     codeAttribute._appendFourBytes((unsigned long)featureMetaInfoBodyCode._bytes.size());
     codeAttribute._append(featureMetaInfoBodyCode);
@@ -187,6 +246,51 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
     result._appendTwoBytes(0x0001);
     result._appendFourBytes((unsigned long)codeAttribute._bytes.size());
     result._append(codeAttribute);
+
+    return result;
+}
+
+ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassConstants, const EUserClass& userClass) {
+    ByteCode result;
+    result._appendTwoBytes(0x0001);
+    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaDefaultConstructorName()));
+    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaDefaultConstructorDescriptor()));
+    result._appendTwoBytes(0x0001);
+
+    // "Code" attribute of method
+    ByteCode codeAttribute;
+    codeAttribute._appendTwoBytes(0x1000);
+    codeAttribute._appendTwoBytes(0x01);
+
+    ByteCode routineBodyCode;
+    // Call this.super
+    routineBodyCode._append(ByteCode::aload(0x0));
+    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(EClass::javaObjectFullName(),
+                                                                                         EProgram::javaDefaultConstructorName(),
+                                                                                         EProgram::javaDefaultConstructorDescriptor()
+                                                                                         ),
+                                                    0,
+                                                    0));
+
+    // Initialize IO variable
+    routineBodyCode._append(ByteCode::aload(0x0));
+    routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy("rtl/CONSOLEIO")));
+    routineBodyCode._append(ByteCode::dup());
+    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0, 0));
+    short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), "io", "Lrtl/CONSOLEIO;");
+    routineBodyCode._append(ByteCode::putfield(fieldRef));
+
+    routineBodyCode._append(ByteCode::_return());
+
+    codeAttribute._appendFourBytes((unsigned long)routineBodyCode._bytes.size());
+    codeAttribute._append(routineBodyCode);
+    codeAttribute._appendFourBytes(0x00000000);
+
+    result._appendTwoBytes(0x0001);
+    result._appendFourBytes((unsigned long)codeAttribute._bytes.size());
+    result._append(codeAttribute);
+
+    return result;
 
     return result;
 }
@@ -247,6 +351,13 @@ ByteCode ByteCode::iconst(signed char i) {
     if ( i < -1 || i > 5) { throw "Invalid parameter for \"iconst\" command (must be an integer in [-1; 5])"; }
 
     result._appendByte(i+3);
+    return result;
+}
+
+ByteCode ByteCode::iconst_null() {
+    ByteCode result;
+    result._appendByte(0x01);
+
     return result;
 }
 

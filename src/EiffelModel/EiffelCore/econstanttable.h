@@ -40,9 +40,10 @@ public:
     int size() const;
 
     std::pair<JvmConstantType, JvmConstant> getConstant(int constantIndex) const;
-    short searchConstant(const std::pair<JvmConstantType, JvmConstant>& constant) const;
-    short searchClassConstBy(const std::string& classFullName) const;
     short searchUtf8By(const std::string& stringUtf8) const;
+    short searchClassConstBy(const std::string& classFullName) const;
+    short searchFieldRefBy(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor) const;
+    short searchMethodRefBy(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) const;
 
     short appendUtf8(const std::string& stringUtf8);
     short appendString(short utf8Link_string);
@@ -50,6 +51,9 @@ public:
     short appendNameAndType(const std::pair<short, short>& utf8Links_nameAndType);
     short appendFieldRef(const std::pair<short, short>& utf8Links_fieldRef);
     short appendMethodRef(const std::pair<short, short>& utf8Links_methodRef);
+
+    short appendFieldRefStr(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor);
+    short appendMethodRefStr(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor);
 };
 
 #endif // ECONSTANTTABLE_H

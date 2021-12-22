@@ -20,6 +20,8 @@ private:
     std::string     _name;
     EConstantTable  _constants;
 
+    bool _isMainClass;
+
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:
@@ -42,6 +44,9 @@ public:
     std::string javaPackageName() const override;
 
     EConstantTable& constants();
+
+    bool isMainClass() const;
+    void becomeMainClass();
 
     // ----------------- contract -----------------
 public:

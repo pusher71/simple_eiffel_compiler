@@ -16,6 +16,14 @@ public:
     static std::vector<SemanticError>   semanticErrors;
     static std::vector<CompileError>    compileErrors;
 
+    static EUserClass* mainClass;
+    static std::string eiffelMainFunctionName();
+    static std::string javaMainFunctionName();
+    static std::string javaMainFunctionDescriptor();
+
+    static std::string javaDefaultConstructorName();
+    static std::string javaDefaultConstructorDescriptor();
+
     // ============== ATTRIBUTES ==============
 private:
     std::map<std::string, std::shared_ptr<EClass>> _classes;
@@ -24,7 +32,7 @@ private:
     // -------- creating --------
 public:
     EProgram();
-    EProgram(const program_strct* program_node);
+    EProgram(const program_strct* programNode, const std::string& mainClassName);
 
     // ------- attributes -------
 public:
@@ -36,7 +44,7 @@ private:
     void runSemanticStage_0(const program_strct* programNode);
     void runSemanticStage_1();
     void runSemanticStage_2();
-    void runSemanticStage_3();
+    void runSemanticStage_3(const std::string& mainClassName);
     void runSemanticStage_4();
 
 public:

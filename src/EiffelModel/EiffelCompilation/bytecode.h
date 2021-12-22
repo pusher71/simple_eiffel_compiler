@@ -18,12 +18,13 @@ public:
     ByteCode();
     ByteCode(const EUserClass& userClass);
     ByteCode(const EConstantTable& classConstantTable);
-    // ByteCode(const EConstantTable& userClassConstants, const EAttribute& classAttribute);
-    // ByteCode(const EConstantTable& userClassConstants, const ERoutine& classRoutine);
     static ByteCode attributesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
     static ByteCode routinesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
-    static ByteCode polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
     ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody);
+
+    static ByteCode defaultConstructorByteCode(const EConstantTable& userClassConstants, const EUserClass& userClass);
+    static ByteCode polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
+    static ByteCode mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass);
 
 private:
     ByteCode& _appendByte(unsigned char value);
@@ -37,6 +38,7 @@ public:
 
 private:
     static ByteCode iconst(signed char i); // [-1 .. 5] (7 possible values)
+    static ByteCode iconst_null();
 
     static ByteCode bipush(char s1);
     static ByteCode sipush(short int s2);

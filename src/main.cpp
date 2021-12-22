@@ -2,6 +2,8 @@
 #include <fstream>
 #include <algorithm>
 #include <cstdio>
+#include <algorithm>
+#include <filesystem>
 
 #include "EiffelModel/EiffelCore/eprogram.h"
 
@@ -81,8 +83,12 @@ int main(int argc, char** argv) {
     // ================ START SEMANTIC ANALYSIS OF SOURCE CODE ===============
     // Start semantic analysis of source code
     EProgram eiffelProgram;
+    std::string mainClassName = configureParams["MAIN_CLASS_NAME"];
+
     if (tree_root != NULL) {
-        eiffelProgram = EProgram(tree_root);
+        std::transform(mainClassName.begin(), mainClassName.end(), mainClassName.begin(), [](unsigned char chr) { return std::toupper(chr); });
+
+        eiffelProgram = EProgram(tree_root, mainClassName);
     }
 
     // Print semantic analysis errors
@@ -94,6 +100,20 @@ int main(int argc, char** argv) {
     // Print compiling errors
     if (EProgram::semanticErrors.empty()) {
         eiffelProgram.compileToJVM("out");
+
+        // Create folder
+        std::filesystem::path metaInfPath = "out";
+        metaInfPath /= "META-INF";
+
+        std::filesystem::create_directory(metaInfPath);
+
+        // Generate java manifest file
+        std::filesystem::path manifestFilePath = metaInfPath / "MANIFEST.MF";
+        std::ofstream manifestFile(manifestFilePath);
+
+        manifestFile << "Manifest-Version: 1.0\n";
+        manifestFile << "Created-By: 1.7.0_06 (Oracle Corporation)\n";
+        manifestFile << "Main-Class: eiffel." + mainClassName + "\n";
     }
 
     // Print compiling errors

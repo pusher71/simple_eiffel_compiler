@@ -40,11 +40,13 @@ std::pair<EConstantTable::JvmConstantType, EConstantTable::JvmConstant> EConstan
     return this->_constants.at(constantIndex-1);
 }
 
-short EConstantTable::searchConstant(const std::pair<JvmConstantType, JvmConstant>& constant) const {
+short EConstantTable::searchUtf8By(const std::string& stringUtf8) const {
     short result = -1;
 
     for (int i=0; i<this->_constants.size(); i++) {
-        if (this->_constants.at(i) == constant) {
+        if (this->_constants.at(i).first == jvm_utf8 &&
+            std::string(*this->_constants.at(i).second.jvm_utf8) == stringUtf8)
+        {
             result = i+1;
             break;
         }
@@ -68,15 +70,56 @@ short EConstantTable::searchClassConstBy(const std::string& classFullName) const
     return result;
 }
 
-short EConstantTable::searchUtf8By(const std::string& stringUtf8) const {
+short EConstantTable::searchFieldRefBy(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor) const {
     short result = -1;
 
     for (int i=0; i<this->_constants.size(); i++) {
-        if (this->_constants.at(i).first == jvm_utf8 &&
-            std::string(*this->_constants.at(i).second.jvm_utf8) == stringUtf8)
-        {
-            result = i+1;
-            break;
+        if (this->_constants.at(i).first == jvm_fieldRef) {
+            std::pair<short, short> fieldRef = this->_constants.at(i).second.jvm_fieldRef;
+
+            if (this->_constants.at(fieldRef.first-1).first == jvm_class &&
+                *this->_constants.at( this->_constants.at(fieldRef.first-1).second.jvm_class-1 ).second.jvm_utf8 == classFullName &&
+                this->_constants.at(fieldRef.second-1).first == jvm_nameAndType)
+            {
+                std::pair<short, short> nameAndType = this->_constants.at(fieldRef.second-1).second.jvm_nameAndType;
+
+                if (this->_constants.at(nameAndType.first-1).first == jvm_utf8 &&
+                    *this->_constants.at(nameAndType.first-1).second.jvm_utf8 == fieldName &&
+                    this->_constants.at(nameAndType.second-1).first == jvm_utf8 &&
+                    *this->_constants.at(nameAndType.second-1).second.jvm_utf8 == fieldDescriptor)
+                {
+                    result = i+1;
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+short EConstantTable::searchMethodRefBy(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) const {
+    short result = -1;
+
+    for (int i=0; i<this->_constants.size(); i++) {
+        if (this->_constants.at(i).first == jvm_methodRef) {
+            std::pair<short, short> methodRef = this->_constants.at(i).second.jvm_methodRef;
+
+            if (this->_constants.at(methodRef.first-1).first == jvm_class &&
+                *this->_constants.at( this->_constants.at(methodRef.first-1).second.jvm_class-1 ).second.jvm_utf8 == classFullName &&
+                this->_constants.at(methodRef.second-1).first == jvm_nameAndType)
+            {
+                std::pair<short, short> nameAndType = this->_constants.at(methodRef.second-1).second.jvm_nameAndType;
+
+                if (this->_constants.at(nameAndType.first-1).first == jvm_utf8 &&
+                    *this->_constants.at(nameAndType.first-1).second.jvm_utf8 == methodName &&
+                    this->_constants.at(nameAndType.second-1).first == jvm_utf8 &&
+                    *this->_constants.at(nameAndType.second-1).second.jvm_utf8 == methodDescriptor)
+                {
+                    result = i+1;
+                    break;
+                }
+            }
         }
     }
 
@@ -201,4 +244,36 @@ short EConstantTable::appendMethodRef(const std::pair<short, short>& utf8Links_m
     else {
         return constantPos;
     }
+}
+
+short EConstantTable::appendFieldRefStr(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor) {
+    short constantPos = this->searchFieldRefBy(classFullName, fieldName, fieldDescriptor);
+
+    if (constantPos == -1) {
+        short classNameUtf8_constantLink        = this->appendUtf8(classFullName);
+        short constClass_constantLink           = this->appendConstClass(classNameUtf8_constantLink);
+        short fieldNameUtf8_constantLink        = this->appendUtf8(fieldName);
+        short fieldDescriptorUtf8_constantLink  = this->appendUtf8(fieldDescriptor);
+        short fieldNameAndType_constantLink     = this->appendNameAndType({fieldNameUtf8_constantLink, fieldDescriptorUtf8_constantLink});
+
+        constantPos = this->appendFieldRef({constClass_constantLink, fieldNameAndType_constantLink});
+    }
+
+    return constantPos;
+}
+
+short EConstantTable::appendMethodRefStr(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) {
+    short constantPos = this->searchMethodRefBy(classFullName, methodName, methodDescriptor);
+
+    if (constantPos == -1) {
+        short classNameUtf8_constantLink        = this->appendUtf8(classFullName);
+        short constClass_constantLink           = this->appendConstClass(classNameUtf8_constantLink);
+        short methodNameUtf8_constantLink       = this->appendUtf8(methodName);
+        short methodDescriptorUtf8_constantLink = this->appendUtf8(methodDescriptor);
+        short methodNameAndType_constantLink    = this->appendNameAndType({methodNameUtf8_constantLink, methodDescriptorUtf8_constantLink});
+
+        constantPos = this->appendMethodRef({constClass_constantLink, methodNameAndType_constantLink});
+    }
+
+    return constantPos;
 }

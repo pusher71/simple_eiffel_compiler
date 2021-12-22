@@ -9,13 +9,22 @@
 #include "EiffelClasses/eclassany.h"
 #include "EiffelClasses/eclassconsoleio.h"
 
-EProgram* EProgram::current;
+EProgram*   EProgram::current = nullptr;
+
 std::vector<SemanticError> EProgram::semanticErrors;
 std::vector<CompileError> EProgram::compileErrors;
 
+EUserClass* EProgram::mainClass = nullptr;
+std::string EProgram::eiffelMainFunctionName() { return "MAKE"; }
+std::string EProgram::javaMainFunctionName() { return "main"; }
+std::string EProgram::javaMainFunctionDescriptor() { return "([Ljava/lang/String;)V"; }
+
+std::string EProgram::javaDefaultConstructorName() { return "<init>"; }
+std::string EProgram::javaDefaultConstructorDescriptor() { return "()V"; }
+
 EProgram::EProgram() {}
 
-EProgram::EProgram(const program_strct* programNode) {
+EProgram::EProgram(const program_strct* programNode, const std::string& mainClassName) {
     EProgram::current = this;
 
     std::cout << "START [SEMANTIC PART]" << std::endl;
@@ -51,7 +60,7 @@ EProgram::EProgram(const program_strct* programNode) {
     // ... STAGE 3 : Examine locals and bodies of each method of user classes
     if (EProgram::semanticErrors.empty()) {
         std::cout << " - Start semantic stage 3 (resolve routine bodies of user classes) ... ";
-        this->runSemanticStage_3();
+        this->runSemanticStage_3(mainClassName);
 
         if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
         else                                    { std::cout << "Failed!" << std::endl; }
@@ -124,13 +133,21 @@ void EProgram::runSemanticStage_2() {
     }
 }
 
-void EProgram::runSemanticStage_3() {
+void EProgram::runSemanticStage_3(const std::string& mainClassName) {
     for (auto& classInfo : this->_classes) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
         if (userClass) {
             userClass->addFeaturesTableInfoToConstantTable();
             userClass->resolveRoutines();
+
+            if (userClass->name() == mainClassName) { userClass->becomeMainClass(); }
         }
+    }
+
+    if (EProgram::mainClass == nullptr) {
+        std::string errorMessage = "Unknown class with name \"" + mainClassName + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(PROGRAM__MAIN_CLASS_ISNT_SET, errorMessage));
     }
 }
 
