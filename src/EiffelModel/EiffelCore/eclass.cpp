@@ -388,14 +388,26 @@ void EClass::setupCreators() {
     for (auto& creatorInfo : this->_creators) {
         const auto& featureMetaInfo = std::find_if(this->_featuresTable.begin(), this->_featuresTable.end(), [&](const auto& featureMetaInfo){ return (featureMetaInfo.finalName() == creatorInfo.first); });
 
-        if (featureMetaInfo != this->_featuresTable.end()) {
-            creatorInfo.second = (*featureMetaInfo).implementation();
-        }
-        else {
+        if (featureMetaInfo == this->_featuresTable.end()) {
             std::string errorMessage = "class \"" + this->name() + "\" ";
             errorMessage += ":: unknown creator with name \"" + creatorInfo.first + "\"";
 
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CREATORS__UNKNOWN_CREATOR, errorMessage));
+        }
+        else if ((*featureMetaInfo).implementation()->featureType() == EFeature::efeature_attribute) {
+            std::string errorMessage = "class \"" + this->name() + "\" ";
+            errorMessage += ":: attribute with name \"" + creatorInfo.first + "\"";
+
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CREATORS__ATTRIBUTE_IS_CREATOR, errorMessage));
+        }
+        else if ((*featureMetaInfo).implementation()->returnType() != EType::voidType()) {
+            std::string errorMessage = "class \"" + this->name() + "\" ";
+            errorMessage += ":: type of creator\'s return value - \"" + (*featureMetaInfo).implementation()->returnType().toString() + "\"";
+
+            EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CREATORS__CREATOR_HAS_RETURN_VALUE, errorMessage));
+        }
+        else {
+            creatorInfo.second = (*featureMetaInfo).implementation();
         }
     }
 }

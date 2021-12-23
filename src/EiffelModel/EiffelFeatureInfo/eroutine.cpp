@@ -283,44 +283,57 @@ void ERoutine::resolveBody() {
     instructionSeqElem = instructionSeqElem->next; // First instruction is NULL instruction
 
     while (instructionSeqElem != NULL) {
-        switch (instructionSeqElem->value->type) {
-            case instruction_create:
-                this->_resolveCreateInstruction(*ownerClass, instructionSeqElem);
-                break;
-            case instruction_assign:
-                this->_resolveAssignInstruction(*ownerClass, instructionSeqElem);
-                break;
-            case instruction_if:
-                this->_resolveIfInstruction(*ownerClass, instructionSeqElem);
-                break;
-            case instruction_loop:
-                this->_resolveLoopInstruction(*ownerClass, instructionSeqElem);
-                break;
-            case instruction_expr:
-                this->_resolveInstructionAsExpr(*ownerClass, instructionSeqElem);
-                break;
-        }
+        this->_resolveInstruction(*ownerClass, instructionSeqElem->value);
 
         instructionSeqElem = instructionSeqElem->next;
     }
 }
 
-void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_seq_strct* createInstruction) {
+void ERoutine::_resolveInstruction(EUserClass& userClass, instruction_strct* instruction) {
+        switch (instruction->type) {
+            case instruction_create:
+                this->_resolveCreateInstruction(userClass, instruction);
+                break;
+            case instruction_assign:
+                this->_resolveAssignInstruction(userClass, instruction);
+                break;
+            case instruction_if:
+                this->_resolveIfInstruction(userClass, instruction);
+                break;
+            case instruction_loop:
+                this->_resolveLoopInstruction(userClass, instruction);
+                break;
+            case instruction_expr:
+                this->_resolveInstructionAsExpr(userClass, instruction);
+                break;
+        }
 }
 
-void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_seq_strct* assignInstruction) {
+void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction) {
+    // Resolve variable of creation
+
+    // Resolve method of creation
+
+    // Resolve arguments of creation method
+
+}
+
+void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction) {
     // Resolve name of left variable
     // userClass._featuresTable.
 }
 
-void ERoutine::_resolveIfInstruction(EUserClass& userClass, instruction_seq_strct* ifInstruction) {
+void ERoutine::_resolveIfInstruction(EUserClass& userClass, instruction_strct* ifInstruction) {
 
 }
 
-void ERoutine::_resolveLoopInstruction(EUserClass& userClass, instruction_seq_strct* loopInstruction) {
+void ERoutine::_resolveLoopInstruction(EUserClass& userClass, instruction_strct* loopInstruction) {
 }
 
-void ERoutine::_resolveInstructionAsExpr(EUserClass& userClass, instruction_seq_strct* instructionAsExpr) {
+void ERoutine::_resolveInstructionAsExpr(EUserClass& userClass, instruction_strct* instructionAsExpr) {
+}
+
+void _resolveExpr(EUserClass& userClass, expr_strct* expr) {
 }
 
 bool ERoutine::isConformingTo(const EFeature& other) const {

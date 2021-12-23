@@ -65,11 +65,14 @@ public:
     void resolveBody();
 
 private:
-    void _resolveCreateInstruction(EUserClass& userClass, instruction_seq_strct* createInstruction);
-    void _resolveAssignInstruction(EUserClass& userClass, instruction_seq_strct* assignInstruction);
-    void _resolveIfInstruction(EUserClass& userClass, instruction_seq_strct* ifInstruction);
-    void _resolveLoopInstruction(EUserClass& userClass, instruction_seq_strct* loopInstruction);
-    void _resolveInstructionAsExpr(EUserClass& userClass, instruction_seq_strct* instructionAsExpr);
+    void _resolveInstruction(EUserClass& userClass, instruction_strct* instruction);
+    void _resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction);
+    void _resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction);
+    void _resolveIfInstruction(EUserClass& userClass, instruction_strct* ifInstruction);
+    void _resolveLoopInstruction(EUserClass& userClass, instruction_strct* loopInstruction);
+    void _resolveInstructionAsExpr(EUserClass& userClass, instruction_strct* instructionAsExpr);
+
+    void _resolveExpr(EUserClass& userClass, expr_strct* expr);
 
 public:
     bool isConformingTo(const EFeature& other) const override;

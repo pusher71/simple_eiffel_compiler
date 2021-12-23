@@ -6,6 +6,7 @@ create
     make
 
 feature
+    attr : INTEGER
     make
     do
         obj := void
