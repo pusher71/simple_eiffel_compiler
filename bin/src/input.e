@@ -10,10 +10,10 @@ feature
 
     make
     local
-        obj2 : OBJECT2
+        obj2 : INTEGER
     do
         create obj
-        create obj2.make()
+        create obj2
     end
 end
 -- EOF

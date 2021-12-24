@@ -334,8 +334,8 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
                 createInstruction->local_var_number = localVar.second.index();
                 const auto& createdVarType = EType(localVar.second.type());
 
-                fieldOrLocalOwnerClassName = EProgram::current->getClassBy( localVar.second.type().toString() )->name();
-                fieldOrLocalOwnerClassFullName = EProgram::current->getClassBy( localVar.second.type().toString() )->fullName();
+                fieldOrLocalOwnerClassName = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() )->name();
+                fieldOrLocalOwnerClassFullName = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() )->fullName();
             }
         }
     }
