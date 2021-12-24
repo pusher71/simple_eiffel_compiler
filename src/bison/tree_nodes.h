@@ -159,8 +159,11 @@ struct instruction_strct {
 
     // Semantic analysis additional data
     short const_class;
+    char* owner_class_full_name;
     short field_ref;
-    short inner_var_number;
+    short local_var_number;
+
+    short creator_method_ref;
 };
 
 struct argument_seq_strct {

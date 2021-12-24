@@ -1,4 +1,5 @@
 #include "eroutine.h"
+#include "eattribute.h"
 #include "../EiffelCore/eprogram.h"
 
 #include "../EiffelCore/EiffelClasses/euserclass.h"
@@ -284,38 +285,94 @@ void ERoutine::resolveBody() {
 
     while (instructionSeqElem != NULL) {
         this->_resolveInstruction(*ownerClass, instructionSeqElem->value);
-
         instructionSeqElem = instructionSeqElem->next;
     }
 }
 
 void ERoutine::_resolveInstruction(EUserClass& userClass, instruction_strct* instruction) {
-        switch (instruction->type) {
-            case instruction_create:
-                this->_resolveCreateInstruction(userClass, instruction);
-                break;
-            case instruction_assign:
-                this->_resolveAssignInstruction(userClass, instruction);
-                break;
-            case instruction_if:
-                this->_resolveIfInstruction(userClass, instruction);
-                break;
-            case instruction_loop:
-                this->_resolveLoopInstruction(userClass, instruction);
-                break;
-            case instruction_expr:
-                this->_resolveInstructionAsExpr(userClass, instruction);
-                break;
-        }
+    switch (instruction->type) {
+        case instruction_create:
+            this->_resolveCreateInstruction(userClass, instruction);
+            break;
+        case instruction_assign:
+            this->_resolveAssignInstruction(userClass, instruction);
+            break;
+        case instruction_if:
+            this->_resolveIfInstruction(userClass, instruction);
+            break;
+        case instruction_loop:
+            this->_resolveLoopInstruction(userClass, instruction);
+            break;
+        case instruction_expr:
+            this->_resolveExprAsInstruction(userClass, instruction);
+            break;
+    }
 }
 
 void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction) {
     // Resolve variable of creation
+    EAttribute* attribute = nullptr;
+    EInnerVariable* localVar = nullptr;
+    EType* createdVarType = nullptr;
 
-    // Resolve method of creation
+    std::string fieldOrLocalOwnerClassName = "";
+    std::string fieldOrLocalOwnerClassFullName = "";
 
-    // Resolve arguments of creation method
+    for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
+        if (attributeMetaInfo->finalName() == createInstruction->first_id_name) {
+            std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
+            createInstruction->field_ref = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->returnType().descriptor());
 
+            fieldOrLocalOwnerClassName = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().toString() )->name();
+            fieldOrLocalOwnerClassFullName = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().toString() )->fullName();
+        }
+    }
+
+    if (attribute == nullptr) {
+        for (const auto& localVar : this->_localVariables) {
+            if (localVar.first == createInstruction->first_id_name) {
+                createInstruction->local_var_number = localVar.second.index();
+                const auto& createdVarType = EType(localVar.second.type());
+
+                fieldOrLocalOwnerClassName = EProgram::current->getClassBy( localVar.second.type().toString() )->name();
+                fieldOrLocalOwnerClassFullName = EProgram::current->getClassBy( localVar.second.type().toString() )->fullName();
+            }
+        }
+    }
+
+    if (!fieldOrLocalOwnerClassFullName.empty()) {
+        createInstruction->const_class = userClass._constants.appendConstClass( userClass._constants.appendUtf8(fieldOrLocalOwnerClassFullName) );
+        createInstruction->owner_class_full_name = new char[fieldOrLocalOwnerClassFullName.size()+1];
+        strcpy(createInstruction->owner_class_full_name, fieldOrLocalOwnerClassFullName.c_str());
+
+        userClass._constants.appendMethodRefStr(fieldOrLocalOwnerClassFullName, "<init>", "()V");
+    }
+
+    if (fieldOrLocalOwnerClassFullName.empty()) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += std::string(":: unknown id \"") + createInstruction->first_id_name + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_CREATE__FIELD_OR_LOCAL_WITH_UNKNOWN_ID, errorMessage));
+    }
+    else if (createInstruction->second_id_name == NULL && !EProgram::current->getClassBy(fieldOrLocalOwnerClassName)->_creators.empty()) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "field or local variable with name \"" + std::string(createInstruction->first_id_name) + "\" of class \"" + fieldOrLocalOwnerClassFullName + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_CREATE__CALL_REMOVED_DEFAULT_CREATOR, errorMessage));
+    }
+    else if (createInstruction->second_id_name != NULL) {
+        const auto& creatorInfo = std::find_if(userClass._creators.begin(), userClass._creators.end(), [&](const auto& creatorInfo) { return (creatorInfo.first == createInstruction->second_id_name); });
+
+        if (creatorInfo == userClass._creators.end()) {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+            errorMessage += std::string(":: unknown id \"") + createInstruction->first_id_name + "\"";
+
+            EProgram::semanticErrors.push_back(SemanticError(INSTR_CREATE__UNKNOWN_CREATOR, errorMessage));
+        }
+        else {
+            createInstruction->creator_method_ref = userClass._constants.appendMethodRefStr(fieldOrLocalOwnerClassFullName, createInstruction->second_id_name, creatorInfo->second->descriptor());
+        }
+    }
 }
 
 void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction) {
@@ -330,7 +387,7 @@ void ERoutine::_resolveIfInstruction(EUserClass& userClass, instruction_strct* i
 void ERoutine::_resolveLoopInstruction(EUserClass& userClass, instruction_strct* loopInstruction) {
 }
 
-void ERoutine::_resolveInstructionAsExpr(EUserClass& userClass, instruction_strct* instructionAsExpr) {
+void ERoutine::_resolveExprAsInstruction(EUserClass& userClass, instruction_strct* exprAsInstruction) {
 }
 
 void _resolveExpr(EUserClass& userClass, expr_strct* expr) {

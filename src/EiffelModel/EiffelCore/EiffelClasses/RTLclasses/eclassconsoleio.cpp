@@ -1,7 +1,9 @@
 #include "eclassconsoleio.h"
 
-#include "../../EiffelFeatureInfo/eattribute.h"
-#include "../../EiffelFeatureInfo/eroutine.h"
+#include "../../../EiffelFeatureInfo/eattribute.h"
+#include "../../../EiffelFeatureInfo/eroutine.h"
+
+std::string EClassCONSOLEIO::classRTLname() { return "CONSOLEIO"; }
 
 EClassCONSOLEIO::EClassCONSOLEIO() {
     this->_initSelf();
@@ -29,4 +31,4 @@ void EClassCONSOLEIO::_defineFeatures() {
     this->_addFeature( std::make_shared<EAttribute>(EAttribute("last_string", this, EType::stringType())) );
 }
 
-std::string EClassCONSOLEIO::name() const { return "CONSOLEIO"; }
+std::string EClassCONSOLEIO::name() const { return EClassCONSOLEIO::classRTLname(); }

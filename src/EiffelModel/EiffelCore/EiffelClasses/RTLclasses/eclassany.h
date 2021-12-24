@@ -1,7 +1,7 @@
 #ifndef ERTLCLASS_H
 #define ERTLCLASS_H
 
-#include "eclassrtl.h"
+#include "../eclassrtl.h"
 
 class EClassANY : public EClassRTL {
     // ================ STATIC ================

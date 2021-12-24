@@ -1,6 +1,6 @@
 #include "bytecode.h"
 #include "../EiffelCore/eclass.h"
-#include "../EiffelCore/EiffelClasses/eclassconsoleio.h"
+#include "../EiffelCore/EiffelClasses/RTLclasses/eclassconsoleio.h"
 #include "../EiffelCore/eprogram.h"
 
 ByteCode::ByteCode() {}
@@ -296,7 +296,114 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
 }
 
 ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody) {
+    const instruction_seq_strct* instructionSeqElem = routineBody->next;
+    instructionSeqElem = instructionSeqElem;
+
+    while (instructionSeqElem != NULL) {
+        this->_append(ByteCode(userClassConstants, instructionSeqElem->value));
+        instructionSeqElem = instructionSeqElem->next;
+    }
+
     this->_append(ByteCode::_return());
+}
+
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_strct* instruction) {
+    switch (instruction->type) {
+        case instruction_create:
+            this->_append(ByteCode::createInstructionByteCode(userClassConstants, instruction));
+            break;
+        case instruction_assign:
+            this->_append(ByteCode::assignInstructionByteCode(userClassConstants, instruction));
+            break;
+        case instruction_if:
+            this->_append(ByteCode::ifInstructionByteCode(userClassConstants, instruction));
+            break;
+        case instruction_loop:
+            this->_append(ByteCode::loopInstructionByteCode(userClassConstants, instruction));
+            break;
+        case instruction_expr:
+            this->_append(ByteCode::exprAsInstructionByteCode(userClassConstants, instruction));
+            break;
+    }
+}
+
+ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* createInstruction) {
+    ByteCode result;
+    // Push "this"
+    if (createInstruction->field_ref != 0) {
+        result._append(ByteCode::aload(0x0));
+    }
+
+    // Create object with given type
+    short const_class = createInstruction->const_class;
+    result._append(ByteCode::new_(createInstruction->const_class));
+    result._append(ByteCode::dup());
+    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(createInstruction->owner_class_full_name, "<init>", "()V"), 0, 0));
+
+    // Call "creator" routine
+    if (createInstruction->creator_method_ref != 0) {
+        result._append(ByteCode::dup());
+
+        short argumentsCount = 0;
+        argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
+        while (argumentSeqElem != NULL) {
+            result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+
+            argumentsCount++;
+            argumentSeqElem = argumentSeqElem->next;
+        }
+
+        result._append(ByteCode::invokevirtual(createInstruction->creator_method_ref, argumentsCount, 0));
+    }
+
+    // Store created object in field or local variable
+    if (createInstruction->field_ref != 0) {
+        result._append(ByteCode::putfield(createInstruction->field_ref));
+    }
+    else if (createInstruction->local_var_number != 0) {
+        result._append(ByteCode::astore(createInstruction->local_var_number));
+    }
+
+    return result;
+}
+
+ByteCode ByteCode::assignInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* assignInstruction) {
+    ByteCode result;
+    // Push "this" if assignment is performed for a field
+    if (assignInstruction->field_ref != 0) {
+        result._append(ByteCode::aload(0x0));
+    }
+
+    // Push expression
+    result._append(ByteCode(userClassConstants, assignInstruction->assign_expr));
+
+    // Store expression in field or local variable
+    if (assignInstruction->field_ref != 0) {
+        result._append(ByteCode::putfield(assignInstruction->field_ref));
+    }
+    else if (assignInstruction->local_var_number != 0) {
+        result._append(ByteCode::astore(assignInstruction->local_var_number));
+    }
+
+    return result;
+}
+
+ByteCode ByteCode::ifInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* ifInstruction) {
+    ByteCode result;
+    return result;
+}
+
+ByteCode ByteCode::loopInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* loopInstruction) {
+    ByteCode result;
+    return result;
+}
+
+ByteCode ByteCode::exprAsInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* exprAsInstruction) {
+    ByteCode result;
+    return result;
+}
+
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
 }
 
 ByteCode& ByteCode::_appendByte(unsigned char value) {

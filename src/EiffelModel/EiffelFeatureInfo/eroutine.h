@@ -70,7 +70,7 @@ private:
     void _resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction);
     void _resolveIfInstruction(EUserClass& userClass, instruction_strct* ifInstruction);
     void _resolveLoopInstruction(EUserClass& userClass, instruction_strct* loopInstruction);
-    void _resolveInstructionAsExpr(EUserClass& userClass, instruction_strct* instructionAsExpr);
+    void _resolveExprAsInstruction(EUserClass& userClass, instruction_strct* exprAsInstruction);
 
     void _resolveExpr(EUserClass& userClass, expr_strct* expr);
 

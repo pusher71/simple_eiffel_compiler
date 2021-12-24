@@ -133,6 +133,23 @@ std::string SemanticError::errorReason() const {
         case PROGRAM__MAIN_CLASS_ISNT_SET:
             result += "MAIN CLASS ISN\'T SET";
             break;
+
+        // Fourth semantic stage error codes ...
+        // ... Create instruction
+        case INSTR_CREATE__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
+            result += "CREATE FIELD OR LOCAL WITH UNKNOWN ID";
+            break;
+        case INSTR_CREATE__CALL_REMOVED_DEFAULT_CREATOR:
+            result += "CALL REMOVED DEFAULT CREATOR";
+            break;
+        case INSTR_CREATE__UNKNOWN_CREATOR:
+            result += "CALL UNKNOWN CREATOR";
+            break;
+
+        // ... Assign instruction
+        case INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
+            result += "ASSIGN TO FIELD OR LOCAL WITH UNKNOWN ID";
+            break;
     }
     result += " :: " + this->_errorMessage;
 

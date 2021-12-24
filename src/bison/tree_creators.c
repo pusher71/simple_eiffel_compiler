@@ -324,6 +324,14 @@ struct instruction_strct* create_create_instruction(unsigned int                
 
     result->instruction_as_expr = NULL;
 
+    // Semantic analysis additional data
+    short const_class = 0;
+    char* owner_class_full_name = NULL;
+    short field_ref = 0;
+    short local_var_number = 0;
+
+    short creator_method_ref = 0;
+
     return result;
 }
 
@@ -349,6 +357,14 @@ struct instruction_strct* create_assign_instruction(unsigned int        node_ind
     result->body                = NULL;
 
     result->instruction_as_expr = NULL;
+
+    // Semantic analysis additional data
+    short const_class = 0;
+    char* owner_class_full_name = NULL;
+    short field_ref = 0;
+    short local_var_number = 0;
+
+    short creator_method_ref = 0;
 
     return result;
 }
@@ -376,6 +392,14 @@ struct instruction_strct* create_if_instruction(unsigned int                    
     result->body                = NULL;
 
     result->instruction_as_expr = NULL;
+
+    // Semantic analysis additional data
+    short const_class = 0;
+    char* owner_class_full_name = NULL;
+    short field_ref = 0;
+    short local_var_number = 0;
+
+    short creator_method_ref = 0;
 
     return result;
 }
@@ -405,6 +429,14 @@ struct instruction_strct* create_loop_instruction(unsigned int                  
 
     result->instruction_as_expr = NULL;
 
+    // Semantic analysis additional data
+    short const_class = 0;
+    char* owner_class_full_name = NULL;
+    short field_ref = 0;
+    short local_var_number = 0;
+
+    short creator_method_ref = 0;
+
     return result;
 }
 
@@ -429,6 +461,14 @@ struct instruction_strct* create_instruction_as_expr(unsigned int        node_in
     result->body                = NULL;
 
     result->instruction_as_expr = instruction_as_expr;
+
+    // Semantic analysis additional data
+    short const_class = 0;
+    char* owner_class_full_name = NULL;
+    short field_ref = 0;
+    short local_var_number = 0;
+
+    short creator_method_ref = 0;
 
     return result;
 }

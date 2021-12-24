@@ -20,11 +20,19 @@ public:
     ByteCode(const EConstantTable& classConstantTable);
     static ByteCode attributesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
     static ByteCode routinesMetaByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
-    ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody);
 
     static ByteCode defaultConstructorByteCode(const EConstantTable& userClassConstants, const EUserClass& userClass);
     static ByteCode polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
     static ByteCode mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass);
+
+    ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody);
+    ByteCode(const EConstantTable& userClassConstants, const instruction_strct* instruction);
+    static ByteCode createInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* createInstruction);
+    static ByteCode assignInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* assignInstruction);
+    static ByteCode ifInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* ifInstruction);
+    static ByteCode loopInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* loopInstruction);
+    static ByteCode exprAsInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* exprAsInstruction);
+    ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
 
 private:
     ByteCode& _appendByte(unsigned char value);

@@ -6,8 +6,14 @@
 
 #include "EiffelClasses/euserclass.h"
 #include "EiffelClasses/eclassrtl.h"
-#include "EiffelClasses/eclassany.h"
-#include "EiffelClasses/eclassconsoleio.h"
+#include "EiffelClasses/RTLclasses/eclassany.h"
+#include "EiffelClasses/RTLclasses/eclassconsoleio.h"
+#include "EiffelClasses/RTLclasses/eclassboolean.h"
+#include "EiffelClasses/RTLclasses/eclassinteger.h"
+#include "EiffelClasses/RTLclasses/eclassnatural.h"
+#include "EiffelClasses/RTLclasses/eclasscharacter.h"
+#include "EiffelClasses/RTLclasses/eclassstring.h"
+#include "EiffelClasses/RTLclasses/eclassarray.h"
 
 EProgram*   EProgram::current = nullptr;
 
@@ -94,11 +100,15 @@ std::vector<EClass*> EProgram::classes() const {
 
 void EProgram::runSemanticStage_0(const program_strct* programNode) {
     // Add RTL classes
-    EClassANY classANY              = EClassANY();
-    EClassCONSOLEIO classCONSOLEIO  = EClassCONSOLEIO();
+    this->_classes[EClassANY::classRTLname()] = std::make_shared<EClassANY>(EClassANY());
+    this->_classes[EClassCONSOLEIO::classRTLname()] = std::make_shared<EClassCONSOLEIO>(EClassCONSOLEIO());
 
-    this->_classes[classANY.name()] = std::make_shared<EClassANY>(classANY);
-    this->_classes[classCONSOLEIO.name()] = std::make_shared<EClassCONSOLEIO>(classCONSOLEIO);
+    this->_classes[EClassBOOLEAN::classRTLname()] = std::make_shared<EClassBOOLEAN>(EClassBOOLEAN());
+    this->_classes[EClassINTEGER::classRTLname()] = std::make_shared<EClassINTEGER>(EClassINTEGER());
+    this->_classes[EClassNATURAL::classRTLname()] = std::make_shared<EClassNATURAL>(EClassNATURAL());
+    this->_classes[EClassCHARACTER::classRTLname()] = std::make_shared<EClassCHARACTER>(EClassCHARACTER());
+    this->_classes[EClassSTRING::classRTLname()] = std::make_shared<EClassSTRING>(EClassSTRING());
+    this->_classes[EClassARRAY::classRTLname()] = std::make_shared<EClassARRAY>(EClassARRAY());
 
     // Add user classes
     class_decl_seq_strct* classDeclSeqElem = programNode->class_decl_seq;
@@ -165,6 +175,7 @@ bool EProgram::compileToJVM(const std::string& jvmFilepath) {
 
     // Create output directory
     std::string outputDirectoryPath = "out";
+    std::filesystem::remove_all(outputDirectoryPath);
     std::filesystem::create_directory(outputDirectoryPath);
 
     for (auto& classInfo : this->_classes) {

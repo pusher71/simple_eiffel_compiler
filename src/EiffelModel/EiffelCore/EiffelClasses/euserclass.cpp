@@ -1,5 +1,5 @@
 #include "euserclass.h"
-#include "eclassany.h"
+#include "RTLclasses/eclassany.h"
 #include "../../EiffelFeatureInfo/eattribute.h"
 #include "../../EiffelFeatureInfo/eroutine.h"
 #include "../../EiffelCompilation/bytecode.h"

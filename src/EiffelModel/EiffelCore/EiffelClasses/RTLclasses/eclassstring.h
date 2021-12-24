@@ -1,13 +1,17 @@
-#ifndef ECLASSCONSOLEIO_H
-#define ECLASSCONSOLEIO_H
+#ifndef ECLASSSTRING_H
+#define ECLASSSTRING_H
 
-#include "eclassrtl.h"
+#include "../eclassrtl.h"
 
-class EClassCONSOLEIO : public EClassRTL {
+class EClassSTRING : public EClassRTL {
+    // ================ STATIC ================
+public:
+    static std::string classRTLname();
+
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
 public:
-    EClassCONSOLEIO();
+    EClassSTRING();
 
 protected:
     void _defineParents() override;
@@ -19,4 +23,4 @@ public:
     std::string name() const override;
 };
 
-#endif // ECLASSCONSOLEIO_H
+#endif // ECLASSSTRING_H

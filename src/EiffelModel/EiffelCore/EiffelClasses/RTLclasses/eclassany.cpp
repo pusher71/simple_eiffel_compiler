@@ -1,6 +1,6 @@
 #include "eclassany.h"
 
-#include "../../EiffelFeatureInfo/eattribute.h"
+#include "../../../EiffelFeatureInfo/eattribute.h"
 
 std::string EClassANY::classRTLname() { return "ANY"; }
 

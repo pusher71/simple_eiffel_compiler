@@ -6,20 +6,21 @@ create
     make
 
 feature
-    attr : INTEGER
+    obj : OBJECT
+
     make
+    local
+        obj2 : OBJECT2
     do
-        obj := void
-        obj.f
-        obj.f4
-        obj.f5
+        create obj
+        create obj2.make()
     end
 end
 -- EOF
 
--- a.e
+-- object.e
 class
-    A
+    OBJECT
 
 feature
     f
@@ -30,12 +31,18 @@ feature
 end
 -- EOF
 
--- b.e
+-- object2.e
 class
-    B
+    OBJECT2
 
-inherit
-    A
+create
+    make
+
+feature
+    make
+    do
+        io.put_string("HELLO")
+    end
 
 end
 -- EOF

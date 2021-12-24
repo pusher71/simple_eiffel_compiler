@@ -56,11 +56,17 @@ enum SemanticErrorCode {
     // Fourth semantic stage error codes
     PROGRAM__MAIN_CLASS_ISNT_SET,
 
-    // Assign
-    INSTR_ASSIGN__UNKNOWN_ID,
-    INSTR_ASSIGN__ROUTINE_ID,
-    INSTR_ASSIGN__CURRENT,
-    INSTR_ASSIGN__FORMAL_PARAMETER,
+    // ... Create instruction
+    INSTR_CREATE__FIELD_OR_LOCAL_WITH_UNKNOWN_ID,
+    INSTR_CREATE__CALL_REMOVED_DEFAULT_CREATOR,
+    INSTR_CREATE__UNKNOWN_CREATOR,
+
+    // ... Assign instruction
+    INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID,
+
+    // ... If instruction
+    // ... Loop instruction
+    // ... Expression as instruction
 };
 
 #endif // ERROR_CODES_H

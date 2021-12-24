@@ -48,8 +48,14 @@ set(SOURCE_FILES
 
     src/EiffelModel/EiffelCore/EiffelClasses/euserclass.cpp
     src/EiffelModel/EiffelCore/EiffelClasses/eclassrtl.cpp
-    src/EiffelModel/EiffelCore/EiffelClasses/eclassany.cpp
-    src/EiffelModel/EiffelCore/EiffelClasses/eclassconsoleio.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassany.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassconsoleio.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassboolean.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassinteger.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassnatural.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclasscharacter.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassstring.cpp
+    src/EiffelModel/EiffelCore/EiffelClasses/RTLclasses/eclassarray.cpp
 
     src/EiffelModel/EiffelFeatureInfo/eattribute.cpp
     src/EiffelModel/EiffelFeatureInfo/eroutine.cpp

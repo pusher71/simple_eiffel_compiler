@@ -38,6 +38,7 @@ public:
     // ---------------- additional ----------------
 public:
     std::string toString() const;
+    std::string firstElemClassName() const;
 };
 
 #endif // EDATATYPE_H

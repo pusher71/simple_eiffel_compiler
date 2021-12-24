@@ -1,6 +1,12 @@
 #include "etype.h"
 #include "eprogram.h"
-#include "EiffelClasses/eclassany.h"
+#include "EiffelClasses/RTLclasses/eclassany.h"
+#include "EiffelClasses/RTLclasses/eclassboolean.h"
+#include "EiffelClasses/RTLclasses/eclassinteger.h"
+#include "EiffelClasses/RTLclasses/eclassnatural.h"
+#include "EiffelClasses/RTLclasses/eclasscharacter.h"
+#include "EiffelClasses/RTLclasses/eclassstring.h"
+#include "EiffelClasses/RTLclasses/eclassarray.h"
 
 extern "C" {
     struct type_strct* create_type(unsigned int         node_index,
@@ -188,6 +194,23 @@ std::string EType::toString() const {
         case dtype_natural:         result = "nat" + result; break;
         case dtype_string:          result = "str" + result; break;
         case dtype_user_defined:    result = std::string(typeLevel->id_name) + result; break;
+
+        default: break;
+    }
+
+    return result;
+}
+
+std::string EType::firstElemClassName() const {
+    std::string result;
+    switch (this->_type->type) {
+        case dtype_boolean:         result = EClassBOOLEAN::classRTLname(); break;
+        case dtype_character:       result = EClassCHARACTER::classRTLname(); break;
+        case dtype_integer:         result = EClassINTEGER::classRTLname(); break;
+        case dtype_natural:         result = EClassNATURAL::classRTLname(); break;
+        case dtype_string:          result = EClassSTRING::classRTLname(); break;
+        case dtype_array:           result = EClassARRAY::classRTLname(); break;
+        case dtype_user_defined:    result = std::string(this->_type->id_name); break;
 
         default: break;
     }
