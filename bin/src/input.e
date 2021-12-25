@@ -6,11 +6,38 @@ create
     make
 
 feature
+    attr0 : INTEGER
+    attr1 : STRING
+    attr2 : OBJECT
+
     make
-    local
-        obj_main : MAIN
     do
-        create obj_main.make
+    end
+
+    feat(fp0, fp1 : STRING)
+    local
+        obj0 : OBJECT
+        obj1 : OBJECT2
+    do
+        create obj0
+        create obj1.make
+        method0
+    end
+
+    method0
+    do
+    end
+
+    method1
+    do
+    end
+
+    method2
+    do
+    end
+
+    method3
+    do
     end
 end
 -- EOF

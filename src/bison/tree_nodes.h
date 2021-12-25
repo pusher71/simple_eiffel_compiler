@@ -232,6 +232,10 @@ struct expr_strct {
 
     // Literals
     short constant_link;
+    short const_class;
+    char* owner_class_full_name;
+    short field_ref;
+    short method_ref;
 
     short inner_var_number;
 };

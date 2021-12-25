@@ -73,6 +73,11 @@ private:
     void _resolveExprAsInstruction(EUserClass& userClass, instruction_strct* exprAsInstruction);
 
     void _resolveExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveCallMethodOrVarExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveCallMethodExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveCallPrecursorExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveCreateExpr(EUserClass& userClass, expr_strct* expr);
 
 public:
     bool isConformingTo(const EFeature& other) const override;

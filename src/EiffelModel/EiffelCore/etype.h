@@ -28,6 +28,8 @@ public:
     std::string descriptor() const;
     bool isExpanded() const;
 
+    type_strct* getRawTypeCopy() const;
+
     // ---------------- comparison ----------------
 public:
     bool operator==(const EType& other) const;

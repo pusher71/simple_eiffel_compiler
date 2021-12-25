@@ -343,9 +343,14 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassCons
     result._append(ByteCode::dup());
     result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(createInstruction->owner_class_full_name, "<init>", "()V"), 0, 0));
 
+    // Store created object in field or local variable
+    if (createInstruction->field_ref != 0)              { result._append(ByteCode::putfield(createInstruction->field_ref)); }
+    else if (createInstruction->local_var_number != 0)  { result._append(ByteCode::astore(createInstruction->local_var_number)); }
+
     // Call "creator" routine
     if (createInstruction->creator_method_ref != 0) {
-        result._append(ByteCode::dup());
+        if (createInstruction->field_ref != 0)              { result._append(ByteCode::getfield(createInstruction->field_ref)); }
+        else if (createInstruction->local_var_number != 0)  { result._append(ByteCode::aload(createInstruction->local_var_number)); }
 
         short argumentsCount = 0;
         argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
@@ -357,14 +362,6 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassCons
         }
 
         result._append(ByteCode::invokevirtual(createInstruction->creator_method_ref, argumentsCount, 0));
-    }
-
-    // Store created object in field or local variable
-    if (createInstruction->field_ref != 0) {
-        result._append(ByteCode::putfield(createInstruction->field_ref));
-    }
-    else if (createInstruction->local_var_number != 0) {
-        result._append(ByteCode::astore(createInstruction->local_var_number));
     }
 
     return result;
@@ -467,12 +464,20 @@ ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, c
 
 ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
+    result._append(ByteCode::aload(0x0));
 
     return result;
 }
 
 ByteCode ByteCode::exprCallMethodOrVarByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
+    if (expression->inner_var_number == -1) {
+        result._append(ByteCode::aload(0x0));
+    }
+
+    if (expression->field_ref != 0)                 { result._append(ByteCode::getfield(expression->field_ref)); }
+    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, 0, 0)); }
+    else if (expression->inner_var_number != 0)     { result._append(ByteCode::aload(expression->inner_var_number)); }
 
     return result;
 }

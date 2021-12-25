@@ -94,6 +94,19 @@ bool EType::isExpanded() const {
     return result;
 }
 
+type_strct* EType::getRawTypeCopy() const {
+    if (this->_type == nullptr) {
+        return nullptr;
+    }
+
+    type_strct* result = new type_strct;
+    result->type = this->_type->type;
+    result->id_name = this->_type->id_name;
+    result->arrayelem_type = (this->_type->type == dtype_array ? EType(this->_type->arrayelem_type).getRawTypeCopy() : nullptr);
+
+    return result;
+}
+
 bool EType::operator==(const EType& other) const {
     bool result = false;
 

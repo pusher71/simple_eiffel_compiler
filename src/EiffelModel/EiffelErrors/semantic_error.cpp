@@ -150,6 +150,14 @@ std::string SemanticError::errorReason() const {
         case INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
             result += "ASSIGN TO FIELD OR LOCAL WITH UNKNOWN ID";
             break;
+
+        // ... Expression as instruction
+        case INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID:
+            result += "CALL METHOD, FIELD OR INNER METHOD VARIABLE WITH UNKNOWN ID";
+            break;
+        case INSTR_AS_EXPR__INSTRUCTION_RETURNS_SOME_VALUE:
+            result += "INSTRUCTION RETURNS SOME VALUE";
+            break;
     }
     result += " :: " + this->_errorMessage;
 
