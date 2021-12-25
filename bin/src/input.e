@@ -6,14 +6,11 @@ create
     make
 
 feature
-    obj : OBJECT
-
     make
     local
-        obj2 : INTEGER
+        obj_main : MAIN
     do
-        create obj
-        create obj2
+        create obj_main.make
     end
 end
 -- EOF

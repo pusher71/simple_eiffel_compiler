@@ -77,6 +77,10 @@ ByteCode::ByteCode(const EConstantTable& classConstantTable) {
                 }
                 break;
 
+            case EConstantTable::jvm_integer:
+                this->_appendFourBytes(jvmConstantInfo.second.jvm_integer);
+                break;
+
             case EConstantTable::jvm_string:
                 this->_appendTwoBytes(jvmConstantInfo.second.jvm_string);
                 break;
@@ -234,7 +238,7 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
             featureMetaInfoBodyCode._append(ByteCode::ireturn());
             break;
         case EFeatureMetaInfo::ereturntype_object:
-            featureMetaInfoBodyCode._append(ByteCode::iconst_null());
+            featureMetaInfoBodyCode._append(ByteCode::const_null());
             featureMetaInfoBodyCode._append(ByteCode::areturn());
             break;
     }
@@ -322,7 +326,7 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_s
             this->_append(ByteCode::loopInstructionByteCode(userClassConstants, instruction));
             break;
         case instruction_expr:
-            this->_append(ByteCode::exprAsInstructionByteCode(userClassConstants, instruction));
+            this->_append(ByteCode(userClassConstants, instruction->instruction_as_expr));
             break;
     }
 }
@@ -335,7 +339,6 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassCons
     }
 
     // Create object with given type
-    short const_class = createInstruction->const_class;
     result._append(ByteCode::new_(createInstruction->const_class));
     result._append(ByteCode::dup());
     result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(createInstruction->owner_class_full_name, "<init>", "()V"), 0, 0));
@@ -398,12 +401,200 @@ ByteCode ByteCode::loopInstructionByteCode(const EConstantTable& userClassConsta
     return result;
 }
 
-ByteCode ByteCode::exprAsInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* exprAsInstruction) {
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    switch(expression->type) {
+        case expr_liter_bool:
+        case expr_liter_int:
+        case expr_liter_char:
+        case expr_liter_str:
+        case expr_liter_void:           this->_append(ByteCode::literExprByteCode(userClassConstants, expression)); break;
+
+        case expr_current:              this->_append(ByteCode::currentExprByteCode(userClassConstants, expression)); break;
+        case expr_call_method_or_var:   this->_append(ByteCode::exprCallMethodOrVarByteCode(userClassConstants, expression)); break;
+        case expr_call_method:          this->_append(ByteCode::exprCallMethodByteCode(userClassConstants, expression)); break;
+        case expr_call_precursor:       this->_append(ByteCode::exprCallPrecursorByteCode(userClassConstants, expression)); break;
+        case expr_subcall:              this->_append(ByteCode::exprCallSubcallByteCode(userClassConstants, expression)); break;
+        case expr_create:               this->_append(ByteCode::createExprByteCode(userClassConstants, expression)); break;
+
+        case expr_arrelem:              this->_append(ByteCode::arrElemExprByteCode(userClassConstants, expression)); break;
+        case expr_plus:                 this->_append(ByteCode::plusExprByteCode(userClassConstants, expression)); break;
+        case expr_bminus:               this->_append(ByteCode::binminusExprByteCode(userClassConstants, expression)); break;
+        case expr_mul:                  this->_append(ByteCode::mulExprByteCode(userClassConstants, expression)); break;
+        case expr_idiv:                 this->_append(ByteCode::idivExprByteCode(userClassConstants, expression)); break;
+        case expr_uminus:               this->_append(ByteCode::unminusExprByteCode(userClassConstants, expression)); break;
+
+        case expr_less:                 this->_append(ByteCode::lessExprByteCode(userClassConstants, expression)); break;
+        case expr_great:                this->_append(ByteCode::greatExprByteCode(userClassConstants, expression)); break;
+        case expr_less_equal:           this->_append(ByteCode::lessequalExprByteCode(userClassConstants, expression)); break;
+        case expr_great_equal:          this->_append(ByteCode::greatequalExprByteCode(userClassConstants, expression)); break;
+        case expr_equal:                this->_append(ByteCode::equalExprByteCode(userClassConstants, expression)); break;
+        case expr_notequal:             this->_append(ByteCode::notequalExprByteCode(userClassConstants, expression)); break;
+
+        case expr_and:                  this->_append(ByteCode::andExprByteCode(userClassConstants, expression)); break;
+        case expr_or:                   this->_append(ByteCode::orExprByteCode(userClassConstants, expression)); break;
+        case expr_not:                  this->_append(ByteCode::notExprByteCode(userClassConstants, expression)); break;
+        case expr_xor:                  this->_append(ByteCode::xorExprByteCode(userClassConstants, expression)); break;
+    }
+}
+
+ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
+    short intLiteral = 0;
+
+    switch(expression->type) {
+        case expr_liter_bool:
+            result._append(ByteCode::iconst(expression->liter_bool));
+            break;
+        case expr_liter_int:
+            intLiteral = expression->liter_int;
+            if (expression->liter_int == intLiteral)    { result._append(ByteCode::sipush(intLiteral)); }
+            else                                        { result._append(ByteCode::ldc_w(expression->constant_link)); }
+
+            break;
+        case expr_liter_char:
+            result._append(ByteCode::bipush(expression->liter_char));
+            break;
+        case expr_liter_str:
+            result._append(ByteCode::ldc_w(expression->constant_link));
+            break;
+        case expr_liter_void:
+            result._append(ByteCode::const_null());
+            break;
+    }
+
     return result;
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::exprCallMethodOrVarByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::exprCallMethodByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::plusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::binminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::mulExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::idivExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
+}
+
+ByteCode ByteCode::xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+    ByteCode result;
+
+    return result;
 }
 
 ByteCode& ByteCode::_appendByte(unsigned char value) {
@@ -461,7 +652,7 @@ ByteCode ByteCode::iconst(signed char i) {
     return result;
 }
 
-ByteCode ByteCode::iconst_null() {
+ByteCode ByteCode::const_null() {
     ByteCode result;
     result._appendByte(0x01);
 
@@ -842,116 +1033,3 @@ ByteCode ByteCode::_return() {
 
     return result;
 }
-
-/*
-=== EXAMPLE OF BYTE CODE STRUCTURE =======
-
-    this->_appendFourBytes(0xCAFEBABE);     // "Magic" java constant
-    this->_appendTwoBytes(0x0000);          // Minor version of java
-    this->_appendTwoBytes(0x003C);          // Major version of java
-
-    // Bytecode of constant table
-    ((EUserClass*)userClass)->_constants.appendUtf8("<init>");
-    ((EUserClass*)userClass)->_constants.appendUtf8("()V");
-    ((EUserClass*)userClass)->_constants.appendNameAndType({19, 20});
-    ((EUserClass*)userClass)->_constants.appendUtf8("java/lang/Object");
-    ((EUserClass*)userClass)->_constants.appendConstClass(22);
-    ((EUserClass*)userClass)->_constants.appendMethodRef({23, 21});
-    ((EUserClass*)userClass)->_constants.appendUtf8("<init>");
-    ((EUserClass*)userClass)->_constants.appendUtf8("()V");
-    ((EUserClass*)userClass)->_constants.appendNameAndType({6, 7});
-    ((EUserClass*)userClass)->_constants.appendMethodRef({5, 8});
-
-    ((EUserClass*)userClass)->_constants.appendUtf8("main");
-    ((EUserClass*)userClass)->_constants.appendUtf8("([Ljava/lang/String;)V");
-    ((EUserClass*)userClass)->_constants.appendUtf8("java/lang/System");
-    ((EUserClass*)userClass)->_constants.appendConstClass(12);
-    ((EUserClass*)userClass)->_constants.appendUtf8("out");
-    ((EUserClass*)userClass)->_constants.appendUtf8("Ljava/io/PrintStream;");
-    ((EUserClass*)userClass)->_constants.appendNameAndType({14, 15});
-    ((EUserClass*)userClass)->_constants.appendFieldRef({13, 16});
-    ((EUserClass*)userClass)->_constants.appendUtf8("java/io/PrintStream");
-    ((EUserClass*)userClass)->_constants.appendConstClass(18);
-    ((EUserClass*)userClass)->_constants.appendUtf8("println");
-    ((EUserClass*)userClass)->_constants.appendUtf8("(Ljava/lang/String;)V");
-    ((EUserClass*)userClass)->_constants.appendNameAndType({20, 21});
-    ((EUserClass*)userClass)->_constants.appendMethodRef({19, 22});
-    ((EUserClass*)userClass)->_constants.appendUtf8("Hello! It\'s me, " + userClass->fullName() + "!\n");
-    ((EUserClass*)userClass)->_constants.appendString(24);
-
-    ByteCode constantTableByteCode(&userClass->_constants);
-    this->_append(constantTableByteCode);
-
-    // Self class info
-    this->_appendTwoBytes(0x0001);          // Access flags (0x0001 - PUBLIC class)
-    this->_appendTwoBytes(userClass->_constants.searchClassConstBy(userClass->fullName())); // Link to self constant class in constant table
-    this->_appendTwoBytes(userClass->_constants.searchClassConstBy(EClass::javaObjectFullName())); // Link to parent constantn class in constant table (java.lang.Object is parent)
-    this->_appendTwoBytes(0x0000);          // Count of interfaces which class implements
-    // Fields info
-    this->_appendTwoBytes(0x0000);
-
-    // Methods info
-    this->_appendTwoBytes(0x0002); // Methods count
-
-    // Default constructor ...
-    // ... Main settings
-    this->_appendTwoBytes(0x0001);  // Access flags (PUBLIC)
-    this->_appendTwoBytes(0x0006);  // Link to utf8 string with name of method
-    this->_appendTwoBytes(0x0007);  // Link to utf8 string with descriptor of method
-    this->_appendTwoBytes(0x0001);  // Attributes count
-    this->_appendTwoBytes(0x0001);  // Attribute index ("Code" attribute)
-    this->_appendFourBytes(0x0011); // Attribute length (in bytes)
-    this->_appendTwoBytes(0x0080); // max stack size (in bytes)
-    this->_appendTwoBytes(0x0080); // max local size (in bytes)
-    this->_appendFourBytes(0x5); // "Code" length (in bytes)
-
-    // ... Code
-    // Aload "this"
-    this->_appendByte(0x2A);
-
-    // Invokespecial
-    this->_appendByte(0xB7);
-    this->_appendTwoBytes(0x0009);
-
-    // Return
-    this->_appendByte(0xB1);
-
-    // ... End of method
-    this->_appendTwoBytes(0x0000); // Length of exception (in bytes)
-    this->_appendTwoBytes(0x0000); // Attributes count
-
-    // "main" function
-    // ... Main settings
-    this->_appendTwoBytes(0x0009);  // Access flags (PUBLIC + STATIC)
-    this->_appendTwoBytes(0x000A);  // Link to utf8 string with name of method
-    this->_appendTwoBytes(0x000B);  // Link to utf8 string with descriptor of method
-    this->_appendTwoBytes(0x0001);  // Attributes count
-    this->_appendTwoBytes(0x0001);  // Attribute index ("Code" attribute)
-    this->_appendFourBytes(0x15);   // Attribute length (in bytes)
-    this->_appendTwoBytes(0x0010);  // max stack size (in bytes)
-    this->_appendTwoBytes(0x0010);  // max local size (in bytes)
-    this->_appendFourBytes(0x09);   // "Code" length (in bytes)
-
-    // ... Code
-    // Getstatic "out"
-    this->_appendByte(0xB2);
-    this->_appendTwoBytes(0x0011);
-
-    // Ldc "string"
-    this->_appendByte(0x12);
-    this->_appendByte(0x19);
-
-    // Invokevirtual
-    this->_appendByte(0xB6);
-    this->_appendTwoBytes(0x0017);
-
-    // Return
-    this->_appendByte(0xB1);
-
-    // ... End of method
-    this->_appendTwoBytes(0x0000); // Length of exception (in bytes)
-    this->_appendTwoBytes(0x0000); // Attributes count
-
-    this->_appendTwoBytes(0x0000); // Class attributes count
-
-*/

@@ -108,6 +108,7 @@ enum type_enum {
     dtype_user_defined,
     dtype_array,
 
+    dtype_void,
     dtype_boolean,
     dtype_character,
     dtype_integer,
@@ -228,5 +229,9 @@ struct expr_strct {
 
     // Semantic analysis additional data
     struct type_strct*  result_type;
+
+    // Literals
+    short constant_link;
+
     short inner_var_number;
 };

@@ -3,12 +3,14 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 class EConstantTable {
     // ============== INNER CLASSES ===========
 public:
     union JvmConstant {
         std::string* jvm_utf8 = nullptr;
+        int32_t jvm_integer;
         short jvm_string;
         short jvm_class;
         std::pair<short, short> jvm_nameAndType;
@@ -23,6 +25,7 @@ public:
     enum JvmConstantType {
         jvm_invalid         = -1,
         jvm_utf8            = 1,
+        jvm_integer         = 3,
         jvm_string          = 8,
         jvm_class           = 7,
         jvm_nameAndType     = 12,
@@ -46,6 +49,7 @@ public:
     short searchMethodRefBy(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) const;
 
     short appendUtf8(const std::string& stringUtf8);
+    short appendInteger(int32_t integerValue);
     short appendString(short utf8Link_string);
     short appendConstClass(short utf8Link_string);
     short appendNameAndType(const std::pair<short, short>& utf8Links_nameAndType);

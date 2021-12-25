@@ -1,11 +1,19 @@
 #include "eroutine.h"
 #include "eattribute.h"
+#include "../EiffelCore/etype.h"
 #include "../EiffelCore/eprogram.h"
 
 #include "../EiffelCore/EiffelClasses/euserclass.h"
-#include "../../bison/tree_creators.h"
+
+#include "../../flex/utilities/chararray_utilities.h"
 
 extern "C" unsigned int curr_node_index;
+extern "C" {
+    struct type_strct* create_type(unsigned int         node_index,
+                                   enum type_enum       type,
+                                   char*                id_name,
+                                   struct type_strct*   arrayelem_type);
+}
 
 ERoutine::ERoutine(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl),
@@ -388,9 +396,86 @@ void ERoutine::_resolveLoopInstruction(EUserClass& userClass, instruction_strct*
 }
 
 void ERoutine::_resolveExprAsInstruction(EUserClass& userClass, instruction_strct* exprAsInstruction) {
+    this->_resolveExpr(userClass, exprAsInstruction->instruction_as_expr);
 }
 
-void _resolveExpr(EUserClass& userClass, expr_strct* expr) {
+void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
+    short intLiteral = 0;
+    std::string stringLiteral = "";
+
+    switch(expr->type) {
+        case expr_liter_bool:
+            expr->result_type = create_type(curr_node_index++, dtype_boolean, NULL, NULL);
+            break;
+        case expr_liter_int:
+            expr->result_type = create_type(curr_node_index++, dtype_integer, NULL, NULL);
+
+            intLiteral = expr->liter_int;
+            if (intLiteral != expr->liter_int) { expr->constant_link = userClass.constants().appendInteger(expr->liter_int); }
+
+            break;
+        case expr_liter_char:
+            expr->result_type = create_type(curr_node_index++, dtype_character, NULL, NULL);
+            break;
+        case expr_liter_str:
+            expr->result_type = create_type(curr_node_index++, dtype_string, NULL, NULL);
+
+            for (int i=0; i<chaarlen(expr->liter_str); i++) { stringLiteral += chaargetchr(expr->liter_str, i); }
+            expr->constant_link = userClass.constants().appendString( userClass.constants().appendUtf8(stringLiteral) );
+
+            break;
+        case expr_liter_void:
+            expr->result_type = create_type(curr_node_index++, dtype_void, NULL, NULL);
+            break;
+
+        case expr_current:
+            break;
+        case expr_call_method_or_var:
+            break;
+        case expr_call_method:
+            break;
+        case expr_call_precursor:
+            break;
+        case expr_subcall:
+            break;
+        case expr_create:
+            break;
+
+        case expr_arrelem:
+            break;
+        case expr_plus:
+            break;
+        case expr_bminus:
+            break;
+        case expr_mul:
+            break;
+        case expr_idiv:
+            break;
+        case expr_uminus:
+            break;
+
+        case expr_less:
+            break;
+        case expr_great:
+            break;
+        case expr_less_equal:
+            break;
+        case expr_great_equal:
+            break;
+        case expr_equal:
+            break;
+        case expr_notequal:
+            break;
+
+        case expr_and:
+            break;
+        case expr_or:
+            break;
+        case expr_not:
+            break;
+        case expr_xor:
+            break;
+    }
 }
 
 bool ERoutine::isConformingTo(const EFeature& other) const {

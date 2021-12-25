@@ -265,6 +265,9 @@ void print_type(FILE* dot_file, struct type_strct* type) {
         case dtype_string:
             fprintf(dot_file, "%u[label=\"dtype <STR>\"];\n", type->_node_index);
             break;
+        case dtype_void:
+            fprintf(dot_file, "%u[label=\"dtype <VOID>\"];\n", type->_node_index);
+            break;
         case dtype_array:
             fprintf(dot_file, "%u[label=\"dtype <ARRAY>\"];\n", type->_node_index);
 

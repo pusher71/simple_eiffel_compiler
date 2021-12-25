@@ -166,6 +166,26 @@ short EConstantTable::appendString(short utf8Link_string) {
     }
 }
 
+short EConstantTable::appendInteger(int32_t integerValue) {
+    EConstantTable::JvmConstant result;
+    result.jvm_integer = integerValue;
+
+    int constantPos = 0;
+    for (int i=0; i<this->_constants.size(); i++) {
+        if (this->_constants.at(i).first == jvm_integer && this->_constants.at(i).second.jvm_integer == integerValue) {
+            constantPos = i+1;
+        }
+    }
+
+    if (constantPos == 0) {
+        this->_constants.push_back({jvm_integer, result});
+        return this->_constants.size();
+    }
+    else {
+        return constantPos;
+    }
+}
+
 short EConstantTable::appendConstClass(short utf8Link_class) {
     EConstantTable::JvmConstant result;
     result.jvm_class = utf8Link_class;

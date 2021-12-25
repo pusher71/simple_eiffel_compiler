@@ -31,8 +31,34 @@ public:
     static ByteCode assignInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* assignInstruction);
     static ByteCode ifInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* ifInstruction);
     static ByteCode loopInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* loopInstruction);
-    static ByteCode exprAsInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* exprAsInstruction);
     ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+
+    static ByteCode exprCallMethodOrVarByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode exprCallMethodByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+
+    static ByteCode arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode plusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode binminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode mulExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode idivExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+
+    static ByteCode lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+
+    static ByteCode andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
 
 private:
     ByteCode& _appendByte(unsigned char value);
@@ -46,7 +72,7 @@ public:
 
 private:
     static ByteCode iconst(signed char i); // [-1 .. 5] (7 possible values)
-    static ByteCode iconst_null();
+    static ByteCode const_null();
 
     static ByteCode bipush(char s1);
     static ByteCode sipush(short int s2);
