@@ -6,6 +6,9 @@
 std::string EClass::javaObjectFullName() { return "java/lang/Object"; }
 std::string EClass::javaStringFullName() { return "java/lang/String"; }
 
+std::string EClass::userClassPackageName() { return "eiffel"; }
+std::string EClass::rtlClassPackageName() { return "rtl"; }
+
 void EClass::_initSelf() {
     this->_defineParents();
     this->_checkInheritClausesDuplicates();

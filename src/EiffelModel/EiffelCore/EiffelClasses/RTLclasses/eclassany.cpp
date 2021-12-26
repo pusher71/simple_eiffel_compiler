@@ -3,6 +3,7 @@
 #include "../../../EiffelFeatureInfo/eattribute.h"
 
 std::string EClassANY::classRTLname() { return "ANY"; }
+std::string EClassANY::classRTLfullName() { return EClass::rtlClassPackageName() + "/" + EClassANY::classRTLname(); }
 
 EClassANY::EClassANY() {
     this->_initSelf();

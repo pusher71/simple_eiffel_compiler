@@ -1,6 +1,7 @@
 #include "eclassnatural.h"
 
 std::string EClassNATURAL::classRTLname() { return "NATURAL"; }
+std::string EClassNATURAL::classRTLfullName() { return EClass::rtlClassPackageName() + "/" + EClassNATURAL::classRTLname(); }
 
 EClassNATURAL::EClassNATURAL() {
     this->_initSelf();

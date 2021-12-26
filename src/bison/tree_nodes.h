@@ -182,8 +182,7 @@ enum expr_type {
     expr_liter_void,
 
     expr_current,
-    expr_call_method_or_var,
-    expr_call_method,
+    expr_call_selffeature,
     expr_call_precursor,
     expr_subcall,
     expr_create,
@@ -216,6 +215,7 @@ struct expr_strct {
     char*                       class_id_name;
     char*                       method_id_name;
     struct argument_seq_strct*  argument_seq;
+    int                         is_field_access;
 
     int                 liter_bool;
     int                 liter_int;

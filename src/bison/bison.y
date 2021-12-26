@@ -259,12 +259,12 @@ ids_with_type_seq: identifiers_comma_seq ':' type opt_semicolon                 
                  ;
 
 type: ID                            { $$ = create_type(curr_node_index++, dtype_user_defined, $1, NULL); }
-    | DATATYPE_BOOLEAN              { $$ = create_type(curr_node_index++, dtype_boolean, NULL, NULL); }
-    | DATATYPE_CHARACTER            { $$ = create_type(curr_node_index++, dtype_character, NULL, NULL); }
-    | DATATYPE_INTEGER              { $$ = create_type(curr_node_index++, dtype_integer, NULL, NULL); }
-    | DATATYPE_NATURAL              { $$ = create_type(curr_node_index++, dtype_natural, NULL, NULL); }
-    | DATATYPE_STRING               { $$ = create_type(curr_node_index++, dtype_string, NULL, NULL); }
-    | DATATYPE_ARRAY '[' type ']'   { $$ = create_type(curr_node_index++, dtype_array, NULL, $3); }
+    | DATATYPE_BOOLEAN              { $$ = create_type(curr_node_index++, dtype_boolean, "BOOLEAN", NULL); }
+    | DATATYPE_CHARACTER            { $$ = create_type(curr_node_index++, dtype_character, "CHARACTER", NULL); }
+    | DATATYPE_INTEGER              { $$ = create_type(curr_node_index++, dtype_integer, "INTEGER", NULL); }
+    | DATATYPE_NATURAL              { $$ = create_type(curr_node_index++, dtype_natural, "NATURAL", NULL); }
+    | DATATYPE_STRING               { $$ = create_type(curr_node_index++, dtype_string, "STRING", NULL); }
+    | DATATYPE_ARRAY '[' type ']'   { $$ = create_type(curr_node_index++, dtype_array, "ARRAY", $3); }
     ;
 
 instruction_seq: opt_semicolon_seq                              { $$ = create_instruction_seq(curr_node_index++, NULL); }
@@ -297,18 +297,18 @@ expr: LITER_BOOLEAN                             { $$ = create_expr_liter_bool(cu
 
     | '(' expr ')'                              { $$ = $2; $$->is_parenthesized = 1; }
     | CURRENT									{ $$ = create_expr_current(curr_node_index++); }
-    | ID                                      	{ $$ = create_expr_call(curr_node_index++, expr_call_method_or_var, $1, NULL); }
-    | ID '(' ')'                                { $$ = create_expr_call(curr_node_index++, expr_call_method, $1, NULL); }
-    | ID '(' argument_seq ')'                   { $$ = create_expr_call(curr_node_index++, expr_call_method, $1, $3); }
+    | ID                                      	{ $$ = create_expr_call(curr_node_index++, expr_call_selffeature, $1, NULL, 1); }
+    | ID '(' ')'                                { $$ = create_expr_call(curr_node_index++, expr_call_selffeature, $1, NULL, 0); }
+    | ID '(' argument_seq ')'                   { $$ = create_expr_call(curr_node_index++, expr_call_selffeature, $1, $3, 0); }
     | PRECURSOR                                 { $$ = create_expr_precursorcall(curr_node_index++, NULL, NULL); }
     | PRECURSOR '(' ')'                         { $$ = create_expr_precursorcall(curr_node_index++, NULL, NULL); }
     | PRECURSOR '(' argument_seq ')'            { $$ = create_expr_precursorcall(curr_node_index++, NULL, NULL); }
     | PRECURSOR '{' ID '}'                      { $$ = create_expr_precursorcall(curr_node_index++, $3, NULL); }
     | PRECURSOR '{' ID '}' '(' ')'              { $$ = create_expr_precursorcall(curr_node_index++, $3, NULL); }
     | PRECURSOR '{' ID '}' '(' argument_seq ')' { $$ = create_expr_precursorcall(curr_node_index++, $3, $6); }
-    | expr '.' ID                               { $$ = create_expr_subcall(curr_node_index++, $1, $3, NULL); }
-    | expr '.' ID '(' ')'						{ $$ = create_expr_subcall(curr_node_index++, $1, $3, NULL); }
-    | expr '.' ID '(' argument_seq ')'          { $$ = create_expr_subcall(curr_node_index++, $1, $3, $5); }
+    | expr '.' ID                               { $$ = create_expr_subcall(curr_node_index++, $1, $3, NULL, 1); }
+    | expr '.' ID '(' ')'						{ $$ = create_expr_subcall(curr_node_index++, $1, $3, NULL, 0); }
+    | expr '.' ID '(' argument_seq ')'          { $$ = create_expr_subcall(curr_node_index++, $1, $3, $5, 0); }
 
     | CREATE '{' type '}'                                 { $$ = create_expr_creation(curr_node_index++, $3, NULL, NULL); }
     | CREATE '{' type '}' '.' ID                          { $$ = create_expr_creation(curr_node_index++, $3, $6, NULL); }

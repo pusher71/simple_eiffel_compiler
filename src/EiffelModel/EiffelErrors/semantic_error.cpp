@@ -152,11 +152,15 @@ std::string SemanticError::errorReason() const {
             break;
 
         // ... Expression as instruction
+        case INSTR_AS_EXPR__INSTRUCTION_RETURNS_SOME_VALUE:
+            result += "INSTRUCTION RETURNS SOME VALUE";
+            break;
+
         case INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID:
             result += "CALL METHOD, FIELD OR INNER METHOD VARIABLE WITH UNKNOWN ID";
             break;
-        case INSTR_AS_EXPR__INSTRUCTION_RETURNS_SOME_VALUE:
-            result += "INSTRUCTION RETURNS SOME VALUE";
+        case INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OPERAND:
+            result += "SUBCALL WITH PRIMITIVE TYPE OPERAND";
             break;
     }
     result += " :: " + this->_errorMessage;

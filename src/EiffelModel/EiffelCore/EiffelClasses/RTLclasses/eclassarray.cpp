@@ -1,6 +1,7 @@
 #include "eclassarray.h"
 
 std::string EClassARRAY::classRTLname() { return "ARRAY"; }
+std::string EClassARRAY::classRTLfullName() { return EClass::rtlClassPackageName() + "/" + EClassARRAY::classRTLname(); }
 
 EClassARRAY::EClassARRAY() {
     this->_initSelf();

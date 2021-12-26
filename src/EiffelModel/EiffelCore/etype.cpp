@@ -70,15 +70,29 @@ std::string EType::descriptor() const {
         classInfo = EProgram::current->getClassBy(typeLevel->id_name);
     }
 
-    switch (typeLevel->type) {
-        case dtype_boolean:         result += "Z"; break;
-        case dtype_character:       result += "C"; break;
-        case dtype_integer:         result += "I"; break;
-        case dtype_natural:         result += "I"; break;
-        case dtype_string:          result += "L" + EClass::javaStringFullName() + ";"; break;
-        case dtype_user_defined:    result += "L" + classInfo->fullName() + ";"; break;
+    if (typeLevel->id_name == NULL) {
+        switch (typeLevel->type) {
+            case dtype_boolean:         result += "Z"; break;
+            case dtype_character:       result += "C"; break;
+            case dtype_integer:         result += "I"; break;
+            case dtype_natural:         result += "I"; break;
+            case dtype_string:          result += "L" + EClass::javaStringFullName() + ";"; break;
 
-        default: break;
+            default: break;
+        }
+    }
+    else {
+        switch (typeLevel->type) {
+            case dtype_boolean:         result += "L" + EClassBOOLEAN::classRTLfullName() + ";"; break;
+            case dtype_character:       result += "L" + EClassCHARACTER::classRTLfullName() + ";"; break;
+            case dtype_integer:         result += "L" + EClassINTEGER::classRTLfullName() + ";"; break;
+            case dtype_natural:         result += "L" + EClassNATURAL::classRTLfullName() + ";"; break;
+            case dtype_string:          result += "L" + EClassSTRING::classRTLfullName() + ";"; break;
+            case dtype_array:           result += "L" + EClassARRAY::classRTLfullName() + ";"; break;
+            case dtype_user_defined:    result += "L" + classInfo->fullName() + ";"; break;
+
+            default: break;
+        }
     }
 
     return result;

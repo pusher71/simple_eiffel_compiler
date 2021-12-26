@@ -2142,32 +2142,32 @@ yyreduce:
 
   case 61:
 #line 262 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_boolean, NULL, NULL); ;}
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_boolean, "BOOLEAN", NULL); ;}
     break;
 
   case 62:
 #line 263 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_character, NULL, NULL); ;}
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_character, "CHARACTER", NULL); ;}
     break;
 
   case 63:
 #line 264 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer, NULL, NULL); ;}
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_integer, "INTEGER", NULL); ;}
     break;
 
   case 64:
 #line 265 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural, NULL, NULL); ;}
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_natural, "NATURAL", NULL); ;}
     break;
 
   case 65:
 #line 266 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_string, NULL, NULL); ;}
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_string, "STRING", NULL); ;}
     break;
 
   case 66:
 #line 267 "src/bison/bison.y"
-    { (yyval.type_field) = create_type(curr_node_index++, dtype_array, NULL, (yyvsp[(3) - (4)].type_field)); ;}
+    { (yyval.type_field) = create_type(curr_node_index++, dtype_array, "ARRAY", (yyvsp[(3) - (4)].type_field)); ;}
     break;
 
   case 67:
@@ -2272,17 +2272,17 @@ yyreduce:
 
   case 87:
 #line 300 "src/bison/bison.y"
-    { (yyval.expr_field) = create_expr_call(curr_node_index++, expr_call_method_or_var, (yyvsp[(1) - (1)].id_field), NULL); ;}
+    { (yyval.expr_field) = create_expr_call(curr_node_index++, expr_call_selffeature, (yyvsp[(1) - (1)].id_field), NULL, 1); ;}
     break;
 
   case 88:
 #line 301 "src/bison/bison.y"
-    { (yyval.expr_field) = create_expr_call(curr_node_index++, expr_call_method, (yyvsp[(1) - (3)].id_field), NULL); ;}
+    { (yyval.expr_field) = create_expr_call(curr_node_index++, expr_call_selffeature, (yyvsp[(1) - (3)].id_field), NULL, 0); ;}
     break;
 
   case 89:
 #line 302 "src/bison/bison.y"
-    { (yyval.expr_field) = create_expr_call(curr_node_index++, expr_call_method, (yyvsp[(1) - (4)].id_field), (yyvsp[(3) - (4)].argument_seq_field)); ;}
+    { (yyval.expr_field) = create_expr_call(curr_node_index++, expr_call_selffeature, (yyvsp[(1) - (4)].id_field), (yyvsp[(3) - (4)].argument_seq_field), 0); ;}
     break;
 
   case 90:
@@ -2317,17 +2317,17 @@ yyreduce:
 
   case 96:
 #line 309 "src/bison/bison.y"
-    { (yyval.expr_field) = create_expr_subcall(curr_node_index++, (yyvsp[(1) - (3)].expr_field), (yyvsp[(3) - (3)].id_field), NULL); ;}
+    { (yyval.expr_field) = create_expr_subcall(curr_node_index++, (yyvsp[(1) - (3)].expr_field), (yyvsp[(3) - (3)].id_field), NULL, 1); ;}
     break;
 
   case 97:
 #line 310 "src/bison/bison.y"
-    { (yyval.expr_field) = create_expr_subcall(curr_node_index++, (yyvsp[(1) - (5)].expr_field), (yyvsp[(3) - (5)].id_field), NULL); ;}
+    { (yyval.expr_field) = create_expr_subcall(curr_node_index++, (yyvsp[(1) - (5)].expr_field), (yyvsp[(3) - (5)].id_field), NULL, 0); ;}
     break;
 
   case 98:
 #line 311 "src/bison/bison.y"
-    { (yyval.expr_field) = create_expr_subcall(curr_node_index++, (yyvsp[(1) - (6)].expr_field), (yyvsp[(3) - (6)].id_field), (yyvsp[(5) - (6)].argument_seq_field)); ;}
+    { (yyval.expr_field) = create_expr_subcall(curr_node_index++, (yyvsp[(1) - (6)].expr_field), (yyvsp[(3) - (6)].id_field), (yyvsp[(5) - (6)].argument_seq_field), 0); ;}
     break;
 
   case 99:

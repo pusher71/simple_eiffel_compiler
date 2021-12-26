@@ -67,8 +67,10 @@ enum SemanticErrorCode {
     // ... If instruction
     // ... Loop instruction
     // ... Expression as instruction
-    INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID,
     INSTR_AS_EXPR__INSTRUCTION_RETURNS_SOME_VALUE,
+
+    INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID,
+    INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OPERAND,
 };
 
 #endif // ERROR_CODES_H

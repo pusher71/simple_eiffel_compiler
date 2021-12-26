@@ -510,6 +510,7 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = liter_bool;
     result->liter_int       = 0;
@@ -536,6 +537,7 @@ struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int)
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = liter_int;
@@ -562,6 +564,7 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -588,6 +591,7 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -614,6 +618,7 @@ struct expr_strct* create_expr_liter_void(unsigned int node_index) {
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -640,6 +645,7 @@ struct expr_strct* create_expr_current(unsigned int node_index) {
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -660,7 +666,8 @@ struct expr_strct* create_expr_current(unsigned int node_index) {
 struct expr_strct* create_expr_call(unsigned int                 node_index,
                                     enum expr_type               call_type,
                                     char*                        method_id_name,
-                                    struct argument_seq_strct*   argument_seq)
+                                    struct argument_seq_strct*   argument_seq,
+                                    int                          is_field_access)
 {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
     result->_node_index         = node_index;
@@ -670,6 +677,7 @@ struct expr_strct* create_expr_call(unsigned int                 node_index,
     result->class_id_name   = NULL;
     result->method_id_name  = method_id_name;
     result->argument_seq    = NULL;
+    result->is_field_access = is_field_access;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -699,6 +707,7 @@ struct expr_strct* create_expr_precursorcall(unsigned int                 node_i
     result->class_id_name   = class_id_name;
     result->method_id_name  = NULL;
     result->argument_seq    = argument_seq;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -719,7 +728,8 @@ struct expr_strct* create_expr_precursorcall(unsigned int                 node_i
 struct expr_strct* create_expr_subcall(unsigned int                 node_index,
                                        struct expr_strct*           expr,
                                        char*                        method_id_name,
-                                       struct argument_seq_strct*   argument_seq)
+                                       struct argument_seq_strct*   argument_seq,
+                                       int                          is_field_access)
 {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
     result->_node_index         = node_index;
@@ -729,6 +739,7 @@ struct expr_strct* create_expr_subcall(unsigned int                 node_index,
     result->class_id_name   = NULL;
     result->method_id_name  = method_id_name;
     result->argument_seq    = argument_seq;
+    result->is_field_access = is_field_access;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -759,6 +770,7 @@ struct expr_strct* create_expr_creation(unsigned int                 node_index,
     result->class_id_name   = NULL;
     result->method_id_name  = method_id_name;
     result->argument_seq    = argument_seq;
+    result->is_field_access = 0;
 
     result->liter_bool      = 0;
     result->liter_int       = 0;
@@ -789,6 +801,7 @@ struct expr_strct* create_expr_operation(unsigned int node_index,
     result->class_id_name   = NULL;
     result->method_id_name  = NULL;
     result->argument_seq    = NULL;
+    result->is_field_access = 0;
 
     result->liter_bool      = -1;
     result->liter_int       = 0;

@@ -118,7 +118,7 @@ void EUserClass::_defineFeatures() {
 }
 
 std::string EUserClass::name() const { return this->_name; }
-std::string EUserClass::javaPackageName() const { return "eiffel"; }
+std::string EUserClass::javaPackageName() const { return EClass::userClassPackageName(); }
 
 EConstantTable& EUserClass::constants() { return this->_constants; }
 

@@ -164,12 +164,12 @@ ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants
     // Create main class
     routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy(mainClass.fullName())));
     routineBodyCode._append(ByteCode::dup());
-    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor()), 0, 0));
+    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor()), 0));
     routineBodyCode._append(ByteCode::astore(0x01));
 
     // Run main method of main class
     routineBodyCode._append(ByteCode::aload(0x01));
-    routineBodyCode._append(ByteCode::invokevirtual(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::eiffelMainFunctionName(), EProgram::javaDefaultConstructorDescriptor()), 0, 0));
+    routineBodyCode._append(ByteCode::invokevirtual(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::eiffelMainFunctionName(), EProgram::javaDefaultConstructorDescriptor()), 0));
 
     routineBodyCode._append(ByteCode::_return());
 
@@ -217,7 +217,7 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
 
         ifBlock._append((polymorphicFeatureInfo.second.first == EFeature::efeature_attribute
                          ? ByteCode::getfield(polymorphicFeatureInfo.second.second)
-                         : ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount, false)));
+                         : ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount)));
 
         switch (featureMetaInfo.returnType()) {
             case EFeatureMetaInfo::ereturntype_void:                                          break;
@@ -269,19 +269,14 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
     ByteCode routineBodyCode;
     // Call this.super
     routineBodyCode._append(ByteCode::aload(0x0));
-    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(EClass::javaObjectFullName(),
-                                                                                         EProgram::javaDefaultConstructorName(),
-                                                                                         EProgram::javaDefaultConstructorDescriptor()
-                                                                                         ),
-                                                    0,
-                                                    0));
+    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(EClass::javaObjectFullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor() ), 0));
 
     // Initialize IO variable
     routineBodyCode._append(ByteCode::aload(0x0));
     routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy("rtl/CONSOLEIO")));
     routineBodyCode._append(ByteCode::dup());
-    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0, 0));
-    short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), "io", "Lrtl/CONSOLEIO;");
+    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0));
+    short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), "IO", "Lrtl/CONSOLEIO;");
     routineBodyCode._append(ByteCode::putfield(fieldRef));
 
     routineBodyCode._append(ByteCode::_return());
@@ -341,7 +336,7 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassCons
     // Create object with given type
     result._append(ByteCode::new_(createInstruction->const_class));
     result._append(ByteCode::dup());
-    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(createInstruction->owner_class_full_name, "<init>", "()V"), 0, 0));
+    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(createInstruction->owner_class_full_name, "<init>", "()V"), 0));
 
     // Store created object in field or local variable
     if (createInstruction->field_ref != 0)              { result._append(ByteCode::putfield(createInstruction->field_ref)); }
@@ -361,7 +356,7 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassCons
             argumentSeqElem = argumentSeqElem->next;
         }
 
-        result._append(ByteCode::invokevirtual(createInstruction->creator_method_ref, argumentsCount, 0));
+        result._append(ByteCode::invokevirtual(createInstruction->creator_method_ref, argumentsCount));
     }
 
     return result;
@@ -407,8 +402,7 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* e
         case expr_liter_void:           this->_append(ByteCode::literExprByteCode(userClassConstants, expression)); break;
 
         case expr_current:              this->_append(ByteCode::currentExprByteCode(userClassConstants, expression)); break;
-        case expr_call_method_or_var:   this->_append(ByteCode::exprCallMethodOrVarByteCode(userClassConstants, expression)); break;
-        case expr_call_method:          this->_append(ByteCode::exprCallMethodByteCode(userClassConstants, expression)); break;
+        case expr_call_selffeature:     this->_append(ByteCode::exprCallSelffeatureByteCode(userClassConstants, expression)); break;
         case expr_call_precursor:       this->_append(ByteCode::exprCallPrecursorByteCode(userClassConstants, expression)); break;
         case expr_subcall:              this->_append(ByteCode::exprCallSubcallByteCode(userClassConstants, expression)); break;
         case expr_create:               this->_append(ByteCode::createExprByteCode(userClassConstants, expression)); break;
@@ -457,6 +451,8 @@ ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, c
         case expr_liter_void:
             result._append(ByteCode::const_null());
             break;
+
+        default: break;
     }
 
     return result;
@@ -469,21 +465,15 @@ ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants,
     return result;
 }
 
-ByteCode ByteCode::exprCallMethodOrVarByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
     if (expression->inner_var_number == -1) {
         result._append(ByteCode::aload(0x0));
     }
 
     if (expression->field_ref != 0)                 { result._append(ByteCode::getfield(expression->field_ref)); }
-    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, 0, 0)); }
+    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, 0)); }
     else if (expression->inner_var_number != 0)     { result._append(ByteCode::aload(expression->inner_var_number)); }
-
-    return result;
-}
-
-ByteCode ByteCode::exprCallMethodByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
-    ByteCode result;
 
     return result;
 }
@@ -496,6 +486,20 @@ ByteCode ByteCode::exprCallPrecursorByteCode(const EConstantTable& userClassCons
 
 ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_left));
+
+    int argumentsCount = 0;
+    argument_seq_strct* argumentSeqElem = expression->argument_seq;
+    while (argumentSeqElem != NULL) {
+        result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+        argumentSeqElem = argumentSeqElem->next;
+
+        argumentsCount++;
+    }
+
+    if (expression->field_ref != 0)                 { result._append(ByteCode::getfield(expression->field_ref)); }
+    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount)); }
 
     return result;
 }
@@ -994,7 +998,7 @@ ByteCode ByteCode::instanceof(short int u2) {
     return result;
 }
 
-ByteCode ByteCode::invokevirtual(short int u2, short int argCount, bool isVoid) {
+ByteCode ByteCode::invokevirtual(short int u2, short int argCount) {
     ByteCode result;
     result._appendByte(0xB6);
     result._appendTwoBytes(u2);
@@ -1002,7 +1006,7 @@ ByteCode ByteCode::invokevirtual(short int u2, short int argCount, bool isVoid) 
     return result;
 }
 
-ByteCode ByteCode::invokespecial(short int u2, short int argCount, bool isVoid) {
+ByteCode ByteCode::invokespecial(short int u2, short int argCount) {
     ByteCode result;
     result._appendByte(0xB7);
     result._appendTwoBytes(u2);
@@ -1010,7 +1014,7 @@ ByteCode ByteCode::invokespecial(short int u2, short int argCount, bool isVoid) 
     return result;
 }
 
-ByteCode ByteCode::invokestatic(short int u2, short int argCount, bool isVoid) {
+ByteCode ByteCode::invokestatic(short int u2, short int argCount) {
     ByteCode result;
     result._appendByte(0xB8);
     result._appendTwoBytes(u2);

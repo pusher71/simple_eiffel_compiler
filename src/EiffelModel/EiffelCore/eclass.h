@@ -22,6 +22,9 @@ public:
     static std::string javaObjectFullName();
     static std::string javaStringFullName();
 
+    static std::string userClassPackageName();
+    static std::string rtlClassPackageName();
+
     // ================= SUBTYPES =================
 protected:
     struct EParentInfo {

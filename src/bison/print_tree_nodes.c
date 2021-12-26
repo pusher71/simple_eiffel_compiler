@@ -251,25 +251,35 @@ void print_type(FILE* dot_file, struct type_strct* type) {
             fprintf(dot_file, "%u[label=\"custom dtype <%s>\"];\n", type->_node_index, type->id_name);
             break;
         case dtype_boolean:
-            fprintf(dot_file, "%u[label=\"dtype <BOOL>\"];\n", type->_node_index);
+            if (type->id_name == NULL)  { fprintf(dot_file, "%u[label=\"dtype <BOOL>\"];\n", type->_node_index); }
+            else                        { fprintf(dot_file, "%u[label=\"custom dtype <%s>\"];\n", type->_node_index, type->id_name); }
+
             break;
         case dtype_character:
-            fprintf(dot_file, "%u[label=\"dtype <CHAR>\"];\n", type->_node_index);
+            if (type->id_name == NULL)  { fprintf(dot_file, "%u[label=\"dtype <CHAR>\"];\n", type->_node_index); }
+            else                        { fprintf(dot_file, "%u[label=\"custom dtype <%s>\"];\n", type->_node_index, type->id_name); }
+
             break;
         case dtype_integer:
-            fprintf(dot_file, "%u[label=\"dtype <INT>\"];\n", type->_node_index);
+            if (type->id_name == NULL)  { fprintf(dot_file, "%u[label=\"dtype <INT>\"];\n", type->_node_index); }
+            else                        { fprintf(dot_file, "%u[label=\"custom dtype <%s>\"];\n", type->_node_index, type->id_name); }
+
             break;
         case dtype_natural:
-            fprintf(dot_file, "%u[label=\"dtype <NAT>\"];\n", type->_node_index);
+            if (type->id_name == NULL)  { fprintf(dot_file, "%u[label=\"dtype <NAT>\"];\n", type->_node_index); }
+            else                        { fprintf(dot_file, "%u[label=\"custom dtype <%s>\"];\n", type->_node_index, type->id_name); }
+
             break;
         case dtype_string:
-            fprintf(dot_file, "%u[label=\"dtype <STR>\"];\n", type->_node_index);
+            if (type->id_name == NULL)  { fprintf(dot_file, "%u[label=\"dtype <STR>\"];\n", type->_node_index); }
+            else                        { fprintf(dot_file, "%u[label=\"custom dtype <%s>\"];\n", type->_node_index, type->id_name); }
+
             break;
         case dtype_void:
             fprintf(dot_file, "%u[label=\"dtype <VOID>\"];\n", type->_node_index);
             break;
         case dtype_array:
-            fprintf(dot_file, "%u[label=\"dtype <ARRAY>\"];\n", type->_node_index);
+            fprintf(dot_file, "%u[label=\"dtype <%s>\"];\n", type->_node_index, type->id_name);
 
             print_type(dot_file, type->arrayelem_type);
             fprintf(dot_file, "%u -> %u[label=\"elem type\"];\n", type->_node_index, type->arrayelem_type->_node_index);
@@ -428,12 +438,13 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             fprintf(dot_file, "%u[label=\"expr :: CURRENT\"];\n", expr->_node_index);
             break;
 
-        case expr_call_method_or_var:
-            fprintf(dot_file, "%u[label=\"expr :: my method or var <%s>\"];\n", expr->_node_index, expr->method_id_name);
-            break;
-
-        case expr_call_method:
-            fprintf(dot_file, "%u[label=\"expr :: my method <%s>\"];\n", expr->_node_index, expr->method_id_name);
+        case expr_call_selffeature:
+            if (expr->is_field_access) {
+                fprintf(dot_file, "%u[label=\"expr :: my attribute <%s>\"];\n", expr->_node_index, expr->method_id_name);
+            }
+            else {
+                fprintf(dot_file, "%u[label=\"expr :: my routine <%s>\"];\n", expr->_node_index, expr->method_id_name);
+            }
 
             {
                 struct argument_seq_strct* curr = expr->argument_seq;

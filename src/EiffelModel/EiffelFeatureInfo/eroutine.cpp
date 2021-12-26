@@ -319,10 +319,6 @@ void ERoutine::_resolveInstruction(EUserClass& userClass, instruction_strct* ins
 
 void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction) {
     // Resolve variable of creation
-    EAttribute* attribute = nullptr;
-    EInnerVariable* localVar = nullptr;
-    EType* createdVarType = nullptr;
-
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
 
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
@@ -330,11 +326,11 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
             std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
             createInstruction->field_ref = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->returnType().descriptor());
 
-            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().toString() );
+            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
         }
     }
 
-    if (attribute == nullptr) {
+    if (fieldOrLocalOwnerClassInfo == nullptr) {
         for (const auto& localVar : this->_localVariables) {
             if (localVar.first == createInstruction->first_id_name) {
                 createInstruction->local_var_number = localVar.second.index();
@@ -438,11 +434,8 @@ void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
             expr->result_type = create_type(curr_node_index++, dtype_user_defined, userClassName, NULL);
 
             break;
-        case expr_call_method_or_var:
-            this->_resolveCallMethodOrVarExpr(userClass, expr);
-            break;
-        case expr_call_method:
-            this->_resolveCallMethodExpr(userClass, expr);
+        case expr_call_selffeature:
+            this->_resolveCallSelffeatureExpr(userClass, expr);
             break;
         case expr_call_precursor:
             this->_resolveCallPrecursorExpr(userClass, expr);
@@ -491,8 +484,8 @@ void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
     }
 }
 
-void ERoutine::_resolveCallMethodOrVarExpr(EUserClass& userClass, expr_strct* expr) {
-    // Resolve variable of creation
+void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* expr) {
+    // Resolve call target
     bool isFound = false;
     std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
 
@@ -544,19 +537,73 @@ void ERoutine::_resolveCallMethodOrVarExpr(EUserClass& userClass, expr_strct* ex
 
     if (!isFound) {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
-        errorMessage += std::string(":: unknown id \"") + expr->method_id_name + "\"";
+        errorMessage += std::string(":: unknown id \"") + expr->method_id_name + "\" ";
+        errorMessage += std::string("in class \"") + userClass.name() + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
     }
-}
 
-void ERoutine::_resolveCallMethodExpr(EUserClass& userClass, expr_strct* expr) {
+    // Resolve arguments
+    argument_seq_strct* argumentSeqElem = expr->argument_seq;
+    while (argumentSeqElem != NULL) {
+        this->_resolveExpr(userClass, argumentSeqElem->value);
+        argumentSeqElem = argumentSeqElem->next;
+    }
 }
 
 void ERoutine::_resolveCallPrecursorExpr(EUserClass& userClass, expr_strct* expr) {
 }
 
 void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) {
+    // Resolve call target
+    this->_resolveExpr(userClass, expr->expr_left);
+
+    if (expr->expr_left->result_type->id_name == NULL) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OPERAND, errorMessage));
+    }
+
+    EClass* targetOwnerClassInfo = EProgram::current->getClassBy(expr->expr_left->result_type->id_name);
+    bool isFound = false;
+
+    for (const auto& attributeMetaInfo : targetOwnerClassInfo->attributesMetaInfo()) {
+        if (attributeMetaInfo->finalName() == expr->method_id_name) {
+            expr->field_ref = userClass._constants.appendFieldRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->returnType().descriptor());
+            expr->result_type = attributeMetaInfo->implementation()->returnType().getRawTypeCopy();
+
+            isFound = true;
+            break;
+        }
+    }
+
+    if (!isFound) {
+        for (const auto& routineMetaInfo : targetOwnerClassInfo->routinesMetaInfo()) {
+            if (routineMetaInfo->finalName() == expr->method_id_name) {
+                expr->method_ref = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
+                expr->result_type = routineMetaInfo->implementation()->returnType().getRawTypeCopy();
+
+                isFound = true;
+                break;
+            }
+        }
+    }
+
+    if (!isFound) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += std::string(":: unknown id \"") + expr->method_id_name + "\" ";
+        errorMessage += std::string("in class \"") + expr->expr_left->result_type->id_name + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
+    }
+
+    // Resolve arguments
+    argument_seq_strct* argumentSeqElem = expr->argument_seq;
+    while (argumentSeqElem != NULL) {
+        this->_resolveExpr(userClass, argumentSeqElem->value);
+        argumentSeqElem = argumentSeqElem->next;
+    }
 }
 
 void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {

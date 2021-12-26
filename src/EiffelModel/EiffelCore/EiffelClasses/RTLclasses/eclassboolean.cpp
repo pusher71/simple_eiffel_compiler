@@ -1,6 +1,7 @@
 #include "eclassboolean.h"
 
 std::string EClassBOOLEAN::classRTLname() { return "BOOLEAN"; }
+std::string EClassBOOLEAN::classRTLfullName() { return EClass::rtlClassPackageName() + "/" + EClassBOOLEAN::classRTLname(); }
 
 EClassBOOLEAN::EClassBOOLEAN() {
     this->_initSelf();

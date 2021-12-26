@@ -1,6 +1,5 @@
 #include "eclassrtl.h"
 
-EClassRTL::EClassRTL() {
-}
+EClassRTL::EClassRTL() {}
 
-std::string EClassRTL::javaPackageName() const { return "rtl"; }
+std::string EClassRTL::javaPackageName() const { return EClass::rtlClassPackageName(); }

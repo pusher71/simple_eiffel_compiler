@@ -35,8 +35,7 @@ public:
     static ByteCode literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
     static ByteCode currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
 
-    static ByteCode exprCallMethodOrVarByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode exprCallMethodByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
     static ByteCode exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
     static ByteCode exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
     static ByteCode createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
@@ -129,9 +128,9 @@ private:
     static ByteCode putfield(short int u2);
     static ByteCode instanceof(short int u2);
 
-    static ByteCode invokevirtual(short int u2, short int argCount, bool isVoid);
-    static ByteCode invokespecial(short int u2, short int argCount, bool isVoid);
-    static ByteCode invokestatic(short int u2, short int argCount, bool isVoid);
+    static ByteCode invokevirtual(short int u2, short int argCount);
+    static ByteCode invokespecial(short int u2, short int argCount);
+    static ByteCode invokestatic(short int u2, short int argCount);
     static ByteCode ireturn();
     static ByteCode areturn();
     static ByteCode _return();
