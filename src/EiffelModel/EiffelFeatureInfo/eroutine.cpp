@@ -4,6 +4,7 @@
 #include "../EiffelCore/eprogram.h"
 
 #include "../EiffelCore/EiffelClasses/euserclass.h"
+#include "../EiffelCore/EiffelClasses/eclassrtl.h"
 
 #include "../../flex/utilities/chararray_utilities.h"
 
@@ -570,7 +571,13 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
 
     for (const auto& attributeMetaInfo : targetOwnerClassInfo->attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == expr->method_id_name) {
-            expr->field_ref = userClass._constants.appendFieldRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->returnType().descriptor());
+            if (dynamic_cast<EClassRTL*>(targetOwnerClassInfo) == nullptr) {
+                expr->method_ref = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->featureMark().first + ":" + attributeMetaInfo->featureMark().second, "()" + attributeMetaInfo->implementation()->returnType().descriptor());
+            }
+            else {
+                expr->field_ref = userClass._constants.appendFieldRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->returnType().descriptor());
+            }
+
             expr->result_type = attributeMetaInfo->implementation()->returnType().getRawTypeCopy();
 
             isFound = true;
@@ -581,7 +588,13 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
     if (!isFound) {
         for (const auto& routineMetaInfo : targetOwnerClassInfo->routinesMetaInfo()) {
             if (routineMetaInfo->finalName() == expr->method_id_name) {
-                expr->method_ref = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
+                if (dynamic_cast<EClassRTL*>(targetOwnerClassInfo) == nullptr) {
+                    expr->method_ref = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->featureMark().first + ":" + routineMetaInfo->featureMark().second, routineMetaInfo->implementation()->descriptor());
+                }
+                else {
+                    expr->method_ref = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
+                }
+
                 expr->result_type = routineMetaInfo->implementation()->returnType().getRawTypeCopy();
 
                 isFound = true;
