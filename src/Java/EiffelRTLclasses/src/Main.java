@@ -1,12 +1,10 @@
-public class Main {
-    public void method(Integer a) {
-        System.out.println(a);
-    }
+import rtl.INTEGER;
 
-    public void method2() {
-        method(0);
-    }
+public class Main {
+    static Object var;
 
     static public void main(String[] args) {
+        var = new INTEGER(0);
+        System.out.println(((INTEGER)var).GET());
     }
 }

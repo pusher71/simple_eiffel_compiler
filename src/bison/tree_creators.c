@@ -325,12 +325,12 @@ struct instruction_strct* create_create_instruction(unsigned int                
     result->instruction_as_expr = NULL;
 
     // Semantic analysis additional data
-    short const_class = 0;
-    char* owner_class_full_name = NULL;
-    short field_ref = 0;
-    short local_var_number = 0;
+    result->const_class             = 0;
+    result->owner_class_full_name   = NULL;
+    result->field_ref               = 0;
+    result->local_var_number        = 0;
 
-    short creator_method_ref = 0;
+    result->creator_method_ref      = 0;
 
     return result;
 }
@@ -359,12 +359,12 @@ struct instruction_strct* create_assign_instruction(unsigned int        node_ind
     result->instruction_as_expr = NULL;
 
     // Semantic analysis additional data
-    short const_class = 0;
-    char* owner_class_full_name = NULL;
-    short field_ref = 0;
-    short local_var_number = 0;
+    result->const_class             = 0;
+    result->owner_class_full_name   = NULL;
+    result->field_ref               = 0;
+    result->local_var_number        = 0;
 
-    short creator_method_ref = 0;
+    result->creator_method_ref      = 0;
 
     return result;
 }
@@ -394,12 +394,12 @@ struct instruction_strct* create_if_instruction(unsigned int                    
     result->instruction_as_expr = NULL;
 
     // Semantic analysis additional data
-    short const_class = 0;
-    char* owner_class_full_name = NULL;
-    short field_ref = 0;
-    short local_var_number = 0;
+    result->const_class             = 0;
+    result->owner_class_full_name   = NULL;
+    result->field_ref               = 0;
+    result->local_var_number        = 0;
 
-    short creator_method_ref = 0;
+    result->creator_method_ref      = 0;
 
     return result;
 }
@@ -430,12 +430,12 @@ struct instruction_strct* create_loop_instruction(unsigned int                  
     result->instruction_as_expr = NULL;
 
     // Semantic analysis additional data
-    short const_class = 0;
-    char* owner_class_full_name = NULL;
-    short field_ref = 0;
-    short local_var_number = 0;
+    result->const_class             = 0;
+    result->owner_class_full_name   = NULL;
+    result->field_ref               = 0;
+    result->local_var_number        = 0;
 
-    short creator_method_ref = 0;
+    result->creator_method_ref      = 0;
 
     return result;
 }
@@ -463,12 +463,12 @@ struct instruction_strct* create_instruction_as_expr(unsigned int        node_in
     result->instruction_as_expr = instruction_as_expr;
 
     // Semantic analysis additional data
-    short const_class = 0;
-    char* owner_class_full_name = NULL;
-    short field_ref = 0;
-    short local_var_number = 0;
+    result->const_class             = 0;
+    result->owner_class_full_name   = NULL;
+    result->field_ref               = 0;
+    result->local_var_number        = 0;
 
-    short creator_method_ref = 0;
+    result->creator_method_ref      = 0;
 
     return result;
 }
@@ -522,8 +522,16 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -549,8 +557,16 @@ struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int)
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -576,8 +592,16 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -603,8 +627,16 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -630,8 +662,16 @@ struct expr_strct* create_expr_liter_void(unsigned int node_index) {
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -657,8 +697,16 @@ struct expr_strct* create_expr_current(unsigned int node_index) {
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -689,8 +737,16 @@ struct expr_strct* create_expr_call(unsigned int                 node_index,
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -719,8 +775,16 @@ struct expr_strct* create_expr_precursorcall(unsigned int                 node_i
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -751,8 +815,16 @@ struct expr_strct* create_expr_subcall(unsigned int                 node_index,
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -782,8 +854,16 @@ struct expr_strct* create_expr_creation(unsigned int                 node_index,
 
     result->create_type     = create_type;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }
@@ -813,8 +893,16 @@ struct expr_strct* create_expr_operation(unsigned int node_index,
 
     result->create_type     = NULL;
 
-    result->result_type         = NULL;
-    result->inner_var_number    = -1;
+    // Semantic analysis additional data
+    result->result_type           = NULL;
+
+    result->constant_link         = 0;
+    result->const_class           = 0;
+    result->owner_class_full_name = NULL;
+    result->field_ref             = 0;
+    result->method_ref            = 0;
+
+    result->inner_var_number      = 0;
 
     return result;
 }

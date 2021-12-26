@@ -27,7 +27,7 @@ std::map<std::string, std::string> extractConfigureParameters(std::ifstream& con
 int main(int argc, char** argv) {
     // Set initial compiler settings
     CompilerState compilerState;
-    compilerState.isPrintingTreeNodes = true;
+    compilerState.isPrintingTreeNodes = false;
 
     // ================== READ CONFIGURATION FILE OF EIFFEL ==================
     if (argc != 2) {

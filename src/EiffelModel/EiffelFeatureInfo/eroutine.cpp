@@ -379,7 +379,38 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
 
 void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction) {
     // Resolve name of left variable
+    this->_resolveExpr(userClass, assignInstruction->assign_expr);
     // userClass._featuresTable.
+
+    // Resolve variable of creation
+    const EClass* fieldOrLocalOwnerClassInfo = nullptr;
+
+    for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
+        if (attributeMetaInfo->finalName() == assignInstruction->first_id_name) {
+            std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
+            assignInstruction->field_ref = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->returnType().descriptor());
+
+            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
+        }
+    }
+
+    if (fieldOrLocalOwnerClassInfo == nullptr) {
+        for (const auto& localVar : this->_localVariables) {
+            if (localVar.first == assignInstruction->first_id_name) {
+                assignInstruction->local_var_number = localVar.second.index();
+                const auto& createdVarType = EType(localVar.second.type());
+
+                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
+            }
+        }
+    }
+
+    if (fieldOrLocalOwnerClassInfo == nullptr) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += std::string(":: unknown id \"") + assignInstruction->first_id_name + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID, errorMessage));
+    }
 }
 
 void ERoutine::_resolveIfInstruction(EUserClass& userClass, instruction_strct* ifInstruction) {
@@ -559,11 +590,11 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
     // Resolve call target
     this->_resolveExpr(userClass, expr->expr_left);
 
-    if (expr->expr_left->result_type->id_name == NULL) {
+    if (expr->expr_left->result_type == NULL || expr->expr_left->result_type->id_name == NULL) {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
         errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
 
-        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OPERAND, errorMessage));
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND, errorMessage));
     }
 
     EClass* targetOwnerClassInfo = EProgram::current->getClassBy(expr->expr_left->result_type->id_name);
@@ -620,6 +651,39 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
 }
 
 void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
+    // Resolve variable of creation
+    const EClass* createClassInfo = nullptr;
+
+    expr->result_type = EType(expr->create_type).getRawTypeCopy();
+
+    createClassInfo = EProgram::current->getClassBy( EType(expr->result_type).firstElemClassName() );
+    expr->const_class = userClass._constants.appendConstClass( userClass._constants.appendUtf8(createClassInfo->fullName()) );
+
+    userClass._constants.appendMethodRefStr(createClassInfo->fullName(), "<init>", "()V");
+
+    expr->owner_class_full_name = new char[createClassInfo->fullName().size() + 1];
+    strcpy(expr->owner_class_full_name, createClassInfo->fullName().c_str());
+
+    if (expr->method_id_name == NULL && !createClassInfo->_creators.empty()) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "creating entity of type \"" + EType(expr->result_type).toString() + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__CALL_REMOVED_DEFAULT_CREATOR, errorMessage));
+    }
+    else if (expr->method_id_name != NULL) {
+        const auto& creatorInfo = std::find_if(createClassInfo->_creators.begin(), createClassInfo->_creators.end(), [&](const auto& creatorInfo) { return (creatorInfo.first == expr->method_id_name); });
+
+        if (creatorInfo == createClassInfo->_creators.end()) {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+            errorMessage += "creating entity of type \"" + EType(expr->result_type).toString() + "\" ";
+            errorMessage += "with unknown creator with name \"" + std::string(expr->method_id_name) + "\"";
+
+            EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__CALL_UNKNOWN_CREATOR_METHOD, errorMessage));
+        }
+        else {
+            expr->method_ref = userClass._constants.appendMethodRefStr(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+        }
+    }
 }
 
 bool ERoutine::isConformingTo(const EFeature& other) const {

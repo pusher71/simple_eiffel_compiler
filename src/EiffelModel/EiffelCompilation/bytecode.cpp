@@ -467,7 +467,7 @@ ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants,
 
 ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
-    if (expression->inner_var_number == -1) {
+    if (expression->inner_var_number == 0) {
         result._append(ByteCode::aload(0x0));
     }
 
@@ -515,6 +515,24 @@ ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConsta
 
 ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
     ByteCode result;
+    // Create object with given type
+    result._append(ByteCode::new_(expression->const_class));
+    result._append(ByteCode::dup());
+    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(expression->owner_class_full_name, "<init>", "()V"), 0));
+
+    // Call "creator" routine
+    if (expression->method_ref != 0) {
+        short argumentsCount = 0;
+        argument_seq_strct* argumentSeqElem = expression->argument_seq;
+        while (argumentSeqElem != NULL) {
+            result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+
+            argumentsCount++;
+            argumentSeqElem = argumentSeqElem->next;
+        }
+
+        result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount));
+    }
 
     return result;
 }
@@ -1002,6 +1020,14 @@ ByteCode ByteCode::putfield(short int u2) {
 ByteCode ByteCode::instanceof(short int u2) {
     ByteCode result;
     result._appendByte(0xC1);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::checkcast(short int u2) {
+    ByteCode result;
+    result._appendByte(0xC0);
     result._appendTwoBytes(u2);
 
     return result;

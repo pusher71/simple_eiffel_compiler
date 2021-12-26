@@ -159,8 +159,15 @@ std::string SemanticError::errorReason() const {
         case INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID:
             result += "CALL METHOD, FIELD OR INNER METHOD VARIABLE WITH UNKNOWN ID";
             break;
-        case INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OPERAND:
-            result += "SUBCALL WITH PRIMITIVE TYPE OPERAND";
+        case INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND:
+            result += "SUBCALL WITH PRIMITIVE TYPE OR VOID OPERAND";
+            break;
+
+        case INSTR_AS_EXPR__CALL_REMOVED_DEFAULT_CREATOR:
+            result += "CALL REMOVED DEFAULT CREATOR METHOD IN CREATE EXPRESSION";
+            break;
+        case INSTR_AS_EXPR__CALL_UNKNOWN_CREATOR_METHOD:
+            result += "CALL UNKNOWN CREATOR METHOD IN CREATE EXPRESSION";
             break;
     }
     result += " :: " + this->_errorMessage;

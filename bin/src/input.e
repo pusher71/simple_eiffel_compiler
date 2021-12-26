@@ -6,12 +6,11 @@ create
     make
 
 feature
-    make
-    local
-        obj : OBJECT
-    do
-        create obj
+    obj : OBJECT_PARENT
 
+    make
+    do
+        obj := create {OBJECT}
         obj.f
         print_two_integers
     end
@@ -31,10 +30,30 @@ end
 class
     OBJECT
 
+inherit
+    OBJECT_PARENT
+    redefine
+        f
+    end
+
 feature
     f
     do
         io.put_string("OBJECT::F")
+        io.new_line
+    end
+
+end
+-- EOF
+
+-- object_parent.e
+class
+    OBJECT_PARENT
+
+feature
+    f
+    do
+        io.put_string("OBJECT_PARENT::F")
         io.new_line
     end
 

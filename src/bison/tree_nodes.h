@@ -230,7 +230,6 @@ struct expr_strct {
     // Semantic analysis additional data
     struct type_strct*  result_type;
 
-    // Literals
     short constant_link;
     short const_class;
     char* owner_class_full_name;
