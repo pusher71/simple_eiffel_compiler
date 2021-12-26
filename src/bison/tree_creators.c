@@ -676,7 +676,7 @@ struct expr_strct* create_expr_call(unsigned int                 node_index,
 
     result->class_id_name   = NULL;
     result->method_id_name  = method_id_name;
-    result->argument_seq    = NULL;
+    result->argument_seq    = argument_seq;
     result->is_field_access = is_field_access;
 
     result->liter_bool      = 0;

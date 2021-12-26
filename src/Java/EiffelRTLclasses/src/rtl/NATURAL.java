@@ -2,10 +2,15 @@ package rtl;
 
 public class NATURAL extends ANY {
     // ================ ATTRIBUTES ================
-    private int _value;
+    private long _value;
 
     // ================ OPERATIONS ================
+    // ----------------- creating -----------------
+    public NATURAL(long value) { this.SET(value); }
+
     // ----------------- contract -----------------
-    public int GET()            { return this._value; }
-    public void SET(int value)  { this._value = value; }
+    public long GET()           { return this._value; }
+    public void SET(long value) {
+        this._value = (value >= 0 ? value : Integer.MAX_VALUE + value);
+    }
 }

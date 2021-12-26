@@ -471,8 +471,17 @@ ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassCo
         result._append(ByteCode::aload(0x0));
     }
 
+    int argumentsCount = 0;
+    argument_seq_strct* argumentSeqElem = expression->argument_seq;
+    while (argumentSeqElem != NULL) {
+        result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+        argumentSeqElem = argumentSeqElem->next;
+
+        argumentsCount++;
+    }
+
     if (expression->field_ref != 0)                 { result._append(ByteCode::getfield(expression->field_ref)); }
-    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, 0)); }
+    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount)); }
     else if (expression->inner_var_number != 0)     { result._append(ByteCode::aload(expression->inner_var_number)); }
 
     return result;
