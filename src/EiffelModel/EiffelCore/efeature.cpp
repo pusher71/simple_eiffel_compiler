@@ -49,6 +49,8 @@ short EFeature::linkUtf8_descriptor() const { return this->_linkUtf8_descriptor;
 void EFeature::setLinkUtf8_name(short linkUtf8_name) { this->_linkUtf8_name = linkUtf8_name; }
 void EFeature::setLinkUtf8_descriptor(short linkUtf8_descriptor) { this->_linkUtf8_descriptor = linkUtf8_descriptor; }
 
+void EFeature::changeOwnerClass(const EClass* classInfo) { this->_ownerClassName = classInfo->name(); }
+
 std::string EFeature::toString() const {
     std::string result = this->_returnType.toString() + " " + this->_name;
     return result;

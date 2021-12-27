@@ -61,6 +61,8 @@ public:
 public:
     virtual bool isConformingTo(const EFeature& other) const = 0;
 
+    void changeOwnerClass(const EClass* classInfo);
+
     // ---------------- additional ----------------
 public:
     virtual std::string toString() const = 0;

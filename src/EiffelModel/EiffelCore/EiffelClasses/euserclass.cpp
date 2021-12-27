@@ -206,9 +206,17 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
 }
 
 void EUserClass::resolveRoutines() {
-    for (const auto& featureInfo : this->_features) {
-        if (featureInfo.second.get()->featureType() == EFeature::efeature_routine) {
-            ((ERoutine*)featureInfo.second.get())->resolveBody();
+    for (auto& featureMetaInfo : this->_featuresTable) {
+        if (featureMetaInfo.featureType() == EFeature::efeature_routine) {
+            // Make copy of routine implementation if routine doesn't belong to self
+            if (featureMetaInfo.implementation()->ownerClassName() != this->name()) {
+                ERoutine* routineCopy = new ERoutine(*((ERoutine*)featureMetaInfo.implementation()));
+                routineCopy->changeOwnerClass(this);
+
+                featureMetaInfo.setImplementation(routineCopy);
+            }
+
+            ((ERoutine*)featureMetaInfo.implementation())->resolveBody();
         }
     }
 }
