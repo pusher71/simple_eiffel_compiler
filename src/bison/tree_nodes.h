@@ -157,14 +157,6 @@ struct instruction_strct {
     struct instruction_seq_strct* body;
 
     struct expr_strct* instruction_as_expr;
-
-    // Semantic analysis additional data
-    short const_class;
-    char* owner_class_full_name;
-    short field_ref;
-    short local_var_number;
-
-    short creator_method_ref;
 };
 
 struct argument_seq_strct {
@@ -226,17 +218,4 @@ struct expr_strct {
     struct expr_strct*  expr_right;
 
     struct type_strct*  create_type;
-
-    // Semantic analysis additional data
-    struct type_strct*  result_type;
-
-    short constant_link;
-    short const_class;
-    char* owner_class_full_name;
-    short field_ref;
-    short method_ref;
-
-    short inner_var_number;
-
-    short is_rtl_call;
 };

@@ -1,56 +1,95 @@
 -- main.e
-class
-    MAIN
-
-create
-    make
-
+class MAIN
+create make
 feature
-    obj : OBJECT_PARENT
-
-    make
-    do
-        obj := create {OBJECT}
-        obj.f
-    end
-
-    print_two_integers
-    do
-        io.put_string("Values: ")
-    end
+make
+local
+obj : A
+do
+obj := create {A}
+obj.f
+obj := create {B}
+obj.f
+obj := create {C}
+obj.f
+obj := create {D}
+obj.f
+obj := create {E}
+obj.f
+end
 end
 -- EOF
 
--- object.e
-class
-    OBJECT
-
-inherit
-    OBJECT_PARENT
+-- E.e
+class E
+  inherit
+    D
+    A
+    rename
+      f as f3
     redefine
-        f
+      f3
+    select
+      f3
     end
-
-feature
-    f
+  feature
+    f3
     do
-        io.put_string("OBJECT::F")
-        io.new_line
+      io.put_string("E::f3()%N")
     end
-
 end
 -- EOF
 
--- object_parent.e
-class
-    OBJECT_PARENT
-
-feature
-    f
-    do
-        io.put_string("OBJECT_PARENT::F")
-        io.new_line
+-- D.e
+class D
+  inherit
+    B
+    select
+      f2
     end
-
+    C
 end
 -- EOF
+
+-- C.e
+class C
+  inherit
+    A
+    redefine
+      f
+    end
+  feature
+    f
+    do
+      io.put_string("C::f()%N")
+    end
+end
+-- EOF
+
+-- B.e
+class B
+  inherit
+    A
+    rename
+      f as f2
+    redefine
+      f2
+    end
+  feature
+    f2
+    do
+      io.put_string("B::f2()%N")
+    end
+end
+-- EOF
+
+-- A.e
+class A
+  feature
+    f
+    do
+      io.put_string("A::f()%N")
+    end
+end
+-- EOF
+

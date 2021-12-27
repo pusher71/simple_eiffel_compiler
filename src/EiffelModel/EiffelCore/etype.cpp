@@ -26,11 +26,68 @@ EType::EType(const std::string& className) {
     this->_type = create_type(-1, dtype_user_defined, className_cstr, NULL);
 }
 
-EType EType::voidType()     { return EType(nullptr); }
-EType EType::boolType()     { return EType(create_type(-1, dtype_boolean, nullptr, NULL)); }
-EType EType::intType()      { return EType(create_type(-1, dtype_integer, nullptr, NULL)); }
-EType EType::charType()     { return EType(create_type(-1, dtype_character, nullptr, NULL)); }
-EType EType::stringType()   { return EType(create_type(-1, dtype_string, nullptr, NULL)); }
+EType EType::noType()           { return EType(nullptr); }
+EType EType::voidLiterType()    { return EType(create_type(-1, dtype_void, NULL, NULL)); }
+
+EType EType::boolType(bool isClass) {
+    char* classNameStr = NULL;
+
+    if (isClass) {
+        std::string className = EClassBOOLEAN::classRTLname();
+
+        classNameStr = new char[className.size() + 1];
+        strcpy(classNameStr, className.c_str());
+    }
+
+    return EType(create_type(-1, dtype_boolean, classNameStr, NULL));
+}
+
+EType EType::intType(bool isClass) {
+    char* classNameStr = NULL;
+
+    if (isClass) {
+        std::string className = EClassINTEGER::classRTLname();
+
+        classNameStr = new char[className.size() + 1];
+        strcpy(classNameStr, className.c_str());
+    }
+
+    return EType(create_type(-1, dtype_integer, classNameStr, NULL));
+}
+
+EType EType::charType(bool isClass) {
+    char* classNameStr = NULL;
+
+    if (isClass) {
+        std::string className = EClassCHARACTER::classRTLname();
+
+        classNameStr = new char[className.size() + 1];
+        strcpy(classNameStr, className.c_str());
+    }
+
+    return EType(create_type(-1, dtype_character, classNameStr, NULL));
+}
+
+EType EType::stringType(bool isClass) {
+    char* classNameStr = NULL;
+
+    if (isClass) {
+        std::string className = EClassSTRING::classRTLname();
+
+        classNameStr = new char[className.size() + 1];
+        strcpy(classNameStr, className.c_str());
+    }
+
+    return EType(create_type(-1, dtype_string, classNameStr, NULL));
+}
+
+EType EType::classType(const std::string& classTypeName) {
+    char* classNameStr = NULL;
+    classNameStr = new char[classTypeName.size() + 1];
+    strcpy(classNameStr, classTypeName.c_str());
+
+    return EType(create_type(-1, dtype_user_defined, classNameStr, NULL));
+}
 
 bool EType::isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) const {
     bool result = true;
@@ -52,6 +109,8 @@ bool EType::isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) co
 
     return result;
 }
+
+bool EType::isClass() const { return (this->_type->id_name != NULL); }
 
 std::string EType::descriptor() const {
     std::string result;
@@ -99,7 +158,7 @@ std::string EType::descriptor() const {
 }
 
 bool EType::isExpanded() const {
-    bool result = *this == EType::voidType() ||
+    bool result = *this == EType::noType() ||
                   (this->_type->type == dtype_boolean) ||
                   (this->_type->type == dtype_integer) ||
                   (this->_type->type == dtype_natural) ||
@@ -165,7 +224,7 @@ bool EType::canCastTo(const EType& other) const {
     if (*this == other) {
         return true;
     }
-    else if (*this == EType::voidType() || other == EType::voidType()) {
+    else if (*this == EType::noType() || other == EType::noType()) {
         return false;
     }
 

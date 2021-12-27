@@ -33,8 +33,7 @@ ByteCode::ByteCode(const EUserClass& userClass) {
 
     // Methods info
     const auto& userClassRoutinesMetaInfo = userClass.routinesMetaInfo();
-    this->_appendTwoBytes(userClassRoutinesMetaInfo.size() + userClass._featuresTable.size() + 1 + userClass.isMainClass());
-    // this->_appendTwoBytes(userClassRoutinesMetaInfo.size() + 1);
+    this->_appendTwoBytes(1 + userClassRoutinesMetaInfo.size() + userClass._featuresTable.size() + userClass.isMainClass());
 
     // ... Compile default constructor to bytecode
     this->_append(ByteCode::defaultConstructorByteCode(userClass._constants, userClass));
@@ -134,7 +133,7 @@ ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants
     codeAttribute._appendTwoBytes(0x1000);
     codeAttribute._appendTwoBytes((short)classRoutine->_formalParameters.size() + (short)classRoutine->_localVariables.size() + 1);
 
-    ByteCode routineBodyCode(userClassConstants, classRoutine->_routineBody);
+    ByteCode routineBodyCode(userClassConstants, classRoutine->_routineBody, classRoutine->_instrInfo, classRoutine->_exprInfo);
 
     codeAttribute._appendFourBytes((unsigned long)routineBodyCode._bytes.size());
     codeAttribute._append(routineBodyCode);
@@ -295,141 +294,165 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
     return result;
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody) {
+ByteCode::ByteCode(const EConstantTable&                                                userClassConstants,
+                   const instruction_seq_strct*                                         routineBody,
+                   const std::map<const instruction_strct*, ERoutine::InstructionInfo>& instructionInfo,
+                   const std::map<const expr_strct*, ERoutine::ExpressionInfo>&         expressionInfo)
+{
     const instruction_seq_strct* instructionSeqElem = routineBody->next;
     instructionSeqElem = instructionSeqElem;
 
     while (instructionSeqElem != NULL) {
-        this->_append(ByteCode(userClassConstants, instructionSeqElem->value));
+        this->_append(ByteCode(userClassConstants, instructionSeqElem->value, instructionInfo, expressionInfo));
         instructionSeqElem = instructionSeqElem->next;
     }
 
     this->_append(ByteCode::_return());
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const instruction_strct* instruction) {
+ByteCode::ByteCode(const EConstantTable&                                                    userClassConstants,
+                   const instruction_strct*                                                 instruction,
+                   const std::map<const instruction_strct*, ERoutine::InstructionInfo>&     instructionInfo,
+                   const std::map<const expr_strct*, ERoutine::ExpressionInfo>&             expressionInfo)
+{
     switch (instruction->type) {
         case instruction_create:
-            this->_append(ByteCode::createInstructionByteCode(userClassConstants, instruction));
+            this->_append(ByteCode::createInstructionByteCode(userClassConstants, instruction, instructionInfo, expressionInfo));
             break;
         case instruction_assign:
-            this->_append(ByteCode::assignInstructionByteCode(userClassConstants, instruction));
+            this->_append(ByteCode::assignInstructionByteCode(userClassConstants, instruction, instructionInfo, expressionInfo));
             break;
         case instruction_if:
-            this->_append(ByteCode::ifInstructionByteCode(userClassConstants, instruction));
+            this->_append(ByteCode::ifInstructionByteCode(userClassConstants, instruction, instructionInfo, expressionInfo));
             break;
         case instruction_loop:
-            this->_append(ByteCode::loopInstructionByteCode(userClassConstants, instruction));
+            this->_append(ByteCode::loopInstructionByteCode(userClassConstants, instruction, instructionInfo, expressionInfo));
             break;
         case instruction_expr:
-            this->_append(ByteCode(userClassConstants, instruction->instruction_as_expr));
+            this->_append(ByteCode(userClassConstants, instruction->instruction_as_expr, expressionInfo));
             break;
     }
 }
 
-ByteCode ByteCode::createInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* createInstruction) {
+ByteCode ByteCode::createInstructionByteCode(const EConstantTable&                                                  userClassConstants,
+                                             const instruction_strct*                                               createInstruction,
+                                             const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
+                                             const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo)
+{
     ByteCode result;
     // Push "this"
-    if (createInstruction->field_ref != 0) {
+    if (instructionInfo.at(createInstruction).fieldRef_constLink != 0) {
         result._append(ByteCode::aload(0x0));
     }
 
     // Create object with given type
-    result._append(ByteCode::new_(createInstruction->const_class));
+    result._append(ByteCode::new_(instructionInfo.at(createInstruction).constClass_constLink));
     result._append(ByteCode::dup());
-    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(createInstruction->owner_class_full_name, "<init>", "()V"), 0));
+    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(instructionInfo.at(createInstruction).ownerClassFullName, "<init>", "()V"), 0));
 
     // Store created object in field or local variable
-    if (createInstruction->field_ref != 0)              { result._append(ByteCode::putfield(createInstruction->field_ref)); }
-    else if (createInstruction->local_var_number != 0)  { result._append(ByteCode::astore(createInstruction->local_var_number)); }
+    if (instructionInfo.at(createInstruction).fieldRef_constLink != 0)  { result._append(ByteCode::putfield( instructionInfo.at(createInstruction).fieldRef_constLink )); }
+    else if (instructionInfo.at(createInstruction).localVarNumber != 0) { result._append(ByteCode::astore( instructionInfo.at(createInstruction).localVarNumber )); }
 
     // Call "creator" routine
-    if (createInstruction->creator_method_ref != 0) {
-        if (createInstruction->field_ref != 0)              { result._append(ByteCode::getfield(createInstruction->field_ref)); }
-        else if (createInstruction->local_var_number != 0)  { result._append(ByteCode::aload(createInstruction->local_var_number)); }
+    if (instructionInfo.at(createInstruction).creatorMethodRef_constLink != 0) {
+        if (instructionInfo.at(createInstruction).fieldRef_constLink != 0)  { result._append(ByteCode::getfield( instructionInfo.at(createInstruction).fieldRef_constLink )); }
+        else if (instructionInfo.at(createInstruction).localVarNumber != 0) { result._append(ByteCode::aload( instructionInfo.at(createInstruction).localVarNumber )); }
 
         short argumentsCount = 0;
         argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
         while (argumentSeqElem != NULL) {
-            result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+            result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
 
             argumentsCount++;
             argumentSeqElem = argumentSeqElem->next;
         }
 
-        result._append(ByteCode::invokevirtual(createInstruction->creator_method_ref, argumentsCount));
+        result._append(ByteCode::invokevirtual(instructionInfo.at(createInstruction).creatorMethodRef_constLink, argumentsCount));
     }
 
     return result;
 }
 
-ByteCode ByteCode::assignInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* assignInstruction) {
+ByteCode ByteCode::assignInstructionByteCode(const EConstantTable&                                                  userClassConstants,
+                                             const instruction_strct*                                               assignInstruction,
+                                             const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
+                                             const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo)
+{
     ByteCode result;
     // Push "this" if assignment is performed for a field
-    if (assignInstruction->field_ref != 0) {
+    if (instructionInfo.at(assignInstruction).fieldRef_constLink != 0) {
         result._append(ByteCode::aload(0x0));
     }
 
     // Push expression
-    result._append(ByteCode(userClassConstants, assignInstruction->assign_expr));
+    result._append(ByteCode(userClassConstants, assignInstruction->assign_expr, expressionInfo));
 
     // Store expression in field or local variable
-    if (assignInstruction->field_ref != 0) {
-        result._append(ByteCode::putfield(assignInstruction->field_ref));
+    if (instructionInfo.at(assignInstruction).fieldRef_constLink != 0) {
+        result._append(ByteCode::putfield(instructionInfo.at(assignInstruction).fieldRef_constLink));
     }
-    else if (assignInstruction->local_var_number != 0) {
-        result._append(ByteCode::astore(assignInstruction->local_var_number));
+    else if (instructionInfo.at(assignInstruction).localVarNumber != 0) {
+        result._append(ByteCode::astore(instructionInfo.at(assignInstruction).localVarNumber));
     }
 
     return result;
 }
 
-ByteCode ByteCode::ifInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* ifInstruction) {
+ByteCode ByteCode::ifInstructionByteCode(const EConstantTable&                                                  userClassConstants,
+                                         const instruction_strct*                                               ifInstruction,
+                                         const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
+                                         const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo)
+{
     ByteCode result;
     return result;
 }
 
-ByteCode ByteCode::loopInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* loopInstruction) {
+ByteCode ByteCode::loopInstructionByteCode(const EConstantTable&                                                userClassConstants,
+                                         const instruction_strct*                                               loopInstruction,
+                                         const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
+                                         const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo)
+{
     ByteCode result;
     return result;
 }
 
-ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     switch(expression->type) {
         case expr_liter_bool:
         case expr_liter_int:
         case expr_liter_char:
         case expr_liter_str:
-        case expr_liter_void:           this->_append(ByteCode::literExprByteCode(userClassConstants, expression)); break;
+        case expr_liter_void:           this->_append(ByteCode::literExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_current:              this->_append(ByteCode::currentExprByteCode(userClassConstants, expression)); break;
-        case expr_call_selffeature:     this->_append(ByteCode::exprCallSelffeatureByteCode(userClassConstants, expression)); break;
-        case expr_call_precursor:       this->_append(ByteCode::exprCallPrecursorByteCode(userClassConstants, expression)); break;
-        case expr_subcall:              this->_append(ByteCode::exprCallSubcallByteCode(userClassConstants, expression)); break;
-        case expr_create:               this->_append(ByteCode::createExprByteCode(userClassConstants, expression)); break;
+        case expr_current:              this->_append(ByteCode::currentExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_call_selffeature:     this->_append(ByteCode::exprCallSelffeatureByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_call_precursor:       this->_append(ByteCode::exprCallPrecursorByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_subcall:              this->_append(ByteCode::exprCallSubcallByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_create:               this->_append(ByteCode::createExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_arrelem:              this->_append(ByteCode::arrElemExprByteCode(userClassConstants, expression)); break;
-        case expr_plus:                 this->_append(ByteCode::plusExprByteCode(userClassConstants, expression)); break;
-        case expr_bminus:               this->_append(ByteCode::binminusExprByteCode(userClassConstants, expression)); break;
-        case expr_mul:                  this->_append(ByteCode::mulExprByteCode(userClassConstants, expression)); break;
-        case expr_idiv:                 this->_append(ByteCode::idivExprByteCode(userClassConstants, expression)); break;
-        case expr_uminus:               this->_append(ByteCode::unminusExprByteCode(userClassConstants, expression)); break;
+        case expr_arrelem:              this->_append(ByteCode::arrElemExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_plus:                 this->_append(ByteCode::plusExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_bminus:               this->_append(ByteCode::binminusExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_mul:                  this->_append(ByteCode::mulExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_idiv:                 this->_append(ByteCode::idivExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_uminus:               this->_append(ByteCode::unminusExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_less:                 this->_append(ByteCode::lessExprByteCode(userClassConstants, expression)); break;
-        case expr_great:                this->_append(ByteCode::greatExprByteCode(userClassConstants, expression)); break;
-        case expr_less_equal:           this->_append(ByteCode::lessequalExprByteCode(userClassConstants, expression)); break;
-        case expr_great_equal:          this->_append(ByteCode::greatequalExprByteCode(userClassConstants, expression)); break;
-        case expr_equal:                this->_append(ByteCode::equalExprByteCode(userClassConstants, expression)); break;
-        case expr_notequal:             this->_append(ByteCode::notequalExprByteCode(userClassConstants, expression)); break;
+        case expr_less:                 this->_append(ByteCode::lessExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_great:                this->_append(ByteCode::greatExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_less_equal:           this->_append(ByteCode::lessequalExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_great_equal:          this->_append(ByteCode::greatequalExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_equal:                this->_append(ByteCode::equalExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_notequal:             this->_append(ByteCode::notequalExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_and:                  this->_append(ByteCode::andExprByteCode(userClassConstants, expression)); break;
-        case expr_or:                   this->_append(ByteCode::orExprByteCode(userClassConstants, expression)); break;
-        case expr_not:                  this->_append(ByteCode::notExprByteCode(userClassConstants, expression)); break;
-        case expr_xor:                  this->_append(ByteCode::xorExprByteCode(userClassConstants, expression)); break;
+        case expr_and:                  this->_append(ByteCode::andExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_or:                   this->_append(ByteCode::orExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_not:                  this->_append(ByteCode::notExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_xor:                  this->_append(ByteCode::xorExprByteCode(userClassConstants, expression, expressionInfo)); break;
     }
 }
 
-ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
     short intLiteral = 0;
 
@@ -440,14 +463,14 @@ ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, c
         case expr_liter_int:
             intLiteral = expression->liter_int;
             if (expression->liter_int == intLiteral)    { result._append(ByteCode::sipush(intLiteral)); }
-            else                                        { result._append(ByteCode::ldc_w(expression->constant_link)); }
+            else                                        { result._append(ByteCode::ldc_w(expressionInfo.at(expression).liter_constLink)); }
 
             break;
         case expr_liter_char:
             result._append(ByteCode::bipush(expression->liter_char));
             break;
         case expr_liter_str:
-            result._append(ByteCode::ldc_w(expression->constant_link));
+            result._append(ByteCode::ldc_w(expressionInfo.at(expression).liter_constLink));
             break;
         case expr_liter_void:
             result._append(ByteCode::const_null());
@@ -459,183 +482,183 @@ ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, c
     return result;
 }
 
-ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
     result._append(ByteCode::aload(0x0));
 
     return result;
 }
 
-ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
-    if (expression->inner_var_number == 0) {
+    if (expressionInfo.at(expression).innerVarNumber == 0) {
         result._append(ByteCode::aload(0x0));
     }
 
     int argumentsCount = 0;
     argument_seq_strct* argumentSeqElem = expression->argument_seq;
     while (argumentSeqElem != NULL) {
-        result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+        result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
         argumentSeqElem = argumentSeqElem->next;
 
         argumentsCount++;
     }
 
-    if (expression->field_ref != 0)                 { result._append(ByteCode::getfield(expression->field_ref)); }
-    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount)); }
-    else if (expression->inner_var_number != 0)     { result._append(ByteCode::aload(expression->inner_var_number)); }
+    if (expressionInfo.at(expression).fieldRef_constLink != 0)          { result._append(ByteCode::getfield(expressionInfo.at(expression).fieldRef_constLink)); }
+    else if (expressionInfo.at(expression).methodRef_constLink != 0)    { result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, argumentsCount)); }
+    else if (expressionInfo.at(expression).innerVarNumber != 0)         { result._append(ByteCode::aload(expressionInfo.at(expression).innerVarNumber)); }
 
     return result;
 }
 
-ByteCode ByteCode::exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
-    result._append(ByteCode(userClassConstants, expression->expr_left));
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
 
-    if (expression->const_class != 0) {
-        result._append(ByteCode::checkcast(expression->expr_left->const_class));
+    if (expressionInfo.at(expression).constClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression).constClass_constLink));
     }
 
     int argumentsCount = 0;
     argument_seq_strct* argumentSeqElem = expression->argument_seq;
     while (argumentSeqElem != NULL) {
-        result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+        result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
         argumentSeqElem = argumentSeqElem->next;
 
         argumentsCount++;
     }
 
-    if (expression->field_ref != 0) { result._append(ByteCode::getfield(expression->field_ref)); }
-    else if (expression->method_ref != 0) {
-        if (expression->is_rtl_call)    { result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount)); }
-        else                            { result._append(ByteCode::invokestatic(expression->method_ref, argumentsCount+1)); }
+    if (expressionInfo.at(expression).fieldRef_constLink != 0) { result._append(ByteCode::getfield(expressionInfo.at(expression).fieldRef_constLink)); }
+    else if (expressionInfo.at(expression).methodRef_constLink != 0) {
+        if (expressionInfo.at(expression).isRTLcall)    { result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, argumentsCount)); }
+        else                                            { result._append(ByteCode::invokestatic(expressionInfo.at(expression).methodRef_constLink, argumentsCount+1)); }
     }
 
     return result;
 }
 
-ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
     // Create object with given type
-    result._append(ByteCode::new_(expression->const_class));
+    result._append(ByteCode::new_(expressionInfo.at(expression).constClass_constLink));
     result._append(ByteCode::dup());
-    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(expression->owner_class_full_name, "<init>", "()V"), 0));
+    result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(expressionInfo.at(expression).ownerClassFullName, "<init>", "()V"), 0));
 
     // Call "creator" routine
-    if (expression->method_ref != 0) {
+    if (expressionInfo.at(expression).methodRef_constLink != 0) {
         short argumentsCount = 0;
         argument_seq_strct* argumentSeqElem = expression->argument_seq;
         while (argumentSeqElem != NULL) {
-            result._append(ByteCode(userClassConstants, argumentSeqElem->value));
+            result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
 
             argumentsCount++;
             argumentSeqElem = argumentSeqElem->next;
         }
 
-        result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, argumentsCount));
     }
 
     return result;
 }
 
-ByteCode ByteCode::arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::plusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::plusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::binminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::binminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::mulExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::mulExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::idivExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::idivExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;
 }
 
-ByteCode ByteCode::xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression) {
+ByteCode ByteCode::xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
 
     return result;

@@ -14,6 +14,31 @@ class ERoutine : public EFeature {
     // ================ MY FRIENDS ================
     friend ByteCode;
 
+    // ================= SUBTYPES =================
+public:
+    struct InstructionInfo {
+        short       localVarNumber              = 0;
+        short       fieldRef_constLink          = 0;
+        short       creatorMethodRef_constLink  = 0;
+
+        short       constClass_constLink        = 0;
+        std::string ownerClassFullName          = "";
+    };
+
+    struct ExpressionInfo {
+        EType       resultType                  = EType::noType();
+
+        short       innerVarNumber              = 0;
+        short       liter_constLink             = 0;
+        short       fieldRef_constLink          = 0;
+        short       methodRef_constLink         = 0;
+
+        short       constClass_constLink        = 0;
+        std::string ownerClassFullName          = "";
+
+        bool        isRTLcall                   = false;
+    };
+
     // ================ ATTRIBUTES ================
 private:
     instruction_seq_strct*      _routineBody;
@@ -21,6 +46,9 @@ private:
     EInnerVariable              _current;
     std::map<std::string, EInnerVariable> _formalParameters;
     std::map<std::string, EInnerVariable> _localVariables;
+
+    std::map<const instruction_strct*, InstructionInfo>  _instrInfo;
+    std::map<const expr_strct*, ExpressionInfo>   _exprInfo;
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------

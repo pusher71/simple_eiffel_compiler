@@ -685,9 +685,4 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             fprintf(dot_file, "%u -> %u;\n", expr->_node_index, expr->expr_right->_node_index);
             break;
     }
-
-    if (expr->result_type != NULL) {
-        print_type(dot_file, expr->result_type);
-        fprintf(dot_file, "%u -> %u[label=\"result type\"];\n", expr->_node_index, expr->result_type->_node_index);
-    }
 }

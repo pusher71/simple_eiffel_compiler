@@ -15,15 +15,18 @@ public:
     EType(type_strct* type);
     EType(const std::string& className);
 
-    static EType voidType();
-    static EType boolType();
-    static EType intType();
-    static EType charType();
-    static EType stringType();
+    static EType noType();
+    static EType voidLiterType();
+    static EType boolType(bool isClass = false);
+    static EType intType(bool isClass = false);
+    static EType charType(bool isClass = false);
+    static EType stringType(bool isClass = false);
+    static EType classType(const std::string& classTypeName);
 
     // ----------------- contract -----------------
 public:
     bool isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) const;
+    bool isClass() const;
 
     std::string descriptor() const;
     bool isExpanded() const;

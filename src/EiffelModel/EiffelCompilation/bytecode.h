@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <fstream>
+#include <cstring>
+#include <string.h>
 
 #include "../EiffelCore/EiffelClasses/euserclass.h"
 #include "../EiffelFeatureInfo/eattribute.h"
@@ -25,39 +27,63 @@ public:
     static ByteCode polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo);
     static ByteCode mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass);
 
-    ByteCode(const EConstantTable& userClassConstants, const instruction_seq_strct* routineBody);
-    ByteCode(const EConstantTable& userClassConstants, const instruction_strct* instruction);
-    static ByteCode createInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* createInstruction);
-    static ByteCode assignInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* assignInstruction);
-    static ByteCode ifInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* ifInstruction);
-    static ByteCode loopInstructionByteCode(const EConstantTable& userClassConstants, const instruction_strct* loopInstruction);
-    ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    ByteCode(const EConstantTable&                                                  userClassConstants,
+             const instruction_seq_strct*                                           routineBody,
+             const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
+             const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo);
 
-    static ByteCode exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    ByteCode(const EConstantTable&                                                  userClassConstants,
+             const instruction_strct*                                               instruction,
+             const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
+             const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo);
 
-    static ByteCode arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode plusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode binminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode mulExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode idivExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode createInstructionByteCode(const EConstantTable&                                                 userClassConstants,
+                                              const instruction_strct*                                              createInstruction,
+                                              const std::map<const instruction_strct*, ERoutine::InstructionInfo>&  instructionInfo,
+                                              const std::map<const expr_strct*, ERoutine::ExpressionInfo>&          expressionInfo);
 
-    static ByteCode lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode assignInstructionByteCode(const EConstantTable&                                                 userClassConstants,
+                                              const instruction_strct*                                              assignInstruction,
+                                              const std::map<const instruction_strct*, ERoutine::InstructionInfo>&  instructionInfo,
+                                              const std::map<const expr_strct*, ERoutine::ExpressionInfo>&          expressionInfo);
 
-    static ByteCode andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
-    static ByteCode xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression);
+    static ByteCode ifInstructionByteCode(const EConstantTable&                                                     userClassConstants,
+                                          const instruction_strct*                                                  ifInstruction,
+                                          const std::map<const instruction_strct*, ERoutine::InstructionInfo>&      instructionInfo,
+                                          const std::map<const expr_strct*, ERoutine::ExpressionInfo>&              expressionInfo);
+
+    static ByteCode loopInstructionByteCode(const EConstantTable&                                                   userClassConstants,
+                                            const instruction_strct*                                                ifInstruction,
+                                            const std::map<const instruction_strct*, ERoutine::InstructionInfo>&    instructionInfo,
+                                            const std::map<const expr_strct*, ERoutine::ExpressionInfo>&            expressionInfo);
+
+    ByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode currentExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+
+    static ByteCode exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode createExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+
+    static ByteCode arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode plusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode binminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode mulExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode idivExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+
+    static ByteCode lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+
+    static ByteCode andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
+    static ByteCode xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo);
 
 private:
     ByteCode& _appendByte(unsigned char value);

@@ -101,7 +101,7 @@ void EClass::_fillFeaturesTableWithSelfFeatures() {
         // Add feature to feature table if it was defined in the class
         if (std::find(allRedefines.begin(), allRedefines.end(), featureInfo.first) == allRedefines.end()) {
             EFeatureMetaInfo featureMetaInfo(featureInfo.first, {this->name(), featureInfo.first}, featureInfo.second.get(), featureInfo.second.get()->featureType());
-            if (featureInfo.second.get()->returnType() == EType::voidType()) {
+            if (featureInfo.second.get()->returnType() == EType::noType()) {
                 featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_void);
             }
             else if (featureInfo.second.get()->returnType() == EType::intType()) {
@@ -403,7 +403,7 @@ void EClass::setupCreators() {
 
             EProgram::semanticErrors.push_back(SemanticError(SemanticErrorCode::CREATORS__ATTRIBUTE_IS_CREATOR, errorMessage));
         }
-        else if ((*featureMetaInfo).implementation()->returnType() != EType::voidType()) {
+        else if ((*featureMetaInfo).implementation()->returnType() != EType::noType()) {
             std::string errorMessage = "class \"" + this->name() + "\" ";
             errorMessage += ":: type of creator\'s return value - \"" + (*featureMetaInfo).implementation()->returnType().toString() + "\"";
 

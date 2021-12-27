@@ -9,7 +9,7 @@ EFeature::EFeature(const std::string& featureName, EUserClass* ownerClass, featu
     : _name(featureName),
       _ownerClassName(ownerClass->name()),
       _node(featureDecl),
-      _returnType( (featureDecl->type != nullptr ? EType(featureDecl->type) : EType::voidType()) )
+      _returnType( (featureDecl->type != nullptr ? EType(featureDecl->type) : EType::noType()) )
 {}
 
 EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, const EType& returnType)
@@ -22,7 +22,7 @@ EFeature::EFeature(const std::string& featureName, const EClass* ownerClass, con
 EFeature::~EFeature() {}
 
 void EFeature::validateDataTypes() {
-    if (this->_returnType != EType::voidType()) {
+    if (this->_returnType != EType::noType()) {
         std::string invalidUserTypeName;
 
         if (!this->_returnType.isUserDefinedSubtypeValid(invalidUserTypeName)) {
