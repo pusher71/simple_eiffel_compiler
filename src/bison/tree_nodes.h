@@ -237,4 +237,6 @@ struct expr_strct {
     short method_ref;
 
     short inner_var_number;
+
+    short is_rtl_call;
 };

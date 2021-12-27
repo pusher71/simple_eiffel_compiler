@@ -163,7 +163,7 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
     std::string featureMarkStr = featureMetaInfo.featureMark().first + ":" + featureMetaInfo.featureMark().second;
     featureMetaInfo.setPolyMethodName_utf8Link(this->_constants.appendUtf8(featureMarkStr));
 
-    std::string descriptorStr = "(";
+    std::string descriptorStr = "(L" + EClass::javaObjectFullName() + ";";
     if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
         for (const auto& formalParamInfo : ((ERoutine*)featureMetaInfo.implementation())->formalParameters()) {
             descriptorStr += formalParamInfo.second.type().descriptor();

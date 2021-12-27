@@ -187,7 +187,7 @@ ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants
 ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, const EFeatureMetaInfo& featureMetaInfo) {
     ByteCode result;
 
-    result._appendTwoBytes(0x0001);
+    result._appendTwoBytes(0x0009);
     result._appendTwoBytes(featureMetaInfo.polyMethodName_utf8Link());
     result._appendTwoBytes(featureMetaInfo.polyMethodDescriptor_utf8Link());
     result._appendTwoBytes(0x0001);
@@ -210,7 +210,8 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
         featureMetaInfoBodyCode._append(ByteCode::instanceof(polymorphicFeatureInfo.first));
 
         ByteCode ifBlock;
-        ifBlock._append(ByteCode::aload(0));
+        ifBlock._append(ByteCode::aload(0x0));
+        // featureMetaInfoBodyCode._append(ByteCode::checkcast(polymorphicFeatureInfo.first));
         for (short i=0; i<formalParamsCount; i++) {
             ifBlock._append(ByteCode::aload(i+1));
         }
@@ -276,7 +277,7 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
     routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy("rtl/CONSOLEIO")));
     routineBodyCode._append(ByteCode::dup());
     routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0));
-    short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), "IO", "Lrtl/CONSOLEIO;");
+    short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), "IO", "L" + EClassCONSOLEIO::classRTLfullName() + ";");
     routineBodyCode._append(ByteCode::putfield(fieldRef));
 
     routineBodyCode._append(ByteCode::_return());
@@ -498,6 +499,10 @@ ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConsta
 
     result._append(ByteCode(userClassConstants, expression->expr_left));
 
+    if (expression->const_class != 0) {
+        result._append(ByteCode::checkcast(expression->expr_left->const_class));
+    }
+
     int argumentsCount = 0;
     argument_seq_strct* argumentSeqElem = expression->argument_seq;
     while (argumentSeqElem != NULL) {
@@ -507,8 +512,11 @@ ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConsta
         argumentsCount++;
     }
 
-    if (expression->field_ref != 0)                 { result._append(ByteCode::getfield(expression->field_ref)); }
-    else if (expression->method_ref != 0)           { result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount)); }
+    if (expression->field_ref != 0) { result._append(ByteCode::getfield(expression->field_ref)); }
+    else if (expression->method_ref != 0) {
+        if (expression->is_rtl_call)    { result._append(ByteCode::invokevirtual(expression->method_ref, argumentsCount)); }
+        else                            { result._append(ByteCode::invokestatic(expression->method_ref, argumentsCount+1)); }
+    }
 
     return result;
 }

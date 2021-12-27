@@ -4,6 +4,7 @@
 #include "eroutine.h"
 
 #include "../EiffelCore/EiffelClasses/euserclass.h"
+#include "../EiffelCore/EiffelClasses/eclassrtl.h"
 
 EAttribute::EAttribute(const std::string& featureName, EUserClass* ownerClass, feature_decl_strct* featureDecl)
     : EFeature(featureName, ownerClass, featureDecl)
@@ -46,7 +47,8 @@ bool EAttribute::isConformingTo(const EFeature& other) const {
 }
 
 std::string EAttribute::descriptor() const {
-    return this->_returnType.descriptor();
+    if ( dynamic_cast<EClassRTL*>(EProgram::current->getClassBy(this->_ownerClassName)) )   { return (this->_returnType.descriptor()); }
+    else                                                                                    { return ("L" + EClass::javaObjectFullName() + ";"); }
 }
 
 std::string EAttribute::toString() const {

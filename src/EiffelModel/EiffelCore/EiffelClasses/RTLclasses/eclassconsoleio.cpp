@@ -4,6 +4,7 @@
 #include "../../../EiffelFeatureInfo/eroutine.h"
 
 std::string EClassCONSOLEIO::classRTLname() { return "CONSOLEIO"; }
+std::string EClassCONSOLEIO::classRTLfullName() { return EClass::rtlClassPackageName() + "/" + EClassCONSOLEIO::classRTLname(); }
 
 EClassCONSOLEIO::EClassCONSOLEIO() {
     this->_initSelf();

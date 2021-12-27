@@ -533,6 +533,8 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
 
     result->inner_var_number      = 0;
 
+    result->is_rtl_call           = 0;
+
     return result;
 }
 
@@ -567,6 +569,8 @@ struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int)
     result->method_ref            = 0;
 
     result->inner_var_number      = 0;
+
+    result->is_rtl_call           = 0;
 
     return result;
 }
@@ -603,6 +607,8 @@ struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_ch
 
     result->inner_var_number      = 0;
 
+    result->is_rtl_call           = 0;
+
     return result;
 }
 
@@ -637,6 +643,8 @@ struct expr_strct* create_expr_liter_str(unsigned int node_index, struct CharArr
     result->method_ref            = 0;
 
     result->inner_var_number      = 0;
+
+    result->is_rtl_call           = 0;
 
     return result;
 }
@@ -673,6 +681,8 @@ struct expr_strct* create_expr_liter_void(unsigned int node_index) {
 
     result->inner_var_number      = 0;
 
+    result->is_rtl_call           = 0;
+
     return result;
 }
 
@@ -707,6 +717,8 @@ struct expr_strct* create_expr_current(unsigned int node_index) {
     result->method_ref            = 0;
 
     result->inner_var_number      = 0;
+
+    result->is_rtl_call           = 0;
 
     return result;
 }
@@ -748,6 +760,8 @@ struct expr_strct* create_expr_call(unsigned int                 node_index,
 
     result->inner_var_number      = 0;
 
+    result->is_rtl_call           = 0;
+
     return result;
 }
 
@@ -785,6 +799,8 @@ struct expr_strct* create_expr_precursorcall(unsigned int                 node_i
     result->method_ref            = 0;
 
     result->inner_var_number      = 0;
+
+    result->is_rtl_call           = 0;
 
     return result;
 }
@@ -826,6 +842,8 @@ struct expr_strct* create_expr_subcall(unsigned int                 node_index,
 
     result->inner_var_number      = 0;
 
+    result->is_rtl_call           = 0;
+
     return result;
 }
 
@@ -865,6 +883,8 @@ struct expr_strct* create_expr_creation(unsigned int                 node_index,
 
     result->inner_var_number      = 0;
 
+    result->is_rtl_call           = 0;
+
     return result;
 }
 
@@ -903,6 +923,8 @@ struct expr_strct* create_expr_operation(unsigned int node_index,
     result->method_ref            = 0;
 
     result->inner_var_number      = 0;
+
+    result->is_rtl_call           = 0;
 
     return result;
 }

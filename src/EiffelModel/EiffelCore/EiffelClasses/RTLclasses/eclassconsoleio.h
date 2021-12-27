@@ -7,6 +7,7 @@ class EClassCONSOLEIO : public EClassRTL {
     // ================ STATIC ================
 public:
     static std::string classRTLname();
+    static std::string classRTLfullName();
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
