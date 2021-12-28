@@ -98,22 +98,8 @@ int main(int argc, char** argv) {
 
     // ========================= COMPILE SOURCE CODE =========================
     // Print compiling errors
-    if (EProgram::semanticErrors.empty()) {
-        eiffelProgram.compileToJVM("out");
-
-        // Create folder
-        std::filesystem::path metaInfPath = "out";
-        metaInfPath /= "META-INF";
-
-        std::filesystem::create_directory(metaInfPath);
-
-        // Generate java manifest file
-        std::filesystem::path manifestFilePath = metaInfPath / "MANIFEST.MF";
-        std::ofstream manifestFile(manifestFilePath);
-
-        manifestFile << "Manifest-Version: 1.0\n";
-        manifestFile << "Created-By: 1.7.0_06 (Oracle Corporation)\n";
-        manifestFile << "Main-Class: eiffel." + mainClassName + "\n";
+    if (tree_root != NULL && EProgram::semanticErrors.empty()) {
+        eiffelProgram.compileToJVM(mainClassName, argv[0]);
     }
 
     // Print compiling errors

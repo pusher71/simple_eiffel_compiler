@@ -9,7 +9,12 @@
 #include "../EiffelCore/EiffelClasses/euserclass.h"
 #include "../EiffelFeatureInfo/eattribute.h"
 
+class EClassRTL;
+
 class ByteCode {
+    // ================ MY FRIENDS ================
+    friend EClassRTL;
+
     // ================ ATTRIBUTES ================
 private:
     std::vector<unsigned char> _bytes;

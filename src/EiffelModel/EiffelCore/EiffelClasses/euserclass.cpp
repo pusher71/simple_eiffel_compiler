@@ -240,7 +240,7 @@ void EUserClass::compile(const std::string& outputDirectoryPath) {
     // Generate byte code for user class
     ByteCode byteCode(*this);
 
-    // Write byte code to file
+    // Write byte code to the file
     byteCode.writeToFile(outputClassFile);
 
     outputClassFile.close();

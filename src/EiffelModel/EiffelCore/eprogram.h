@@ -48,7 +48,7 @@ private:
     void runSemanticStage_4();
 
 public:
-    bool compileToJVM(const std::string& jvmFilepath);
+    bool compileToJVM(const std::string& mainClassName, const std::string& compilerExeFilePath);
 };
 
 #endif // EPROGRAM_H

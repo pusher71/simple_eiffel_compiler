@@ -170,16 +170,45 @@ void EProgram::runSemanticStage_4() {
     }
 }
 
-bool EProgram::compileToJVM(const std::string& jvmFilepath) {
+bool EProgram::compileToJVM(const std::string& mainClassName, const std::string& compilerExeFilePath) {
     std::cout << "START [COMPILATION PART]" << std::endl;
 
     // Create output directory
-    std::string outputDirectoryPath = "out";
+    std::filesystem::path outputDirectoryPath = "out";
     std::filesystem::remove_all(outputDirectoryPath);
     std::filesystem::create_directory(outputDirectoryPath);
 
+    // Create java manifest file
+    std::filesystem::create_directory(outputDirectoryPath / "META-INF");
+    std::ofstream manifestFile(outputDirectoryPath / "META-INF" / "MANIFEST.MF");
+
+    manifestFile << "Manifest-Version: 1.0\n";
+    manifestFile << "Created-By: 1.7.0_06 (Oracle Corporation)\n";
+    manifestFile << "Main-Class: eiffel." + mainClassName + "\n";
+
+    // Copy RTL classes to the output directory
+    std::filesystem::path secToolsDirectoryPath = std::filesystem::path(compilerExeFilePath).parent_path() / "sec_tools";
+
+    if (!std::filesystem::exists(secToolsDirectoryPath)) {
+        std::cerr << "INPUT ERROR :: No \"sec_tools\" directory found near eiffel compiler executable." << std::endl;
+        return false;
+    }
+    else if (!std::filesystem::exists(secToolsDirectoryPath / "to_out")) {
+        std::cerr << "INPUT ERROR :: No \"to_out\" directory found in \"sec_tools\" directory near eiffel compiler executable." << std::endl;
+        return false;
+    }
+    else if (!std::filesystem::exists(secToolsDirectoryPath / "to_out" / "rtl")) {
+        std::cerr << "INPUT ERROR :: No \"rtl\" directory found in \"sec_tools/to_out\" directory near eiffel compiler executable." << std::endl;
+        return false;
+    }
+
+    std::filesystem::path rtlDirectoryPath = secToolsDirectoryPath / "rtl";
+    std::filesystem::copy(secToolsDirectoryPath / "to_out", outputDirectoryPath, std::filesystem::copy_options::recursive);
+
+    // Compile each user class
     for (auto& classInfo : this->_classes) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
+
         if (userClass) {
             std::cout << " - Compiling class \"" << userClass->name() << "\" ... ";
 
