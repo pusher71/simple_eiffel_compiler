@@ -6,6 +6,7 @@ public class INTEGER extends ANY {
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
+    public INTEGER() { this.SET(0); }
     public INTEGER(int value) { this.SET(value); }
 
     // ----------------- contract -----------------

@@ -1,4 +1,5 @@
 #include "eclassconsoleio.h"
+#include "eclassany.h"
 
 #include "../../../EiffelFeatureInfo/eattribute.h"
 #include "../../../EiffelFeatureInfo/eroutine.h"
@@ -10,7 +11,7 @@ EClassCONSOLEIO::EClassCONSOLEIO() {
     this->_initSelf();
 }
 
-void EClassCONSOLEIO::_defineParents() {}
+void EClassCONSOLEIO::_defineParents() { this->_parents.push_back({EClassANY::classRTLname(), {}}); }
 void EClassCONSOLEIO::_defineCreators() {}
 void EClassCONSOLEIO::_defineFeatures() {
     std::vector<EFeature> features;

@@ -12,6 +12,8 @@ public class CONSOLEIO {
     public char     LAST_CHARACTER;
     public String   LAST_STRING;
 
+    public CONSOLEIO IO = this;
+
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
     public CONSOLEIO() {

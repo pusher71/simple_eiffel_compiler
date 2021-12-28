@@ -5,8 +5,6 @@
 
 ByteCode::ByteCode() {}
 
-#include <iostream>
-
 ByteCode::ByteCode(const EUserClass& userClass) {
     // Main bytecode values
     this->_appendFourBytes(0xCAFEBABE);     // "Magic" java constant
@@ -366,8 +364,15 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable&              
 
     // Call "creator" routine
     if (instructionInfo.at(createInstruction).creatorMethodRef_constLink != 0) {
-        if (instructionInfo.at(createInstruction).fieldRef_constLink != 0)  { result._append(ByteCode::getfield( instructionInfo.at(createInstruction).fieldRef_constLink )); }
-        else if (instructionInfo.at(createInstruction).localVarNumber != 0) { result._append(ByteCode::aload( instructionInfo.at(createInstruction).localVarNumber )); }
+        if (instructionInfo.at(createInstruction).fieldRef_constLink != 0) {
+            result._append(ByteCode::aload(0x0));
+            result._append(ByteCode::getfield( instructionInfo.at(createInstruction).fieldRef_constLink ));
+            result._append(ByteCode::checkcast( instructionInfo.at(createInstruction).constClass_constLink ));
+        }
+        else if (instructionInfo.at(createInstruction).localVarNumber != 0) {
+            result._append(ByteCode::aload( instructionInfo.at(createInstruction).localVarNumber ));
+            result._append(ByteCode::checkcast( instructionInfo.at(createInstruction).constClass_constLink ));
+        }
 
         short argumentsCount = 0;
         argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
@@ -499,6 +504,8 @@ ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants,
     return result;
 }
 
+#include <iostream>
+
 ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
     if (expressionInfo.at(expression).innerVarNumber == 0) {
@@ -531,10 +538,6 @@ ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConsta
     ByteCode result;
 
     result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
-
-    if (expressionInfo.at(expression).constClass_constLink != 0) {
-        result._append(ByteCode::checkcast(expressionInfo.at(expression).constClass_constLink));
-    }
 
     int argumentsCount = 0;
     argument_seq_strct* argumentSeqElem = expression->argument_seq;

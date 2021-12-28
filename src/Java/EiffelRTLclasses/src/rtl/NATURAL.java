@@ -6,6 +6,7 @@ public class NATURAL extends ANY {
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
+    public NATURAL() { this.SET(0); }
     public NATURAL(long value) { this.SET(value); }
 
     // ----------------- contract -----------------

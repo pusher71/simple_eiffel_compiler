@@ -319,6 +319,8 @@ void ERoutine::_resolveInstruction(EUserClass& userClass, instruction_strct* ins
     }
 }
 
+#include <iostream>
+
 void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction) {
     // Resolve variable of creation
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
@@ -620,6 +622,8 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
     // Resolve call target
     this->_resolveExpr(userClass, expr->expr_left);
 
+    if (!EProgram::semanticErrors.empty()) { return; }
+
     if (this->_exprInfo[expr->expr_left].resultType == EType::noType() || !this->_exprInfo[expr->expr_left].resultType.isClass()) {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
         errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
@@ -633,10 +637,11 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
     for (const auto& attributeMetaInfo : targetOwnerClassInfo->attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == expr->method_id_name) {
             if (dynamic_cast<EClassRTL*>(targetOwnerClassInfo) == nullptr) {
-                this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->featureMark().first + ":" + attributeMetaInfo->featureMark().second, "(L" + EClass::javaObjectFullName() + ")" + attributeMetaInfo->implementation()->descriptor());
+                this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->featureMark().first + ":" + attributeMetaInfo->featureMark().second, "(L" + EClass::javaObjectFullName() + ";)" + attributeMetaInfo->implementation()->descriptor());
             }
             else {
                 this->_exprInfo[expr].isRTLcall = true;
+
                 this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
             }
 
@@ -760,15 +765,11 @@ std::string ERoutine::descriptor() const {
     std::string result = "(";
 
     if ( dynamic_cast<EClassRTL*>(EProgram::current->getClassBy(this->_ownerClassName)) ) {
-        for (const auto& formalParamInfo : this->_formalParameters) {
-            result += formalParamInfo.second.type().descriptor();
-        }
+        for (const auto& formalParamInfo : this->_formalParameters) { result += formalParamInfo.second.type().descriptor(); }
         result += ")" + this->_returnType.descriptor();
     }
     else {
-        for (const auto& formalParamInfo : this->_formalParameters) {
-            result += "L" + EClass::javaObjectFullName() + ";";
-        }
+        for (const auto& formalParamInfo : this->_formalParameters) { result += "L" + EClass::javaObjectFullName() + ";"; }
         result += ")";
 
         if (this->_returnType == EType::noType())   { result += "V"; }
@@ -781,14 +782,8 @@ std::string ERoutine::descriptor() const {
 std::string ERoutine::toString() const {
     std::string result = EFeature::toString() + "(";
 
-    // for (const auto& formalTypeInfo : this->_formalParameters) {
-    for (int i=1; i<=this->_formalParameters.size(); i++) {
-        result += this->getInnerVar(i)->type().toString() + ", ";
-    }
-
-    if (!this->_formalParameters.empty()) {
-        result = result.substr(0, result.size()-2);
-    }
+    for (int i=1; i<=this->_formalParameters.size(); i++) { result += this->getInnerVar(i)->type().toString() + ", "; }
+    if (!this->_formalParameters.empty()) { result = result.substr(0, result.size()-2); }
 
     result += ")";
 

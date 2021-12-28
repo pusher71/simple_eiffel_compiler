@@ -170,8 +170,15 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
         }
     }
     descriptorStr += ")";
-    if (featureMetaInfo.implementation()->returnType() != EType::noType())  { descriptorStr += "L" + EClass::javaObjectFullName() + ";"; }
-    else                                                                    { descriptorStr += "V"; }
+
+    EClass* ownerClassInfo = EProgram::current->getClassBy(featureMetaInfo.implementation()->ownerClassName());
+    if (dynamic_cast<EClassRTL*>(ownerClassInfo) == nullptr) {
+        if (featureMetaInfo.implementation()->returnType() != EType::noType())  { descriptorStr += "L" + EClass::javaObjectFullName() + ";"; }
+        else                                                                    { descriptorStr += "V"; }
+    }
+    else {
+        descriptorStr += featureMetaInfo.implementation()->returnType().descriptor();
+    }
 
     featureMetaInfo.setPolyMethodDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
 
