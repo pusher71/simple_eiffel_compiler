@@ -210,7 +210,6 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
 
         ByteCode ifBlock;
         ifBlock._append(ByteCode::aload(0x0));
-        ifBlock._append(ByteCode::checkcast(polymorphicFeatureInfo.first));
         for (short i=0; i<formalParamsCount; i++) {
             ifBlock._append(ByteCode::aload(i+1));
         }

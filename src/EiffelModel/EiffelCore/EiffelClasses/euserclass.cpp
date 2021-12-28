@@ -171,10 +171,12 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
     std::string descriptorStr = "(L" + EClass::javaObjectFullName() + ";";
     if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
         for (const auto& formalParamInfo : ((ERoutine*)featureMetaInfo.implementation())->formalParameters()) {
-            descriptorStr += formalParamInfo.second.type().descriptor();
+            descriptorStr += "L" + EClass::javaObjectFullName() + ";";
         }
     }
-    descriptorStr += ")" + featureMetaInfo.implementation()->returnType().descriptor();
+    descriptorStr += ")";
+    if (featureMetaInfo.implementation()->returnType() != EType::noType())  { descriptorStr += "L" + EClass::javaObjectFullName() + ";"; }
+    else                                                                    { descriptorStr += "V"; }
 
     featureMetaInfo.setPolyMethodDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
 
@@ -190,6 +192,7 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
 
             if (featureMetaWithSameMark != nullptr) {
                 short constClassLink = this->_constants.appendConstClass( this->_constants.appendUtf8(classInfo->fullName()) );
+                std::cout << featureMetaWithSameMark->implementation()->descriptor() << std::endl;
                 short featureNameAndTypeLink = this->_constants.appendNameAndType({ this->_constants.appendUtf8(featureMetaWithSameMark->finalName()), this->_constants.appendUtf8(featureMetaWithSameMark->implementation()->descriptor()) });
 
                 short fieldOrMethodRef = 0;
