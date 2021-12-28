@@ -147,16 +147,11 @@ void EUserClass::becomeMainClass() {
     }
 }
 
-#include <iostream>
-
 void EUserClass::addFeaturesTableInfoToConstantTable() {
-    std::cout << "HELLO, MY NAME: " << this->name() << std::endl;
     for (auto& featureMetaInfo : this->_featuresTable) {
-        std::cout << featureMetaInfo.finalName() << std::endl;
         this->_addFeatureInfoFromMetaToConstantTable(featureMetaInfo);
         this->_addPolyMethodInfoFromMetaToConstantTable(featureMetaInfo);
     }
-    std::cout << std::endl;
 }
 
 void EUserClass::_addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
@@ -181,30 +176,42 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
     featureMetaInfo.setPolyMethodDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
 
     for (EClass* classInfo : EProgram::current->classes()) {
-        if (this == classInfo || classInfo->isDescendantTo(this)) {
+        if (this == classInfo || classInfo->isDescendantTo(this) || this->isDescendantTo(classInfo)) {
             EFeatureMetaInfo* featureMetaWithSameMark = nullptr;
             for (auto& otherFeatureMetaInfo : classInfo->_featuresTable) {
                 if (featureMetaInfo.featureMark() == otherFeatureMetaInfo.featureMark()) {
-                    std::cout << " = " << classInfo->fullName() << "::" << featureMetaInfo.finalName() << ", " << classInfo->fullName() << "::" << otherFeatureMetaInfo.finalName() << std::endl;
                     featureMetaWithSameMark = &otherFeatureMetaInfo;
                 }
             }
 
             if (featureMetaWithSameMark != nullptr) {
+                // Const class
                 short constClassLink = this->_constants.appendConstClass( this->_constants.appendUtf8(classInfo->fullName()) );
-                std::cout << featureMetaWithSameMark->implementation()->descriptor() << std::endl;
+
+                // Field or method ref
                 short featureNameAndTypeLink = this->_constants.appendNameAndType({ this->_constants.appendUtf8(featureMetaWithSameMark->finalName()), this->_constants.appendUtf8(featureMetaWithSameMark->implementation()->descriptor()) });
 
                 short fieldOrMethodRef = 0;
 
-                if (featureMetaWithSameMark->featureType() == EFeature::efeature_attribute) {
-                    fieldOrMethodRef = this->_constants.appendFieldRef({constClassLink, featureNameAndTypeLink});
-                }
-                else {
-                    fieldOrMethodRef = this->_constants.appendMethodRef({constClassLink, featureNameAndTypeLink});
-                }
+                if (featureMetaWithSameMark->featureType() == EFeature::efeature_attribute)     { fieldOrMethodRef = this->_constants.appendFieldRef({constClassLink, featureNameAndTypeLink}); }
+                else                                                                            { fieldOrMethodRef = this->_constants.appendMethodRef({constClassLink, featureNameAndTypeLink}); }
 
-                featureMetaInfo.addPolyMethodImplementation(constClassLink, {featureMetaWithSameMark->featureType(), fieldOrMethodRef});
+                featureMetaInfo.addPolyMethodImplementation(constClassLink, EPolymorphicImplementationInfo(featureMetaWithSameMark->featureType(), fieldOrMethodRef));
+            }
+            else {
+                // Const class
+                short constClass_constLink = this->_constants.appendConstClass( this->_constants.appendUtf8(classInfo->fullName()) );
+
+                // Exception method ref
+                short exceptionClass_constLink = this->_constants.appendConstClass( this->_constants.appendUtf8("java/lang/RuntimeException") );
+
+                short exceptionMethodNameAndType_constLink = this->_constants.appendNameAndType({ this->_constants.appendUtf8("<init>"), this->_constants.appendUtf8("(Ljava/lang/String;)V") });
+                short exceptionMethodRef_constLink = this->_constants.appendMethodRef({exceptionClass_constLink, exceptionMethodNameAndType_constLink});
+
+                // Exception message string
+                short exceptionMessageString_constLink = this->_constants.appendString( this->_constants.appendUtf8("No attribute or routine \"" + featureMetaInfo.finalName() + "\" in class \"" + classInfo->fullName() + "\"") );
+
+                featureMetaInfo.addPolyMethodImplementation(constClass_constLink, EPolymorphicImplementationInfo(exceptionClass_constLink, exceptionMethodRef_constLink, exceptionMessageString_constLink));
             }
         }
     }

@@ -4,6 +4,8 @@
 #include "efeature.h"
 #include <map>
 
+#include "../EiffelFeatureInfo/epolymorphicimplementationinfo.h"
+
 class ByteCode;
 
 class EFeatureMetaInfo {
@@ -30,7 +32,7 @@ private:
     short                               _polyMethodName_utf8Link;
     short                               _polyMethodDescriptor_utf8Link;
 
-    std::map<short, std::pair<EFeature::EFeatureType, short>> _polyMethodImplementations; // Constant class -> field or method ref
+    std::map<short, EPolymorphicImplementationInfo> _polyMethodImplementations;
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
@@ -66,13 +68,13 @@ public:
     short featureDescriptor_utf8Link() const;
     short polyMethodName_utf8Link() const;
     short polyMethodDescriptor_utf8Link() const;
-    std::map<short, std::pair<EFeature::EFeatureType, short>> polyMethodImplementations() const;
+    const std::map<short, EPolymorphicImplementationInfo>& polyMethodImplementations() const;
 
     void setFeatureName_utf8Link(short featureName_utf8Link);
     void setFeatureDescriptor_utf8Link(short featureDescriptor_utf8Link);
     void setPolyMethodName_utf8Link(short polyMethodName_utf8Link);
     void setPolyMethodDescriptor_utf8Link(short polyMethodDescriptor_utf8Link);
-    void addPolyMethodImplementation(short constClassLink, const std::pair<EFeature::EFeatureType, short>& fieldOrMethodRef);
+    void addPolyMethodImplementation(short constClassLink, const EPolymorphicImplementationInfo& polyImplementation);
 
     // ----------------- contract -----------------
 public:

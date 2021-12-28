@@ -60,6 +60,7 @@ set(SOURCE_FILES
     src/EiffelModel/EiffelFeatureInfo/eattribute.cpp
     src/EiffelModel/EiffelFeatureInfo/eroutine.cpp
     src/EiffelModel/EiffelFeatureInfo/einnervariable.cpp
+    src/EiffelModel/EiffelFeatureInfo/epolymorphicimplementationinfo.cpp
 
     src/EiffelModel/EiffelCompilation/bytecode.cpp
 

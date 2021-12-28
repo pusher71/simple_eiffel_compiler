@@ -34,6 +34,7 @@ feature
     do
         io.put_string("INVOKER ||| ")
         o.print_self
+        -- o.simple_print
     end
 end
 -- EOF
@@ -65,6 +66,11 @@ feature
     print_self
     do
         io.put_string("OBJECT::print_self%N")
+    end
+
+    simple_print
+    do
+        io.put_string("<<<< OBJECT || print_self >>>>%N")
     end
 
 end

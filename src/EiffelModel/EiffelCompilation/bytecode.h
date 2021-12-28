@@ -159,13 +159,14 @@ private:
     static ByteCode putfield(short int u2);
     static ByteCode instanceof(short int u2);
     static ByteCode checkcast(short int u2);
+    static ByteCode athrow();
 
     static ByteCode invokevirtual(short int u2, short int argCount);
     static ByteCode invokespecial(short int u2, short int argCount);
     static ByteCode invokestatic(short int u2, short int argCount);
+    static ByteCode _return();
     static ByteCode ireturn();
     static ByteCode areturn();
-    static ByteCode _return();
 };
 
 #endif // BYTECODE_H

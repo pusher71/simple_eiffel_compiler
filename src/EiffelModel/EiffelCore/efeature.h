@@ -12,6 +12,7 @@ class EFeature {
     // ================= SUBTYPES =================
 public:
     enum EFeatureType {
+        efeature_nofeature,
         efeature_attribute,
         efeature_routine
     };

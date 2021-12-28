@@ -33,13 +33,13 @@ short EFeatureMetaInfo::featureName_utf8Link() const { return this->_featureName
 short EFeatureMetaInfo::featureDescriptor_utf8Link() const { return this->_featureDescriptor_utf8Link; }
 short EFeatureMetaInfo::polyMethodName_utf8Link() const { return this->_polyMethodName_utf8Link; }
 short EFeatureMetaInfo::polyMethodDescriptor_utf8Link() const { return this->_polyMethodDescriptor_utf8Link; }
-std::map<short, std::pair<EFeature::EFeatureType, short>> EFeatureMetaInfo::polyMethodImplementations() const { return this->_polyMethodImplementations; }
+const std::map<short, EPolymorphicImplementationInfo>& EFeatureMetaInfo::polyMethodImplementations() const { return this->_polyMethodImplementations; }
 
 void EFeatureMetaInfo::setFeatureName_utf8Link(short featureName_utf8Link) { this->_featureName_utf8Link = featureName_utf8Link; }
 void EFeatureMetaInfo::setFeatureDescriptor_utf8Link(short featureDescriptor_utf8Link) { this->_featureDescriptor_utf8Link = featureDescriptor_utf8Link; }
 void EFeatureMetaInfo::setPolyMethodName_utf8Link(short polyMethodName_utf8Link) { this->_polyMethodName_utf8Link = polyMethodName_utf8Link; }
 void EFeatureMetaInfo::setPolyMethodDescriptor_utf8Link(short polyMethodDescriptor_utf8Link) { this->_polyMethodDescriptor_utf8Link = polyMethodDescriptor_utf8Link; }
-void EFeatureMetaInfo::addPolyMethodImplementation(short constClassLink, const std::pair<EFeature::EFeatureType, short>& fieldOrMethodRef) { this->_polyMethodImplementations[constClassLink] = fieldOrMethodRef; }
+void EFeatureMetaInfo::addPolyMethodImplementation(short constClassLink, const EPolymorphicImplementationInfo& polyImplementation) { this->_polyMethodImplementations[constClassLink] = polyImplementation; }
 
 bool EFeatureMetaInfo::operator==(const EFeatureMetaInfo& other) const {
     bool result = true;

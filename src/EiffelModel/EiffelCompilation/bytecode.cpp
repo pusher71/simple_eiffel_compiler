@@ -209,19 +209,30 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
         featureMetaInfoBodyCode._append(ByteCode::instanceof(polymorphicFeatureInfo.first));
 
         ByteCode ifBlock;
-        ifBlock._append(ByteCode::aload(0x0));
-        for (short i=0; i<formalParamsCount; i++) {
-            ifBlock._append(ByteCode::aload(i+1));
+        if (!polymorphicFeatureInfo.second.isExceptionThrow()) {
+            ifBlock._append(ByteCode::aload(0x0));
+            for (short i=0; i<formalParamsCount; i++) {
+                ifBlock._append(ByteCode::aload(i+1));
+            }
+
+            ifBlock._append((polymorphicFeatureInfo.second.featureType() == EFeature::efeature_attribute
+                             ? ByteCode::getfield(polymorphicFeatureInfo.second.fieldOrMethodRef_constLink())
+                             : ByteCode::invokevirtual(polymorphicFeatureInfo.second.fieldOrMethodRef_constLink(), formalParamsCount)));
+
+            switch (featureMetaInfo.returnType()) {
+                case EFeatureMetaInfo::ereturntype_void:    ifBlock._append(ByteCode::_return()); break;
+                case EFeatureMetaInfo::ereturntype_integer: ifBlock._append(ByteCode::ireturn()); break;
+                case EFeatureMetaInfo::ereturntype_object:  ifBlock._append(ByteCode::areturn()); break;
+            }
         }
-
-        ifBlock._append((polymorphicFeatureInfo.second.first == EFeature::efeature_attribute
-                         ? ByteCode::getfield(polymorphicFeatureInfo.second.second)
-                         : ByteCode::invokevirtual(polymorphicFeatureInfo.second.second, formalParamsCount)));
-
-        switch (featureMetaInfo.returnType()) {
-            case EFeatureMetaInfo::ereturntype_void:                                          break;
-            case EFeatureMetaInfo::ereturntype_integer: ifBlock._append(ByteCode::ireturn()); break;
-            case EFeatureMetaInfo::ereturntype_object:  ifBlock._append(ByteCode::areturn()); break;
+        else {
+            ifBlock._append(ByteCode::new_(polymorphicFeatureInfo.second.exceptionClass_constLink()));
+            ifBlock._append(ByteCode::dup());
+            ifBlock._append(ByteCode::ldc_w(polymorphicFeatureInfo.second.exceptionString_constLink()));
+            ifBlock._append(ByteCode::invokespecial(polymorphicFeatureInfo.second.exceptionMethodRef_constLink(), 0));
+            ifBlock._append(ByteCode::athrow());
+            ifBlock._append(ByteCode::pop());
+            ifBlock._append(ByteCode::_return());
         }
 
         featureMetaInfoBodyCode._append(ByteCode::ifeq(0x03 + ifBlock._bytes.size()));
@@ -1063,47 +1074,14 @@ ByteCode ByteCode::checkcast(short int u2) {
     return result;
 }
 
+ByteCode ByteCode::athrow() {
+    ByteCode result;
+    result._appendByte(0xBF);
+
+    return result;
+}
+
 ByteCode ByteCode::invokevirtual(short int u2, short int argCount) {
     ByteCode result;
     result._appendByte(0xB6);
-    result._appendTwoBytes(u2);
-
-    return result;
-}
-
-ByteCode ByteCode::invokespecial(short int u2, short int argCount) {
-    ByteCode result;
-    result._appendByte(0xB7);
-    result._appendTwoBytes(u2);
-
-    return result;
-}
-
-ByteCode ByteCode::invokestatic(short int u2, short int argCount) {
-    ByteCode result;
-    result._appendByte(0xB8);
-    result._appendTwoBytes(u2);
-
-    return result;
-}
-
-ByteCode ByteCode::ireturn() {
-    ByteCode result;
-    result._appendByte(0xAC);
-
-    return result;
-}
-
-ByteCode ByteCode::areturn() {
-    ByteCode result;
-    result._appendByte(0xB0);
-
-    return result;
-}
-
-ByteCode ByteCode::_return() {
-    ByteCode result;
-    result._appendByte(0xB1);
-
-    return result;
-}
+    result._appendTwoBytes(u2);  return result; }  ByteCode ByteCode::invokespecial(short int u2, short int argCount) { ByteCode result; result._appendByte(0xB7); result._appendTwoBytes(u2);  return result; }  ByteCode ByteCode::invokestatic(short int u2, short int argCount) { ByteCode result; result._appendByte(0xB8); result._appendTwoBytes(u2);  return result; }  ByteCode ByteCode::ireturn() { ByteCode result; result._appendByte(0xAC);  return result; }  ByteCode ByteCode::areturn() { ByteCode result; result._appendByte(0xB0);  return result; }  ByteCode ByteCode::_return() { ByteCode result; result._appendByte(0xB1);  return result; }
