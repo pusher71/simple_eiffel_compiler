@@ -18,7 +18,7 @@ feature
         create i.make2
         i := create {OBJECT}.make2;
 
-        what := create {SUPER_OBJECT}
+        what := create {OBJECT}.make(create {SUPER_OBJECT});
 
         (create {OBJECT}.make(create {SUPER_OBJECT})).make(create {SUPER_OBJECT});
 
@@ -34,11 +34,23 @@ feature
         return_obj.obj.f
         io.put_string("----------------%N")
         io.put_string("================%N")
+
+        Current.print_obj(return_obj)
     end
 
     return_obj : OBJECT
+    local
+        myResult : OBJECT
+        param : SUPER_OBJECT
     do
-        Result := create {OBJECT}.make(create {SUPER_OBJECT})
+        Current.io.io.io.io.io.put_string("WHATHHATHL%N");
+        create param
+        create myResult.make(param)
+
+        Result := myResult
+        Current.io.io.io.io.io.put_string(" ??? WHATHHATHL ??? %N");
+
+        result := create {SUPER_OBJECT}
     end
 
     print_obj(obj2 : OBJECT)
@@ -72,6 +84,10 @@ feature
         obj := create {SUPER_OBJECT}
     end
 
+    f
+    do
+        io.put_string("routine OBJECT::f%N")
+    end
 end
 -- EOF
 

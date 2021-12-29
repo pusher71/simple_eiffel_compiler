@@ -396,11 +396,11 @@ void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strc
 
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == assignInstruction->first_id_name) {
+            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
+
             if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo( attributeMetaInfo->implementation()->returnType() )) {
                 std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
                 this->_instrInfo[assignInstruction].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
-
-                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
             }
             else {
                 std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: field \"" + attributeMetaInfo->finalName() + "\"\n";
@@ -415,11 +415,11 @@ void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strc
     if (fieldOrLocalOwnerClassInfo == nullptr) {
         for (const auto& localVar : this->_localVariables) {
             if (localVar.first == assignInstruction->first_id_name) {
+                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
+
                 if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo( EType(localVar.second.type()) )) {
                     this->_instrInfo[assignInstruction].localVarNumber = localVar.second.index();
                     const auto& createdVarType = EType(localVar.second.type());
-
-                    fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
                 }
                 else {
                     std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: local variable \"" + localVar.first + "\"\n";
