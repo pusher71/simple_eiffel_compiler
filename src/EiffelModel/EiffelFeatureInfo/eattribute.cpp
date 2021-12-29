@@ -21,17 +21,17 @@ EFeature::EFeatureType EAttribute::featureType() const { return efeature_attribu
 
 void EAttribute::validateDataTypes() { EFeature::validateDataTypes(); }
 
-bool EAttribute::isConformingTo(const EFeature& other) const {
+bool EAttribute::isConformingTo(const EFeature& other, bool areDeclarationsCompared) const {
     bool result = false;
 
     EAttribute* otherAttribute  = dynamic_cast<EAttribute*>((EFeature*)(&other));
     ERoutine*   otherRoutine    = dynamic_cast<ERoutine*>((EFeature*)(&other));
 
     if (otherAttribute != nullptr) {
-        if (this->_returnType.canCastTo(otherAttribute->_returnType) &&
-            this->_returnType.isExpanded() == otherAttribute->_returnType.isExpanded())
-        {
-            result = true;
+        if (this->_returnType.canCastTo(otherAttribute->_returnType)) {
+            if (!areDeclarationsCompared || this->_returnType.isExpanded() == otherAttribute->_returnType.isExpanded()) {
+                result = true;
+            }
         }
     }
     else if (otherRoutine != nullptr) {

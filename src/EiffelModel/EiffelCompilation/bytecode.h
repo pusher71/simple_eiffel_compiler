@@ -33,7 +33,7 @@ public:
     static ByteCode mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass);
 
     ByteCode(const EConstantTable&                                                  userClassConstants,
-             const instruction_seq_strct*                                           routineBody,
+             const ERoutine*                                                        routineInfo,
              const std::map<const instruction_strct*, ERoutine::InstructionInfo>&   instructionInfo,
              const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo);
 

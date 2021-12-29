@@ -31,7 +31,7 @@ ERoutine::ERoutine(const std::string& featureName, EUserClass* ownerClass, featu
     // Add "result" local variable
     if (this->_returnType != EType::noType()) {
         short resultLocalIndex = this->_formalParameters.size() + this->_localVariables.size() + 1;
-        this->_localVariables.insert({"result", EInnerVariable(resultLocalIndex, this->_returnType)});
+        this->_localVariables.insert({"RESULT", EInnerVariable(resultLocalIndex, this->_returnType)});
     }
 }
 
@@ -185,7 +185,7 @@ void ERoutine::_validateLocalVarDataTypes() const {
         // Validate data type
         invalidUserTypeName = "";
 
-        if (!localVarInfo.second.type().isUserDefinedSubtypeValid(invalidUserTypeName) && localVarInfo.first != "result") {
+        if (!localVarInfo.second.type().isUserDefinedSubtypeValid(invalidUserTypeName) && localVarInfo.first != "RESULT") {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
             errorMessage += ":: no user defined subtype \"" + invalidUserTypeName + "\" ";
             errorMessage += "for local variable <" + std::to_string(localVarInfo.second.index() - this->_formalParameters.size() - 1) + ">";
@@ -290,6 +290,13 @@ void ERoutine::_checkOnLocalVarNameClashing() const {
 void ERoutine::resolveBody() {
     EUserClass* ownerClass = (EUserClass*)EProgram::current->getClassBy(this->_ownerClassName);
 
+    // Resolve local variables
+    for (const auto& localVarInfo : this->_localVariables) {
+        EClass* localVarTypeClassInfo = EProgram::current->getClassBy(localVarInfo.second.type().firstElemClassName());
+        ownerClass->constants().appendMethodRefStr(localVarTypeClassInfo->fullName(), "<init>", "()V");
+    }
+
+    // Resolve routine body instructions
     instruction_seq_strct* instructionSeqElem = this->_routineBody;
     instructionSeqElem = instructionSeqElem->next; // First instruction is NULL instruction
 
@@ -318,8 +325,6 @@ void ERoutine::_resolveInstruction(EUserClass& userClass, instruction_strct* ins
             break;
     }
 }
-
-#include <iostream>
 
 void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction) {
     // Resolve variable of creation
@@ -438,48 +443,49 @@ void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
     char* userClassName = nullptr;
 
     switch(expr->type) {
-        case expr_liter_bool:
+        case expr_liter_bool: // TODO
             this->_exprInfo[expr].resultType = EType::boolType();
             break;
-        case expr_liter_int:
+        case expr_liter_int: // TODO
             this->_exprInfo[expr].resultType = EType::intType();
 
             intLiteral = expr->liter_int;
             if (intLiteral != expr->liter_int) { this->_exprInfo[expr].liter_constLink = userClass.constants().appendInteger(expr->liter_int); }
 
             break;
-        case expr_liter_char:
+        case expr_liter_char: // TODO
             this->_exprInfo[expr].resultType = EType::charType();
             break;
-        case expr_liter_str:
+        case expr_liter_str: // TODO
             this->_exprInfo[expr].resultType = EType::stringType();
 
             for (int i=0; i<chaarlen(expr->liter_str); i++) { stringLiteral += chaargetchr(expr->liter_str, i); }
             this->_exprInfo[expr].liter_constLink = userClass.constants().appendString( userClass.constants().appendUtf8(stringLiteral) );
 
             break;
-        case expr_liter_void:
+        case expr_liter_void: // TODO
             this->_exprInfo[expr].resultType = EType::voidLiterType();
             break;
 
-        case expr_current:
+        case expr_current: // TODO
             this->_exprInfo[expr].resultType = EType::classType(userClass.name());
             break;
 
-        case expr_call_selffeature:
+        case expr_call_selffeature: // TODO
             this->_resolveCallSelffeatureExpr(userClass, expr);
             break;
-        case expr_call_precursor:
+        case expr_call_precursor: // TODO
             this->_resolveCallPrecursorExpr(userClass, expr);
             break;
-        case expr_subcall:
+        case expr_subcall: // TODO
             this->_resolveCallSubcallExpr(userClass, expr);
             break;
-        case expr_create:
+        case expr_create: // TODO
             this->_resolveCreateExpr(userClass, expr);
             break;
 
-        case expr_arrelem:
+        case expr_arrelem: // TODO
+            this->_resolveArrElemExpr(userClass, expr);
             break;
         case expr_plus:
             break;
@@ -604,7 +610,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
         errorMessage += std::string(":: unknown id \"") + expr->method_id_name + "\" ";
         errorMessage += std::string("in class \"") + userClass.name() + "\"";
 
-        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
     }
 
     // Resolve arguments
@@ -628,7 +634,7 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
         errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
 
-        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND, errorMessage));
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND, errorMessage));
     }
 
     EClass* targetOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo[expr->expr_left].resultType.firstElemClassName());
@@ -693,7 +699,7 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
         errorMessage += std::string(":: unknown id \"") + expr->method_id_name + "\" ";
         errorMessage += std::string("in class \"") + this->_exprInfo[expr->expr_left].resultType.firstElemClassName() + "\"";
 
-        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
     }
 
     // Resolve arguments
@@ -709,6 +715,13 @@ void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
     const EClass* createClassInfo = nullptr;
 
     this->_exprInfo[expr].resultType = EType(expr->create_type);
+    std::string userDefinedSubtype;
+    if (!this->_exprInfo[expr].resultType.isUserDefinedSubtypeValid(userDefinedSubtype)) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: no user defined subtype \"" + userDefinedSubtype + "\"";
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__INVALID_TYPE_IN_CREATE_EXPR, errorMessage));
+
+        return;
+    }
 
     createClassInfo = EProgram::current->getClassBy( this->_exprInfo[expr].resultType.firstElemClassName() );
     this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(createClassInfo->fullName()) );
@@ -721,7 +734,7 @@ void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
         errorMessage += "creating entity of type \"" + this->_exprInfo[expr].resultType.toString() + "\"";
 
-        EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__CALL_REMOVED_DEFAULT_CREATOR, errorMessage));
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_REMOVED_DEFAULT_CREATOR, errorMessage));
     }
     else if (expr->method_id_name != NULL) {
         const auto& creatorInfo = std::find_if(createClassInfo->_creators.begin(), createClassInfo->_creators.end(), [&](const auto& creatorInfo) { return (creatorInfo.first == expr->method_id_name); });
@@ -731,15 +744,52 @@ void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
             errorMessage += "creating entity of type \"" + this->_exprInfo[expr].resultType.toString() + "\" ";
             errorMessage += "with unknown creator with name \"" + std::string(expr->method_id_name) + "\"";
 
-            EProgram::semanticErrors.push_back(SemanticError(INSTR_AS_EXPR__CALL_UNKNOWN_CREATOR_METHOD, errorMessage));
+            EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_UNKNOWN_CREATOR_METHOD, errorMessage));
         }
         else {
-            this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+            // Check that arguments are conforming to declaration
+            ERoutine* creatorRoutineInfo = dynamic_cast<ERoutine*>(creatorInfo->second);
+
+            std::vector<std::pair<std::string, EType>> argumentsType;
+            argument_seq_strct* argumentSeqElem = expr->argument_seq;
+            while (argumentSeqElem != NULL) {
+                this->_resolveExpr(userClass, argumentSeqElem->value);
+                argumentsType.push_back({ "", this->_exprInfo.at(argumentSeqElem->value).resultType });
+
+                argumentSeqElem = argumentSeqElem->next;
+            }
+
+            if (argumentsType.size() != creatorRoutineInfo->_formalParameters.size()) {
+                std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+                errorMessage += "creator \"" + this->_exprInfo[expr].resultType.toString() + "\" ";
+                errorMessage += "requires [" + std::to_string(creatorRoutineInfo->_formalParameters.size()) + "] arguments but got [" + std::to_string(argumentsType.size()) + "]";
+
+                EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
+            }
+            else {
+                EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
+                ERoutine creatorRoutineInfoWithArgsTypes(creatorRoutineInfo->name(), ownerClass, creatorRoutineInfo->_returnType, argumentsType, {});
+
+                if (!creatorRoutineInfoWithArgsTypes.isConformingTo(*creatorRoutineInfo, false)) {
+                    std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+                    errorMessage += "creating expression: \"" + this->_exprInfo[expr].resultType.toString() + "\"\n";
+                    errorMessage += "declaration - " + creatorRoutineInfo->toString() + "\n";
+                    errorMessage += "call        - " + creatorRoutineInfoWithArgsTypes.toString();
+
+                    EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE, errorMessage));
+                }
+                else {
+                    this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+                }
+            }
         }
     }
 }
 
-bool ERoutine::isConformingTo(const EFeature& other) const {
+void ERoutine::_resolveArrElemExpr(EUserClass& userClass, expr_strct* expr) {
+}
+
+bool ERoutine::isConformingTo(const EFeature& other, bool areDeclarationsCompared) const {
     bool result = false;
 
     ERoutine* otherRoutine = dynamic_cast<ERoutine*>((EFeature*)(&other));
@@ -751,7 +801,10 @@ bool ERoutine::isConformingTo(const EFeature& other) const {
 
             for (int i=0; i<this->_formalParameters.size() && areFormalParamsConforming; i++) {
                 areFormalParamsConforming &= this->getInnerVar(i+1)->type().canCastTo(otherRoutine->getInnerVar(i+1)->type());
-                areFormalParamsConforming &= this->getInnerVar(i+1)->type().isExpanded() == otherRoutine->getInnerVar(i+1)->type().isExpanded();
+
+                if (areDeclarationsCompared) {
+                    areFormalParamsConforming &= this->getInnerVar(i+1)->type().isExpanded() == otherRoutine->getInnerVar(i+1)->type().isExpanded();
+                }
             }
 
             result = areFormalParamsConforming;

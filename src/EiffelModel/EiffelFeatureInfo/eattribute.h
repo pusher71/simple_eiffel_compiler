@@ -20,7 +20,7 @@ public:
 public:
     void validateDataTypes() override;
 
-    bool isConformingTo(const EFeature& other) const override;
+    bool isConformingTo(const EFeature& other, bool areDeclarationsCompared = true) const override;
 
     std::string descriptor() const override;
 

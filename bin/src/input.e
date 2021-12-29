@@ -6,20 +6,49 @@ create
     make
 
 feature
-    i : OBJECT
+    si : SUPER_INVOKER
 
     make
     do
-        create i.make
-        current.i.obj.io.put_integer(0xCAFEBABE)
-        current.i.obj.f
+        io.put_string("HELLO")
+        io.new_line
 
-        Current.print
+        si := create {INVOKER}
+        si.print_object(create {SUPER_OBJECT})
+        si.print_object(create {OBJECT})
+    end
+end
+-- EOF
+
+-- invoker.e
+class
+    INVOKER
+
+inherit
+    SUPER_INVOKER
+    redefine
+        print_object
     end
 
-    print
+feature
+    print_object(o : OBJECT)
     do
-        Current.io.io.io.io.put_integer(0xFF)
+        io.put_string("INVOKER ||| ")
+        o.print_self
+        o.simple_print
+    end
+end
+-- EOF
+
+-- super_invoker.e
+class
+    SUPER_INVOKER
+
+feature
+    print_object(o : SUPER_OBJECT)
+    do
+        io.put_string("SUPER-INVOKER ||| ")
+        o.print_self
     end
 end
 -- EOF
@@ -28,15 +57,21 @@ end
 class
     OBJECT
 
-create
-    make
+inherit
+    SUPER_OBJECT
+    redefine
+        print_self
+    end
 
 feature
-    obj : SUPER_OBJECT
-
-    make
+    print_self
     do
-        create obj
+        io.put_string("OBJECT::print_self%N")
+    end
+
+    simple_print
+    do
+        io.put_string("<<<< OBJECT || print_self >>>>%N")
     end
 
 end
@@ -47,9 +82,9 @@ class
     SUPER_OBJECT
 
 feature
-    f
+    print_self
     do
-        io.put_string("SUPER_OBJECT::f()%N")
+        io.put_string("SUPER_OBJECT::print_self%N")
     end
 
 end

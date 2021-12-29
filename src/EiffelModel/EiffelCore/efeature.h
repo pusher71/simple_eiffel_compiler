@@ -60,7 +60,7 @@ public:
 
     // ----------------- contract -----------------
 public:
-    virtual bool isConformingTo(const EFeature& other) const = 0;
+    virtual bool isConformingTo(const EFeature& other, bool areDeclarationsCompared = true) const = 0;
 
     void changeOwnerClass(const EClass* classInfo);
 

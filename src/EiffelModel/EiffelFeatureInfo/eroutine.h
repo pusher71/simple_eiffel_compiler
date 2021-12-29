@@ -106,8 +106,10 @@ private:
     void _resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr);
     void _resolveCreateExpr(EUserClass& userClass, expr_strct* expr);
 
+    void _resolveArrElemExpr(EUserClass& userClass, expr_strct* expr);
+
 public:
-    bool isConformingTo(const EFeature& other) const override;
+    bool isConformingTo(const EFeature& other, bool areDeclarationsCompared = true) const override;
 
     // ---------------- additional ----------------
 public:

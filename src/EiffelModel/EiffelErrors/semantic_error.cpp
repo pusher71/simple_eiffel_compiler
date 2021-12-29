@@ -156,18 +156,30 @@ std::string SemanticError::errorReason() const {
             result += "INSTRUCTION RETURNS SOME VALUE";
             break;
 
-        case INSTR_AS_EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID:
+        case EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID:
             result += "CALL METHOD, FIELD OR INNER METHOD VARIABLE WITH UNKNOWN ID";
             break;
-        case INSTR_AS_EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND:
+        case EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND:
             result += "SUBCALL WITH PRIMITIVE TYPE OR VOID OPERAND";
             break;
+        case EXPR__SUBCALL_WITH_NONPARENTHESIZED_CREATE_EXPR_OPERAND:
+            result += "SUBCALL WITH NON-PARENTHESIZED CREATE EXPR AS OPERAND";
+            break;
+        case EXPR__CALL_INVALID_ARGUMENTS_COUNT:
+            result += "CALL HAS IMPROPER ARGUMENTS COUNT";
+            break;
+        case EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE:
+            result += "CALL HAS NON-CONFORMING ARGUMENTS SEQUENCE";
+            break;
 
-        case INSTR_AS_EXPR__CALL_REMOVED_DEFAULT_CREATOR:
+        case EXPR__CALL_REMOVED_DEFAULT_CREATOR:
             result += "CALL REMOVED DEFAULT CREATOR METHOD IN CREATE EXPRESSION";
             break;
-        case INSTR_AS_EXPR__CALL_UNKNOWN_CREATOR_METHOD:
+        case EXPR__CALL_UNKNOWN_CREATOR_METHOD:
             result += "CALL UNKNOWN CREATOR METHOD IN CREATE EXPRESSION";
+            break;
+        case EXPR__INVALID_TYPE_IN_CREATE_EXPR:
+            result += "UNKNOWN TYPE IN CREATE EXPR";
             break;
     }
     result += " :: " + this->_errorMessage;

@@ -131,7 +131,7 @@ ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants
     codeAttribute._appendTwoBytes(0x1000);
     codeAttribute._appendTwoBytes((short)classRoutine->_formalParameters.size() + (short)classRoutine->_localVariables.size() + 1);
 
-    ByteCode routineBodyCode(userClassConstants, classRoutine->_routineBody, classRoutine->_instrInfo, classRoutine->_exprInfo);
+    ByteCode routineBodyCode(userClassConstants, classRoutine, classRoutine->_instrInfo, classRoutine->_exprInfo);
 
     codeAttribute._appendFourBytes((unsigned long)routineBodyCode._bytes.size());
     codeAttribute._append(routineBodyCode);
@@ -298,16 +298,27 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
     result._append(codeAttribute);
 
     return result;
-
-    return result;
 }
 
 ByteCode::ByteCode(const EConstantTable&                                                userClassConstants,
-                   const instruction_seq_strct*                                         routineBody,
+                   const ERoutine*                                                      routineInfo,
                    const std::map<const instruction_strct*, ERoutine::InstructionInfo>& instructionInfo,
                    const std::map<const expr_strct*, ERoutine::ExpressionInfo>&         expressionInfo)
 {
-    const instruction_seq_strct* instructionSeqElem = routineBody->next;
+    // Initialize local variables for its usage
+    for (const auto& localVarInfo : routineInfo->_localVariables) {
+        std::string localVarTypeClassName = localVarInfo.second.type().firstElemClassName();
+        EProgram* currentProgram = EProgram::current;
+        EClass* localVarTypeClassInfo = EProgram::current->getClassBy(localVarInfo.second.type().firstElemClassName());
+
+        this->_append(ByteCode::new_(userClassConstants.searchClassConstBy(localVarTypeClassInfo->fullName())));
+        this->_append(ByteCode::dup());
+        this->_append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(localVarTypeClassInfo->fullName(), "<init>", "()V"), 0));
+        this->_append(ByteCode::astore(localVarInfo.second.index()));
+    }
+
+    // Compile routine body
+    const instruction_seq_strct* instructionSeqElem = routineInfo->_routineBody->next;
     instructionSeqElem = instructionSeqElem;
 
     while (instructionSeqElem != NULL) {
@@ -315,7 +326,14 @@ ByteCode::ByteCode(const EConstantTable&                                        
         instructionSeqElem = instructionSeqElem->next;
     }
 
-    this->_append(ByteCode::_return());
+    // Add return command in the end of the routine
+    if (routineInfo->returnType() == EType::noType()) {
+        this->_append(ByteCode::_return());
+    }
+    else {
+        this->_append(ByteCode::aload(routineInfo->_localVariables.at("RESULT").index()));
+        this->_append(ByteCode::areturn());
+    }
 }
 
 ByteCode::ByteCode(const EConstantTable&                                                    userClassConstants,
@@ -358,21 +376,9 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable&              
     result._append(ByteCode::dup());
     result._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(instructionInfo.at(createInstruction).ownerClassFullName, "<init>", "()V"), 0));
 
-    // Store created object in field or local variable
-    if (instructionInfo.at(createInstruction).fieldRef_constLink != 0)  { result._append(ByteCode::putfield( instructionInfo.at(createInstruction).fieldRef_constLink )); }
-    else if (instructionInfo.at(createInstruction).localVarNumber != 0) { result._append(ByteCode::astore( instructionInfo.at(createInstruction).localVarNumber )); }
-
     // Call "creator" routine
     if (instructionInfo.at(createInstruction).creatorMethodRef_constLink != 0) {
-        if (instructionInfo.at(createInstruction).fieldRef_constLink != 0) {
-            result._append(ByteCode::aload(0x0));
-            result._append(ByteCode::getfield( instructionInfo.at(createInstruction).fieldRef_constLink ));
-            result._append(ByteCode::checkcast( instructionInfo.at(createInstruction).constClass_constLink ));
-        }
-        else if (instructionInfo.at(createInstruction).localVarNumber != 0) {
-            result._append(ByteCode::aload( instructionInfo.at(createInstruction).localVarNumber ));
-            result._append(ByteCode::checkcast( instructionInfo.at(createInstruction).constClass_constLink ));
-        }
+        result._append(ByteCode::dup());
 
         short argumentsCount = 0;
         argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
@@ -385,6 +391,10 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable&              
 
         result._append(ByteCode::invokevirtual(instructionInfo.at(createInstruction).creatorMethodRef_constLink, argumentsCount));
     }
+
+    // Store created object
+    if (instructionInfo.at(createInstruction).fieldRef_constLink != 0)  { result._append(ByteCode::putfield( instructionInfo.at(createInstruction).fieldRef_constLink )); }
+    else if (instructionInfo.at(createInstruction).localVarNumber != 0) { result._append(ByteCode::astore( instructionInfo.at(createInstruction).localVarNumber )); }
 
     return result;
 }
@@ -504,8 +514,6 @@ ByteCode ByteCode::currentExprByteCode(const EConstantTable& userClassConstants,
     return result;
 }
 
-#include <iostream>
-
 ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
     if (expressionInfo.at(expression).innerVarNumber == 0) {
@@ -566,6 +574,8 @@ ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, 
 
     // Call "creator" routine
     if (expressionInfo.at(expression).methodRef_constLink != 0) {
+        result._append(ByteCode::dup());
+
         short argumentsCount = 0;
         argument_seq_strct* argumentSeqElem = expression->argument_seq;
         while (argumentSeqElem != NULL) {
@@ -577,6 +587,8 @@ ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, 
 
         result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, argumentsCount));
     }
+
+    result._append(ByteCode::checkcast(expressionInfo.at(expression).constClass_constLink));
 
     return result;
 }
@@ -1087,4 +1099,43 @@ ByteCode ByteCode::athrow() {
 ByteCode ByteCode::invokevirtual(short int u2, short int argCount) {
     ByteCode result;
     result._appendByte(0xB6);
-    result._appendTwoBytes(u2);  return result; }  ByteCode ByteCode::invokespecial(short int u2, short int argCount) { ByteCode result; result._appendByte(0xB7); result._appendTwoBytes(u2);  return result; }  ByteCode ByteCode::invokestatic(short int u2, short int argCount) { ByteCode result; result._appendByte(0xB8); result._appendTwoBytes(u2);  return result; }  ByteCode ByteCode::ireturn() { ByteCode result; result._appendByte(0xAC);  return result; }  ByteCode ByteCode::areturn() { ByteCode result; result._appendByte(0xB0);  return result; }  ByteCode ByteCode::_return() { ByteCode result; result._appendByte(0xB1);  return result; }
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::invokespecial(short int u2, short int argCount) {
+    ByteCode result;
+    result._appendByte(0xB7);
+    result._appendTwoBytes(u2);
+
+    return result; }
+
+ByteCode ByteCode::invokestatic(short int u2, short int argCount) {
+    ByteCode result;
+    result._appendByte(0xB8);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::ireturn() {
+    ByteCode result;
+    result._appendByte(0xAC);
+
+    return result;
+}
+
+ByteCode ByteCode::areturn() {
+    ByteCode result;
+    result._appendByte(0xB0);
+
+    return result;
+}
+
+ByteCode ByteCode::_return() {
+    ByteCode result;
+    result._appendByte(0xB1);
+
+    return result;
+}

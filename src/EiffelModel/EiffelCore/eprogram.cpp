@@ -15,7 +15,7 @@
 #include "EiffelClasses/RTLclasses/eclassstring.h"
 #include "EiffelClasses/RTLclasses/eclassarray.h"
 
-EProgram*   EProgram::current = nullptr;
+EProgram* EProgram::current = nullptr;
 
 std::vector<SemanticError> EProgram::semanticErrors;
 std::vector<CompileError> EProgram::compileErrors;
@@ -32,7 +32,6 @@ EProgram::EProgram() {}
 
 EProgram::EProgram(const program_strct* programNode, const std::string& mainClassName) {
     EProgram::current = this;
-
     std::cout << "START [SEMANTIC PART]" << std::endl;
 
     // Start semantic analysis stages ...
@@ -171,6 +170,7 @@ void EProgram::runSemanticStage_4() {
 }
 
 bool EProgram::compileToJVM(const std::string& mainClassName, const std::string& compilerExeFilePath) {
+    EProgram::current = this;
     std::cout << "START [COMPILATION PART]" << std::endl;
 
     // Create output directory
