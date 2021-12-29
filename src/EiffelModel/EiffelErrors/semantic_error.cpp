@@ -137,7 +137,7 @@ std::string SemanticError::errorReason() const {
         // Fourth semantic stage error codes ...
         // ... Create instruction
         case INSTR_CREATE__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
-            result += "CREATE FIELD OR LOCAL WITH UNKNOWN ID";
+            result += "CREATE FIELD OR LOCAL VARIABLE WITH UNKNOWN ID";
             break;
         case INSTR_CREATE__CALL_REMOVED_DEFAULT_CREATOR:
             result += "CALL REMOVED DEFAULT CREATOR";
@@ -148,7 +148,13 @@ std::string SemanticError::errorReason() const {
 
         // ... Assign instruction
         case INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
-            result += "ASSIGN TO FIELD OR LOCAL WITH UNKNOWN ID";
+            result += "ASSIGN TO FIELD OR LOCAL VARIABLE WITH UNKNOWN ID";
+            break;
+        case INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_FIELD:
+            result += "CAN\'T CAST EXPR TO TYPE OF FIELD";
+            break;
+        case INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL:
+            result += "CAN\'T CAST EXPR TO TYPE OF LOCAL VARIABLE";
             break;
 
         // ... Expression as instruction
@@ -167,6 +173,9 @@ std::string SemanticError::errorReason() const {
             break;
         case EXPR__CALL_INVALID_ARGUMENTS_COUNT:
             result += "CALL HAS IMPROPER ARGUMENTS COUNT";
+            break;
+        case EXPR__CALL_ATTRIBUTE_AS_ROUTINE:
+            result += "CALL ATTRIBUTE AS ROUTINE";
             break;
         case EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE:
             result += "CALL HAS NON-CONFORMING ARGUMENTS SEQUENCE";

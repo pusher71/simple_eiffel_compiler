@@ -183,12 +183,8 @@ type_strct* EType::getRawTypeCopy() const {
 bool EType::operator==(const EType& other) const {
     bool result = false;
 
-    if (other._type == nullptr) {
-        return (this->_type == nullptr);
-    }
-    else if (this->_type == nullptr) {
-        return (other._type == nullptr);
-    }
+    if (other._type == nullptr)         { return (this->_type == nullptr); }
+    else if (this->_type == nullptr)    { return (other._type == nullptr); }
 
     // Convert first type to its the lowest array element type If first type is a multidimensional array
     type_strct* firstTypeArrElemType = this->_type;
@@ -211,6 +207,9 @@ bool EType::operator==(const EType& other) const {
     // Compare got types
     if (firstTypeArrElemType->type == secondTypeArrElemType->type && firstTypeArrLevel == secondTypeArrLevel) {
         if (firstTypeArrElemType->type == dtype_user_defined && std::string(firstTypeArrElemType->id_name) == std::string(secondTypeArrElemType->id_name)) {
+            result = true;
+        }
+        else if (firstTypeArrElemType->type != dtype_user_defined) {
             result = true;
         }
     }

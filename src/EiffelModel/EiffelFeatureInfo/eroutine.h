@@ -105,6 +105,7 @@ private:
     void _resolveCallPrecursorExpr(EUserClass& userClass, expr_strct* expr);
     void _resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr);
     void _resolveCreateExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveCallArguments(EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
 
     void _resolveArrElemExpr(EUserClass& userClass, expr_strct* expr);
 

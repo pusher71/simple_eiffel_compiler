@@ -379,6 +379,7 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
             EProgram::semanticErrors.push_back(SemanticError(INSTR_CREATE__UNKNOWN_CREATOR, errorMessage));
         }
         else {
+            this->_resolveCallArguments(userClass, creatorInfo->second, createInstruction->argument_seq, 0);
             this->_instrInfo[createInstruction].creatorMethodRef_constLink = userClass._constants.appendMethodRefStr(fieldOrLocalOwnerClassInfo->fullName(), createInstruction->second_id_name, creatorInfo->second->descriptor());
         }
     }
@@ -387,27 +388,46 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
 void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction) {
     // Resolve name of left variable
     this->_resolveExpr(userClass, assignInstruction->assign_expr);
-    // userClass._featuresTable.
+
+    if (!EProgram::current->semanticErrors.empty()) { return; }
 
     // Resolve variable of creation
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
 
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == assignInstruction->first_id_name) {
-            std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
-            this->_instrInfo[assignInstruction].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
+            if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo( attributeMetaInfo->implementation()->returnType() )) {
+                std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
+                this->_instrInfo[assignInstruction].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
 
-            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
+                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
+            }
+            else {
+                std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: field \"" + attributeMetaInfo->finalName() + "\"\n";
+                errorMessage += std::string("type of field or local id - \"") + attributeMetaInfo->implementation()->returnType().toString() + "\"\n";
+                errorMessage += std::string("type of expr              - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
+
+                EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL, errorMessage));
+            }
         }
     }
 
     if (fieldOrLocalOwnerClassInfo == nullptr) {
         for (const auto& localVar : this->_localVariables) {
             if (localVar.first == assignInstruction->first_id_name) {
-                this->_instrInfo[assignInstruction].localVarNumber = localVar.second.index();
-                const auto& createdVarType = EType(localVar.second.type());
+                if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo( EType(localVar.second.type()) )) {
+                    this->_instrInfo[assignInstruction].localVarNumber = localVar.second.index();
+                    const auto& createdVarType = EType(localVar.second.type());
 
-                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
+                    fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
+                }
+                else {
+                    std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: local variable \"" + localVar.first + "\"\n";
+                    errorMessage += std::string("type of field or local id - \"") + EType(localVar.second.type()).toString() + "\"\n";
+                    errorMessage += std::string("type of expr              - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
+
+                    EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL, errorMessage));
+                }
             }
         }
     }
@@ -531,6 +551,8 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
         if (attributeMetaInfo->finalName() == expr->method_id_name) {
             this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
 
+            this->_resolveCallArguments(userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+
             this->_exprInfo[expr].resultType = EType(attributeMetaInfo->implementation()->returnType());
             if (attributeMetaInfo->implementation()->returnType() != EType::noType()) {
                 EClass* checkcastClassInfo = EProgram::current->getClassBy(attributeMetaInfo->implementation()->returnType().firstElemClassName());
@@ -549,6 +571,8 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
         for (const auto& routineMetaInfo : userClass.routinesMetaInfo()) {
             if (routineMetaInfo->finalName() == expr->method_id_name) {
                 this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(ownerClassFullName, routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
+
+                this->_resolveCallArguments(userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
 
                 this->_exprInfo[expr].resultType = EType(routineMetaInfo->implementation()->returnType());
                 if (routineMetaInfo->implementation()->returnType() != EType::noType()) {
@@ -570,6 +594,10 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
             if (formalParam.first == expr->method_id_name) {
                 this->_exprInfo[expr].innerVarNumber = formalParam.second.index();
 
+                EClass* ownerClassInfo = EProgram::current->getClassBy(formalParam.second.type().firstElemClassName());
+                EAttribute innerVarInfo("", ownerClassInfo, formalParam.second.type());
+                this->_resolveCallArguments(userClass, &innerVarInfo, expr->argument_seq, expr->is_field_access);
+
                 this->_exprInfo[expr].resultType = EType(formalParam.second.type());
                 if (formalParam.second.type() != EType::noType()) {
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(formalParam.second.type().firstElemClassName());
@@ -589,6 +617,10 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
         for (const auto& localVar : this->_localVariables) {
             if (localVar.first == expr->method_id_name) {
                 this->_exprInfo[expr].innerVarNumber = localVar.second.index();
+
+                EClass* ownerClassInfo = EProgram::current->getClassBy(localVar.second.type().firstElemClassName());
+                EAttribute innerVarInfo("", ownerClassInfo, localVar.second.type());
+                this->_resolveCallArguments(userClass, &innerVarInfo, expr->argument_seq, expr->is_field_access);
 
                 this->_exprInfo[expr].resultType = EType(localVar.second.type());
                 if (localVar.second.type() != EType::noType()) {
@@ -611,13 +643,6 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
         errorMessage += std::string("in class \"") + userClass.name() + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
-    }
-
-    // Resolve arguments
-    argument_seq_strct* argumentSeqElem = expr->argument_seq;
-    while (argumentSeqElem != NULL) {
-        this->_resolveExpr(userClass, argumentSeqElem->value);
-        argumentSeqElem = argumentSeqElem->next;
     }
 }
 
@@ -651,6 +676,8 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
                 this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
             }
 
+            this->_resolveCallArguments(userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+
             this->_exprInfo[expr].resultType = EType(attributeMetaInfo->implementation()->returnType());
             if (attributeMetaInfo->implementation()->returnType() != EType::noType()) {
                 EClass* checkcastClassInfo = EProgram::current->getClassBy(attributeMetaInfo->implementation()->returnType().firstElemClassName());
@@ -678,6 +705,8 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
                     this->_exprInfo[expr].isRTLcall = true;
                     this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
                 }
+
+                this->_resolveCallArguments(userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
 
                 this->_exprInfo[expr].resultType = EType(routineMetaInfo->implementation()->returnType());
                 if (routineMetaInfo->implementation()->returnType() != EType::noType()) {
@@ -747,41 +776,58 @@ void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_UNKNOWN_CREATOR_METHOD, errorMessage));
         }
         else {
-            // Check that arguments are conforming to declaration
-            ERoutine* creatorRoutineInfo = dynamic_cast<ERoutine*>(creatorInfo->second);
+            this->_resolveCallArguments(userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
+            this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+        }
+    }
+}
 
-            std::vector<std::pair<std::string, EType>> argumentsType;
-            argument_seq_strct* argumentSeqElem = expr->argument_seq;
-            while (argumentSeqElem != NULL) {
-                this->_resolveExpr(userClass, argumentSeqElem->value);
-                argumentsType.push_back({ "", this->_exprInfo.at(argumentSeqElem->value).resultType });
+void ERoutine::_resolveCallArguments(EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess) {
+    std::vector<std::pair<std::string, EType>> argumentsType;
+    argument_seq_strct* argumentSeqElem = (argument_seq_strct*)argumentSeq;
+    while (argumentSeqElem != NULL) {
+        this->_resolveExpr(userClass, argumentSeqElem->value);
+        argumentsType.push_back({ "", this->_exprInfo.at(argumentSeqElem->value).resultType });
 
-                argumentSeqElem = argumentSeqElem->next;
-            }
+        argumentSeqElem = argumentSeqElem->next;
+    }
 
-            if (argumentsType.size() != creatorRoutineInfo->_formalParameters.size()) {
-                std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
-                errorMessage += "creator \"" + this->_exprInfo[expr].resultType.toString() + "\" ";
-                errorMessage += "requires [" + std::to_string(creatorRoutineInfo->_formalParameters.size()) + "] arguments but got [" + std::to_string(argumentsType.size()) + "]";
+    if (dynamic_cast<const EAttribute*>(featureInfo)) {
+        if (argumentsType.size() != 0) {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+            errorMessage += "call of attribute \"" + featureInfo->toString() + "\" ";
+            errorMessage += "requires [0] arguments but got [" + std::to_string(argumentsType.size()) + "]";
 
-                EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
-            }
-            else {
-                EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
-                ERoutine creatorRoutineInfoWithArgsTypes(creatorRoutineInfo->name(), ownerClass, creatorRoutineInfo->_returnType, argumentsType, {});
+            EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
+        }
+        else if (!isFieldAccess) {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+            errorMessage += "try to call attribute \"" + featureInfo->toString() + "\" like routine";
 
-                if (!creatorRoutineInfoWithArgsTypes.isConformingTo(*creatorRoutineInfo, false)) {
-                    std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
-                    errorMessage += "creating expression: \"" + this->_exprInfo[expr].resultType.toString() + "\"\n";
-                    errorMessage += "declaration - " + creatorRoutineInfo->toString() + "\n";
-                    errorMessage += "call        - " + creatorRoutineInfoWithArgsTypes.toString();
+            EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_ATTRIBUTE_AS_ROUTINE, errorMessage));
+        }
 
-                    EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE, errorMessage));
-                }
-                else {
-                    this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
-                }
-            }
+        return;
+    }
+
+    if (argumentsType.size() != ((ERoutine*)featureInfo)->_formalParameters.size()) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "call of routine \"" + featureInfo->toString() + "\" ";
+        errorMessage += "requires [" + std::to_string(((ERoutine*)featureInfo)->_formalParameters.size()) + "] arguments but got [" + std::to_string(argumentsType.size()) + "]";
+
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
+    }
+    else {
+        EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
+        ERoutine creatorRoutineInfoWithArgsTypes(featureInfo->name(), ownerClass, featureInfo->returnType(), argumentsType, {});
+
+        if (!creatorRoutineInfoWithArgsTypes.isConformingTo(*featureInfo, false)) {
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+            errorMessage += "call of routine \"" + featureInfo->toString() + "\"\n";
+            errorMessage += "declaration - " + featureInfo->toString() + "\n";
+            errorMessage += "call        - " + creatorRoutineInfoWithArgsTypes.toString();
+
+            EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE, errorMessage));
         }
     }
 }

@@ -6,49 +6,46 @@ create
     make
 
 feature
-    si : SUPER_INVOKER
+    i : OBJECT
+    si : SUPER_OBJECT
+
+    what : ANY
 
     make
     do
-        io.put_string("HELLO")
-        io.new_line
+        i := create {OBJECT}.make(create {SUPER_OBJECT});
+        create i.make(create {SUPER_OBJECT})
+        create i.make2
+        i := create {OBJECT}.make2;
 
-        si := create {INVOKER}
-        si.print_object(create {SUPER_OBJECT})
-        si.print_object(create {OBJECT})
+        what := create {SUPER_OBJECT}
+
+        (create {OBJECT}.make(create {SUPER_OBJECT})).make(create {SUPER_OBJECT});
+
+        ((current.i).obj).io.put_integer(0xCAFE)
+        ((current.i).obj).io.io.new_line;
+        (current.i.obj).io.put_integer(0xBABE)
+        (current.i.obj).io.new_line
+        i.io.io.put_string("HELLO%N")
+        create si
+
+        io.put_string("================%N")
+        io.put_string("----------------%N")
+        return_obj.obj.f
+        io.put_string("----------------%N")
+        io.put_string("================%N")
     end
-end
--- EOF
 
--- invoker.e
-class
-    INVOKER
-
-inherit
-    SUPER_INVOKER
-    redefine
-        print_object
-    end
-
-feature
-    print_object(o : OBJECT)
+    return_obj : OBJECT
     do
-        io.put_string("INVOKER ||| ")
-        o.print_self
-        o.simple_print
+        Result := create {OBJECT}.make(create {SUPER_OBJECT})
     end
-end
--- EOF
 
--- super_invoker.e
-class
-    SUPER_INVOKER
-
-feature
-    print_object(o : SUPER_OBJECT)
+    print_obj(obj2 : OBJECT)
     do
-        io.put_string("SUPER-INVOKER ||| ")
-        o.print_self
+        io.put_string(" == PRINT OBJECT INFO ================%N")
+        obj2.obj.f
+        io.put_string(" == END OF PRINTING   ================%N")
     end
 end
 -- EOF
@@ -57,21 +54,22 @@ end
 class
     OBJECT
 
-inherit
-    SUPER_OBJECT
-    redefine
-        print_self
-    end
+create
+    make, make2
 
 feature
-    print_self
+    obj : SUPER_OBJECT
+
+    make(in_obj : SUPER_OBJECT)
     do
-        io.put_string("OBJECT::print_self%N")
+        io.put_string("CREATING OBJECT%N")
+        obj := in_obj
     end
 
-    simple_print
+    make2
     do
-        io.put_string("<<<< OBJECT || print_self >>>>%N")
+        io.put_string("CREATING OBJECT [2]%N")
+        obj := create {SUPER_OBJECT}
     end
 
 end
@@ -82,9 +80,9 @@ class
     SUPER_OBJECT
 
 feature
-    print_self
+    f
     do
-        io.put_string("SUPER_OBJECT::print_self%N")
+        io.put_string("<SUPER_OBJECT::f()>%N")
     end
 
 end
