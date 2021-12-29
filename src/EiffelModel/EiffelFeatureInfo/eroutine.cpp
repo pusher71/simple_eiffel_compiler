@@ -463,31 +463,31 @@ void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
     char* userClassName = nullptr;
 
     switch(expr->type) {
-        case expr_liter_bool: // TODO
+        case expr_liter_bool:
             this->_exprInfo[expr].resultType = EType::boolType();
             break;
-        case expr_liter_int: // TODO
+        case expr_liter_int:
             this->_exprInfo[expr].resultType = EType::intType();
 
             intLiteral = expr->liter_int;
             if (intLiteral != expr->liter_int) { this->_exprInfo[expr].liter_constLink = userClass.constants().appendInteger(expr->liter_int); }
 
             break;
-        case expr_liter_char: // TODO
+        case expr_liter_char:
             this->_exprInfo[expr].resultType = EType::charType();
             break;
-        case expr_liter_str: // TODO
+        case expr_liter_str:
             this->_exprInfo[expr].resultType = EType::stringType();
 
             for (int i=0; i<chaarlen(expr->liter_str); i++) { stringLiteral += chaargetchr(expr->liter_str, i); }
             this->_exprInfo[expr].liter_constLink = userClass.constants().appendString( userClass.constants().appendUtf8(stringLiteral) );
 
             break;
-        case expr_liter_void: // TODO
+        case expr_liter_void:
             this->_exprInfo[expr].resultType = EType::voidLiterType();
             break;
 
-        case expr_current: // TODO
+        case expr_current:
             this->_exprInfo[expr].resultType = EType::classType(userClass.name());
             break;
 
@@ -650,6 +650,14 @@ void ERoutine::_resolveCallPrecursorExpr(EUserClass& userClass, expr_strct* expr
 }
 
 void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) {
+    // Check if left expression is create expression without brackets
+    if (expr->expr_left->type == expr_create && !expr->expr_left->is_parenthesized) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
+
+        EProgram::semanticErrors.push_back(SemanticError(EXPR__SUBCALL_WITH_NONPARENTHESIZED_CREATE_EXPR_OPERAND, errorMessage));
+    }
+
     // Resolve call target
     this->_resolveExpr(userClass, expr->expr_left);
 
