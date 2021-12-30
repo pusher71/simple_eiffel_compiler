@@ -17,7 +17,7 @@ class
     A
 
 inherit
-    C
+    B
 
 end
 -- EOF
@@ -27,8 +27,7 @@ class
     B
 
 inherit
-    E
-    D
+    C
 
 end
 -- EOF
@@ -38,48 +37,7 @@ class
     C
 
 inherit
-    F
-
-end
--- EOF
-
--- d.e
-class
-    D
-
-inherit
-    F
-
-end
--- EOF
-
--- e.e
-class
-    E
-
-inherit
-    G
-
-end
--- EOF
-
--- f.e
-class
-    F
-
-inherit
-    B
-
-end
--- EOF
-
--- g.e
-class
-    G
-
-inherit
     A
-    C
 
 end
 -- EOF

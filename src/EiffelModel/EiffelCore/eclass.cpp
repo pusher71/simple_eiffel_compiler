@@ -141,8 +141,11 @@ void EClass::setupFeaturesTable(const std::vector<std::string>& classInheritPath
         return;
     }
     else if (this->_featuresTableState == IN_PROCESS) {
+        auto classInheritPathBegin = classInheritPath.begin();
+        while (*classInheritPathBegin != this->name()) { classInheritPathBegin++; }
+
         std::string classPathStr = "";
-        std::for_each(classInheritPath.begin(), classInheritPath.end(), [&](const std::string& classNameInPath) { classPathStr += classNameInPath + "->"; });
+        std::for_each(classInheritPathBegin, classInheritPath.end(), [&](const std::string& classNameInPath) { classPathStr += classNameInPath + "->"; });
         classPathStr += this->name();
 
         std::string errorMessage = "class \""+ this->name() + "\" has inherited self by path: " + classPathStr;
