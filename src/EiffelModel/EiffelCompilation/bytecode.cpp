@@ -279,13 +279,20 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
     routineBodyCode._append(ByteCode::aload(0x0));
     routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(EClass::javaObjectFullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor() ), 0));
 
-    // Initialize IO variable
-    routineBodyCode._append(ByteCode::aload(0x0));
-    routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy("rtl/CONSOLEIO")));
-    routineBodyCode._append(ByteCode::dup());
-    routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0));
-    short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), "IO", "L" + EClassCONSOLEIO::classRTLfullName() + ";");
-    routineBodyCode._append(ByteCode::putfield(fieldRef));
+    // Initialize all IO variables
+    for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
+        std::string attributeName = attributeMetaInfo->finalName();
+        std::string attributeTypeFirstClassName = attributeMetaInfo->implementation()->returnType().firstElemClassName();
+
+        if (attributeTypeFirstClassName == EClassCONSOLEIO::classRTLname()) {
+            routineBodyCode._append(ByteCode::aload(0x0));
+            routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy("rtl/CONSOLEIO")));
+            routineBodyCode._append(ByteCode::dup());
+            routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0));
+            short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), attributeName, "L" + EClassCONSOLEIO::classRTLfullName() + ";");
+            routineBodyCode._append(ByteCode::putfield(fieldRef));
+        }
+    }
 
     routineBodyCode._append(ByteCode::_return());
 

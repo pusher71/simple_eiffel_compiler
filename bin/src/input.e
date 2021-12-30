@@ -6,58 +6,27 @@ create
     make
 
 feature
-    i : OBJECT
-    si : SUPER_OBJECT
-
-    what : ANY
-
     make
-    do
-        i := create {OBJECT}.make(create {SUPER_OBJECT});
-        create i.make(create {SUPER_OBJECT})
-        create i.make2
-        i := create {OBJECT}.make2;
-
-        what := create {OBJECT}.make(create {SUPER_OBJECT});
-
-        (create {OBJECT}.make(create {SUPER_OBJECT})).make(create {SUPER_OBJECT});
-
-        ((current.i).obj).io.put_integer(0xCAFE)
-        ((current.i).obj).io.io.new_line;
-        (current.i.obj).io.put_integer(0xBABE)
-        (current.i.obj).io.new_line
-        i.io.io.put_string("HELLO%N")
-        create si
-
-        io.put_string("================%N")
-        io.put_string("----------------%N")
-        return_obj.obj.f
-        io.put_string("----------------%N")
-        io.put_string("================%N")
-
-        Current.print_obj(return_obj)
-    end
-
-    return_obj : OBJECT
     local
-        myResult : OBJECT
-        param : SUPER_OBJECT
+        so : SUPER_OBJECT
     do
-        Current.io.io.io.io.io.put_string("WHATHHATHL%N");
-        create param
-        create myResult.make(param)
+        create so.make(create {STATE})
+        so.print
 
-        Result := myResult
-        Current.io.io.io.io.io.put_string(" ??? WHATHHATHL ??? %N");
+        create so.make(create {STATE_0})
+        so.print
 
-        result := create {SUPER_OBJECT}
-    end
+        create so.make(create {STATE_1})
+        so.print
 
-    print_obj(obj2 : OBJECT)
-    do
-        io.put_string(" == PRINT OBJECT INFO ================%N")
-        obj2.obj.f
-        io.put_string(" == END OF PRINTING   ================%N")
+        create so.make_
+        so.print
+
+        create so.make_0
+        so.print
+
+        create so.make_1
+        so.print
     end
 end
 -- EOF
@@ -66,28 +35,12 @@ end
 class
     OBJECT
 
+inherit
+    SUPER_OBJECT
+
 create
-    make, make2
+    make
 
-feature
-    obj : SUPER_OBJECT
-
-    make(in_obj : SUPER_OBJECT)
-    do
-        io.put_string("CREATING OBJECT%N")
-        obj := in_obj
-    end
-
-    make2
-    do
-        io.put_string("CREATING OBJECT [2]%N")
-        obj := create {SUPER_OBJECT}
-    end
-
-    f
-    do
-        io.put_string("routine OBJECT::f%N")
-    end
 end
 -- EOF
 
@@ -95,10 +48,98 @@ end
 class
     SUPER_OBJECT
 
+create
+    make, make_, make_0, make_1
+
 feature
-    f
+    m_state : STATE
+
+    make(in_state : STATE)
     do
-        io.put_string("<SUPER_OBJECT::f()>%N")
+        m_state := in_state
+    end
+
+    make_
+    do
+        create m_state
+    end
+
+    make_0
+    do
+        m_state := create {STATE_0}
+    end
+
+    make_1
+    do
+        m_state := create {STATE_1}
+    end
+
+    print
+    do
+        io.put_string("SUPER_OBJECT::print | ")
+        m_state.print
+        io.new_line
+    end
+
+end
+-- EOF
+
+-- state.e
+class
+    STATE
+
+inherit
+    ANY
+    rename
+        io as io_state
+    end
+    ANY
+    select
+        io
+    end
+
+feature
+    print
+    do
+        Current.io_state.put_string("STATE")
+    end
+
+end
+-- EOF
+
+-- state_0.e
+class
+    STATE_0
+
+inherit
+    STATE
+    redefine
+        print
+    end
+
+feature
+    print
+    do
+        io_state.put_string("STATE_0")
+    end
+
+end
+-- EOF
+
+-- state_1.e
+class
+    STATE_1
+
+inherit
+    STATE
+    redefine
+        print
+    end
+
+feature
+    print
+    do
+        io_state.put_string("STATE_1")
     end
 
 end
