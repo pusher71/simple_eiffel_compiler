@@ -6,27 +6,34 @@ create
     make
 
 feature
+    so : SUPER_OBJECT
+
     make
     local
-        so : SUPER_OBJECT
+        l_so : SUPER_OBJECT
     do
         create so.make(create {STATE})
-        so.print
+        current.self_print(current)
 
-        create so.make(create {STATE_0})
-        so.print
+        l_so := create{OBJECT}.make(create {STATE_0})
+        l_so.print
 
-        create so.make(create {STATE_1})
-        so.print
+        so := create{OBJECT}.make(create {STATE_1})
+        current.self_print(current)
 
-        create so.make_
-        so.print
+        create l_so.make_
+        l_so.print
 
         create so.make_0
-        so.print
+        current.self_print(current)
 
-        create so.make_1
-        so.print
+        create l_so.make_1
+        l_so.print
+    end
+
+    self_print(m : MAIN)
+    do
+        m.so.print
     end
 end
 -- EOF
@@ -37,9 +44,20 @@ class
 
 inherit
     SUPER_OBJECT
+    redefine
+        print
+    end
 
 create
     make
+
+feature
+    print
+    do
+        io.put_string("OBJECT::print | ")
+        m_state.print
+        io.new_line
+    end
 
 end
 -- EOF
