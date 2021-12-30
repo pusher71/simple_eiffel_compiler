@@ -6,48 +6,27 @@ create
     make
 
 feature
-    si : SUPER_INVOKER
-
     make
+    local
+        so : SUPER_OBJECT
     do
-        io.put_string("HELLO")
-        io.new_line
+        create so.make(create {STATE})
+        so.print
 
-        si := create {INVOKER}
-        si.print_object(create {SUPER_OBJECT})
-    end
-end
--- EOF
+        create so.make(create {STATE_0})
+        so.print
 
--- invoker.e
-class
-    INVOKER
+        create so.make(create {STATE_1})
+        so.print
 
-inherit
-    SUPER_INVOKER
-    redefine
-        print_object
-    end
+        create so.make_
+        so.print
 
-feature
-    print_object(o : OBJECT)
-    do
-        io.put_string("INVOKER ||| ")
-        o.print_self
-        -- o.simple_print
-    end
-end
--- EOF
+        create so.make_0
+        so.print
 
--- super_invoker.e
-class
-    SUPER_INVOKER
-
-feature
-    print_object(o : SUPER_OBJECT)
-    do
-        io.put_string("SUPER-INVOKER ||| ")
-        o.print_self
+        create so.make_1
+        so.print
     end
 end
 -- EOF
@@ -58,20 +37,9 @@ class
 
 inherit
     SUPER_OBJECT
-    redefine
-        print_self
-    end
 
-feature
-    print_self
-    do
-        io.put_string("OBJECT::print_self%N")
-    end
-
-    simple_print
-    do
-        io.put_string("<<<< OBJECT || print_self >>>>%N")
-    end
+create
+    make
 
 end
 -- EOF
@@ -80,10 +48,98 @@ end
 class
     SUPER_OBJECT
 
+create
+    make, make_, make_0, make_1
+
 feature
-    print_self
+    m_state : STATE
+
+    make(in_state : STATE)
     do
-        io.put_string("SUPER_OBJECT::print_self%N")
+        m_state := in_state
+    end
+
+    make_
+    do
+        create m_state
+    end
+
+    make_0
+    do
+        m_state := create {STATE_0}
+    end
+
+    make_1
+    do
+        m_state := create {STATE_1}
+    end
+
+    print
+    do
+        io.put_string("SUPER_OBJECT::print | ")
+        m_state.print
+        io.new_line
+    end
+
+end
+-- EOF
+
+-- state.e
+class
+    STATE
+
+inherit
+    ANY
+    rename
+        io as io_state
+    end
+    ANY
+    select
+        io
+    end
+
+feature
+    print
+    do
+        Current.io_state.put_string("STATE")
+    end
+
+end
+-- EOF
+
+-- state_0.e
+class
+    STATE_0
+
+inherit
+    STATE
+    redefine
+        print
+    end
+
+feature
+    print
+    do
+        io_state.put_string("STATE_0")
+    end
+
+end
+-- EOF
+
+-- state_1.e
+class
+    STATE_1
+
+inherit
+    STATE
+    redefine
+        print
+    end
+
+feature
+    print
+    do
+        io_state.put_string("STATE_1")
     end
 
 end
