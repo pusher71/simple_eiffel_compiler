@@ -142,7 +142,7 @@ void EClass::setupFeaturesTable(const std::vector<std::string>& classInheritPath
     }
     else if (this->_featuresTableState == IN_PROCESS) {
         auto classInheritPathBegin = classInheritPath.begin();
-        while (*classInheritPathBegin != this->name()) { classInheritPathBegin++; }
+        while (*classInheritPathBegin != this->name() && classInheritPathBegin != classInheritPath.end()) { classInheritPathBegin++; }
 
         std::string classPathStr = "";
         std::for_each(classInheritPathBegin, classInheritPath.end(), [&](const std::string& classNameInPath) { classPathStr += classNameInPath + "->"; });
