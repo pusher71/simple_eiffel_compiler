@@ -485,7 +485,7 @@ struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_boo
     return result;
 }
 
-struct expr_strct* create_expr_liter_int(unsigned int node_index, int liter_int) {
+struct expr_strct* create_expr_liter_int(unsigned int node_index, long long liter_int) {
     struct expr_strct* result = (struct expr_strct*)malloc(sizeof(struct expr_strct));
     result->_node_index         = node_index;
     result->type                = expr_liter_int;

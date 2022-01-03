@@ -106,9 +106,11 @@ private:
 
     static ByteCode bipush(char s1);
     static ByteCode sipush(short int s2);
+    static ByteCode i2l();
 
     static ByteCode ldc(char u1);
     static ByteCode ldc_w(short int u2);
+    static ByteCode ldc2_w(short int u2);
     static ByteCode iload(char u1);
     static ByteCode aload(char u1);
 

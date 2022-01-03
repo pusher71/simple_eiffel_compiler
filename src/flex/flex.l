@@ -56,7 +56,7 @@ INVALID_VALUE_TOKEN \-?[0-9]+\w+
 
     int lexerErrorValue;
 
-    int oldCursorLineIndex         = 0;
+    int oldCursorLineIndex       = 0;
     int oldCursorColumnIndex     = 0;
 
     // Read buffers

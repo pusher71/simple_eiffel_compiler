@@ -170,7 +170,7 @@ typedef union YYSTYPE
 
     /* Constants */
     short       liter_boolean_field;
-    long int    liter_integer_field;
+    long long   liter_integer_field;
     char        liter_char_field;
     CharArray*  liter_string_field;
 

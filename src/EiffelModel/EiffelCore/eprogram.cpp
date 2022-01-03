@@ -73,7 +73,7 @@ EProgram::EProgram(const program_strct* programNode, const std::string& mainClas
 
     // ... STAGE 4 : Check that classes initializes their attributes
     if (EProgram::semanticErrors.empty()) {
-        std::cout << " - Start semantic stage 4 (check attributes initialization) ... ";
+        std::cout << " - Start semantic stage 4 (check attributes and local variables initialization) ... ";
         this->runSemanticStage_4();
 
         if (EProgram::semanticErrors.empty())   { std::cout << "Done!" << std::endl; }
@@ -164,7 +164,7 @@ void EProgram::runSemanticStage_4() {
     for (auto& classInfo : this->_classes) {
         EUserClass* userClass = dynamic_cast<EUserClass*>(classInfo.second.get());
         if (userClass) {
-            // userClass->resolveRoutines();
+            userClass->checkUsageOfAttributesAndLocals();
         }
     }
 }

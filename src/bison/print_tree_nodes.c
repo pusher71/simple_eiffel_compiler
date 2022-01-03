@@ -419,7 +419,7 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             break;
 
         case expr_liter_int:
-            fprintf(dot_file, "%u[label=\"expr :: int <%d>\"];\n", expr->_node_index, expr->liter_int);
+            fprintf(dot_file, "%u[label=\"expr :: int <%lld>\"];\n", expr->_node_index, expr->liter_int);
             break;
 
         case expr_liter_char:

@@ -55,6 +55,19 @@ EType EType::intType(bool isClass) {
     return EType(create_type(-1, dtype_integer, classNameStr, NULL));
 }
 
+EType EType::naturalType(bool isClass) {
+    char* classNameStr = NULL;
+
+    if (isClass) {
+        std::string className = EClassNATURAL::classRTLname();
+
+        classNameStr = new char[className.size() + 1];
+        strcpy(classNameStr, className.c_str());
+    }
+
+    return EType(create_type(-1, dtype_natural, classNameStr, NULL));
+}
+
 EType EType::charType(bool isClass) {
     char* classNameStr = NULL;
 
@@ -133,8 +146,8 @@ std::string EType::descriptor() const {
         switch (typeLevel->type) {
             case dtype_boolean:         result += "Z"; break;
             case dtype_character:       result += "C"; break;
-            case dtype_integer:         result += "I"; break;
-            case dtype_natural:         result += "I"; break;
+            case dtype_integer:         result += "J"; break;
+            case dtype_natural:         result += "J"; break;
             case dtype_string:          result += "L" + EClass::javaStringFullName() + ";"; break;
 
             default: break;
@@ -145,7 +158,6 @@ std::string EType::descriptor() const {
             case dtype_boolean:         result += "L" + EClassBOOLEAN::classRTLfullName() + ";"; break;
             case dtype_character:       result += "L" + EClassCHARACTER::classRTLfullName() + ";"; break;
             case dtype_integer:         result += "L" + EClassINTEGER::classRTLfullName() + ";"; break;
-            case dtype_natural:         result += "L" + EClassNATURAL::classRTLfullName() + ";"; break;
             case dtype_string:          result += "L" + EClassSTRING::classRTLfullName() + ";"; break;
             case dtype_array:           result += "L" + EClassARRAY::classRTLfullName() + ";"; break;
             case dtype_user_defined:    result += "L" + classInfo->fullName() + ";"; break;
@@ -161,7 +173,6 @@ bool EType::isExpanded() const {
     bool result = *this == EType::noType() ||
                   (this->_type->type == dtype_boolean) ||
                   (this->_type->type == dtype_integer) ||
-                  (this->_type->type == dtype_natural) ||
                   (this->_type->type == dtype_character);
 
     return result;
@@ -249,11 +260,18 @@ bool EType::canCastTo(const EType& other) const {
     if (secondTypeArrElemType->type == dtype_user_defined && std::string(secondTypeArrElemType->id_name) == EClassANY::classRTLname() && firstTypeArrLevel >= secondTypeArrLevel) {
         return true;
     }
-
-    if (secondTypeArrElemType->type == dtype_user_defined &&
+    else if (secondTypeArrElemType->type == dtype_user_defined &&
         firstTypeArrElemType->type == dtype_user_defined &&
         firstTypeArrLevel == secondTypeArrLevel &&
         EProgram::current->getClassBy(firstTypeArrElemType->id_name)->isDescendantTo(EProgram::current->getClassBy(secondTypeArrElemType->id_name)))
+    {
+        return true;
+    }
+    else if (firstTypeArrElemType->type == dtype_integer &&
+             secondTypeArrElemType->type == dtype_natural
+             ||
+             firstTypeArrElemType->type == dtype_natural &&
+             secondTypeArrElemType->type == dtype_integer)
     {
         return true;
     }
@@ -273,6 +291,7 @@ std::string EType::toString() const {
     }
 
     switch (typeLevel->type) {
+        case dtype_void:            result = "void liter"; break;
         case dtype_boolean:         result = "bool" + result; break;
         case dtype_character:       result = "char" + result; break;
         case dtype_integer:         result = "int" + result; break;

@@ -11,6 +11,8 @@ EClassNATURAL::EClassNATURAL() {
 void EClassNATURAL::_defineParents() { this->_parents.push_back({EClassANY::classRTLname(), {}}); }
 void EClassNATURAL::_defineCreators() {}
 void EClassNATURAL::_defineFeatures() {
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("GET", this, EType::naturalType(), {}, {})) );
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("SET", this, EType::noType(), {{"value", EType::naturalType()}}, {})) );
 }
 
 std::string EClassNATURAL::name() const { return EClassNATURAL::classRTLname(); }

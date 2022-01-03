@@ -42,6 +42,7 @@ set(SOURCE_FILES
     src/EiffelModel/EiffelCore/eprogram.cpp
     src/EiffelModel/EiffelCore/eclass.cpp
     src/EiffelModel/EiffelCore/econstanttable.cpp
+    src/EiffelModel/EiffelCore/jvmconstant.cpp
     src/EiffelModel/EiffelCore/efeature.cpp
     src/EiffelModel/EiffelCore/efeaturemetainfo.cpp
     src/EiffelModel/EiffelCore/etype.cpp

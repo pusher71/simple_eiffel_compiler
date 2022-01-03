@@ -293,7 +293,7 @@ void ERoutine::resolveBody() {
     // Resolve local variables
     for (const auto& localVarInfo : this->_localVariables) {
         EClass* localVarTypeClassInfo = EProgram::current->getClassBy(localVarInfo.second.type().firstElemClassName());
-        ownerClass->constants().appendMethodRefStr(localVarTypeClassInfo->fullName(), "<init>", "()V");
+        ownerClass->constants().appendMethodRef(localVarTypeClassInfo->fullName(), "<init>", "()V");
     }
 
     // Resolve routine body instructions
@@ -333,7 +333,7 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == createInstruction->first_id_name) {
             std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
-            this->_instrInfo[createInstruction].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
+            this->_instrInfo[createInstruction].fieldRef_constLink = userClass._constants.appendFieldRef(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
 
             fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
         }
@@ -351,10 +351,10 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
     }
 
     if (fieldOrLocalOwnerClassInfo != nullptr) {
-        this->_instrInfo[createInstruction].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(fieldOrLocalOwnerClassInfo->fullName()) );
+        this->_instrInfo[createInstruction].constClass_constLink = userClass._constants.appendConstClass(fieldOrLocalOwnerClassInfo->fullName());
         this->_instrInfo[createInstruction].ownerClassFullName = fieldOrLocalOwnerClassInfo->fullName();
 
-        userClass._constants.appendMethodRefStr(fieldOrLocalOwnerClassInfo->fullName(), "<init>", "()V");
+        userClass._constants.appendMethodRef(fieldOrLocalOwnerClassInfo->fullName(), "<init>", "()V");
     }
 
     if (fieldOrLocalOwnerClassInfo == nullptr) {
@@ -380,7 +380,7 @@ void ERoutine::_resolveCreateInstruction(EUserClass& userClass, instruction_strc
         }
         else {
             this->_resolveCallArguments(userClass, creatorInfo->second, createInstruction->argument_seq, 0);
-            this->_instrInfo[createInstruction].creatorMethodRef_constLink = userClass._constants.appendMethodRefStr(fieldOrLocalOwnerClassInfo->fullName(), createInstruction->second_id_name, creatorInfo->second->descriptor());
+            this->_instrInfo[createInstruction].creatorMethodRef_constLink = userClass._constants.appendMethodRef(fieldOrLocalOwnerClassInfo->fullName(), createInstruction->second_id_name, creatorInfo->second->descriptor());
         }
     }
 }
@@ -393,21 +393,23 @@ void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strc
 
     // Resolve variable of creation
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
+    EType leftOperandType = EType::noType();
 
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == assignInstruction->first_id_name) {
-            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
+            leftOperandType = attributeMetaInfo->implementation()->returnType();
+            fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy(leftOperandType.firstElemClassName());
 
-            if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo( attributeMetaInfo->implementation()->returnType() )) {
+            if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo(leftOperandType)) {
                 std::string ownerClassFullName = EProgram::current->getClassBy(this->ownerClassName())->fullName();
-                this->_instrInfo[assignInstruction].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
+                this->_instrInfo[assignInstruction].fieldRef_constLink = userClass._constants.appendFieldRef(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
             }
             else {
-                std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: field \"" + attributeMetaInfo->finalName() + "\"\n";
-                errorMessage += std::string("type of field or local id - \"") + attributeMetaInfo->implementation()->returnType().toString() + "\"\n";
-                errorMessage += std::string("type of expr              - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
+                std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: attribute \"" + attributeMetaInfo->finalName() + "\"\n";
+                errorMessage += std::string("type of attribute - \"") + attributeMetaInfo->implementation()->returnType().toString() + "\"\n";
+                errorMessage += std::string("type of expr      - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
 
-                EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL, errorMessage));
+                EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_ATTRIBUTE, errorMessage));
             }
         }
     }
@@ -415,16 +417,19 @@ void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strc
     if (fieldOrLocalOwnerClassInfo == nullptr) {
         for (const auto& localVar : this->_localVariables) {
             if (localVar.first == assignInstruction->first_id_name) {
-                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
+                leftOperandType = localVar.second.type();
+                fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy(leftOperandType.firstElemClassName());
 
-                if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo( EType(localVar.second.type()) )) {
+                if (this->_exprInfo.at(assignInstruction->assign_expr).resultType.canCastTo(leftOperandType) ||
+                    this->_exprInfo.at(assignInstruction->assign_expr).resultType == EType::voidLiterType())
+                {
                     this->_instrInfo[assignInstruction].localVarNumber = localVar.second.index();
                     const auto& createdVarType = EType(localVar.second.type());
                 }
                 else {
                     std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: local variable \"" + localVar.first + "\"\n";
-                    errorMessage += std::string("type of field or local id - \"") + EType(localVar.second.type()).toString() + "\"\n";
-                    errorMessage += std::string("type of expr              - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
+                    errorMessage += std::string("type of local - \"") + EType(localVar.second.type()).toString() + "\"\n";
+                    errorMessage += std::string("type of expr  - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
 
                     EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL, errorMessage));
                 }
@@ -437,6 +442,16 @@ void ERoutine::_resolveAssignInstruction(EUserClass& userClass, instruction_strc
         errorMessage += std::string(":: unknown id \"") + assignInstruction->first_id_name + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID, errorMessage));
+    }
+    else if (this->_instrInfo.count(assignInstruction) != 0 &&
+             !this->_exprInfo.at(assignInstruction->assign_expr).resultType.isClass() &&
+             this->_exprInfo.at(assignInstruction->assign_expr).resultType != EType::voidLiterType())
+    {
+        EFeatureMetaInfo* getRoutineMetaInfo = (EFeatureMetaInfo*)fieldOrLocalOwnerClassInfo->getFeatureMetaInfoBy("GET"); // Return type of "GET" method and type of "SET" method's formal parameter are the same
+
+        this->_instrInfo.at(assignInstruction).constClass_constLink = userClass.constants().appendConstClass(fieldOrLocalOwnerClassInfo->fullName());
+        this->_instrInfo.at(assignInstruction).creatorMethodRef_constLink = userClass.constants().appendMethodRef(fieldOrLocalOwnerClassInfo->fullName(), "<init>", "()V");
+        this->_instrInfo.at(assignInstruction).methodRef_constLink = userClass.constants().appendMethodRef(fieldOrLocalOwnerClassInfo->fullName(), "SET", "(" + getRoutineMetaInfo->implementation()->returnType().descriptor() + ")V");
     }
 }
 
@@ -457,8 +472,12 @@ void ERoutine::_resolveExprAsInstruction(EUserClass& userClass, instruction_strc
     }
 }
 
+#include <iostream>
+
 void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
-    short intLiteral = 0;
+    short shortIntLiteral = 0;
+    int   intLiteral      = 0;
+
     std::string stringLiteral = "";
     char* userClassName = nullptr;
 
@@ -469,8 +488,17 @@ void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
         case expr_liter_int:
             this->_exprInfo[expr].resultType = EType::intType();
 
+            shortIntLiteral = expr->liter_int;
             intLiteral = expr->liter_int;
-            if (intLiteral != expr->liter_int) { this->_exprInfo[expr].liter_constLink = userClass.constants().appendInteger(expr->liter_int); }
+
+            if (expr->liter_int != shortIntLiteral) {
+                if (expr->liter_int != intLiteral) {
+                    this->_exprInfo[expr].liter_constLink = userClass.constants().append(JvmConstant::Long(expr->liter_int));
+                }
+                else {
+                    this->_exprInfo[expr].liter_constLink = userClass.constants().append(JvmConstant::Integer(intLiteral));
+                }
+            }
 
             break;
         case expr_liter_char:
@@ -480,7 +508,7 @@ void ERoutine::_resolveExpr(EUserClass& userClass, expr_strct* expr) {
             this->_exprInfo[expr].resultType = EType::stringType();
 
             for (int i=0; i<chaarlen(expr->liter_str); i++) { stringLiteral += chaargetchr(expr->liter_str, i); }
-            this->_exprInfo[expr].liter_constLink = userClass.constants().appendString( userClass.constants().appendUtf8(stringLiteral) );
+            this->_exprInfo[expr].liter_constLink = userClass.constants().appendString(stringLiteral);
 
             break;
         case expr_liter_void:
@@ -549,7 +577,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
 
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == expr->method_id_name) {
-            this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRefStr(ownerClassFullName, attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
+            this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRef(ownerClassFullName, attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
 
             this->_resolveCallArguments(userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
 
@@ -558,7 +586,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
                 EClass* checkcastClassInfo = EProgram::current->getClassBy(attributeMetaInfo->implementation()->returnType().firstElemClassName());
 
                 if (dynamic_cast<EUserClass*>(checkcastClassInfo)) {
-                    this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(checkcastClassInfo->fullName()) );
+                    this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(checkcastClassInfo->fullName());
                 }
             }
 
@@ -570,7 +598,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
     if (!isFound) {
         for (const auto& routineMetaInfo : userClass.routinesMetaInfo()) {
             if (routineMetaInfo->finalName() == expr->method_id_name) {
-                this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(ownerClassFullName, routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
+                this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(ownerClassFullName, routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
 
                 this->_resolveCallArguments(userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
 
@@ -579,7 +607,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(routineMetaInfo->implementation()->returnType().firstElemClassName());
 
                     if (dynamic_cast<EUserClass*>(checkcastClassInfo)) {
-                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(checkcastClassInfo->fullName()) );
+                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(checkcastClassInfo->fullName());
                     }
                 }
 
@@ -603,7 +631,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(formalParam.second.type().firstElemClassName());
 
                     if (dynamic_cast<EUserClass*>(checkcastClassInfo)) {
-                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(checkcastClassInfo->fullName()) );
+                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(checkcastClassInfo->fullName());
                     }
                 }
 
@@ -627,7 +655,7 @@ void ERoutine::_resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* ex
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(localVar.second.type().firstElemClassName());
 
                     if (dynamic_cast<EUserClass*>(checkcastClassInfo)) {
-                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(checkcastClassInfo->fullName()) );
+                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(checkcastClassInfo->fullName());
                     }
                 }
 
@@ -676,12 +704,12 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
     for (const auto& attributeMetaInfo : targetOwnerClassInfo->attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == expr->method_id_name) {
             if (dynamic_cast<EClassRTL*>(targetOwnerClassInfo) == nullptr) {
-                this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->featureMark().first + ":" + attributeMetaInfo->featureMark().second, "(L" + EClass::javaObjectFullName() + ";)" + attributeMetaInfo->implementation()->descriptor());
+                this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(targetOwnerClassInfo->fullName(), attributeMetaInfo->featureMark().first + ":" + attributeMetaInfo->featureMark().second, "(L" + EClass::javaObjectFullName() + ";)" + attributeMetaInfo->implementation()->descriptor());
             }
             else {
                 this->_exprInfo[expr].isRTLcall = true;
 
-                this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRefStr(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
+                this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRef(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
             }
 
             this->_resolveCallArguments(userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
@@ -691,7 +719,7 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
                 EClass* checkcastClassInfo = EProgram::current->getClassBy(attributeMetaInfo->implementation()->returnType().firstElemClassName());
 
                 if (dynamic_cast<EUserClass*>(checkcastClassInfo)) {
-                    this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(checkcastClassInfo->fullName()) );
+                    this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(checkcastClassInfo->fullName());
                 }
             }
 
@@ -707,11 +735,11 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
                     std::string polyMethodDescriptor = routineMetaInfo->implementation()->descriptor();
                     polyMethodDescriptor = "(L" + EClass::javaObjectFullName() + ";" + polyMethodDescriptor.substr(1, polyMethodDescriptor.size()-1);
 
-                    this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->featureMark().first + ":" + routineMetaInfo->featureMark().second, polyMethodDescriptor);
+                    this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(targetOwnerClassInfo->fullName(), routineMetaInfo->featureMark().first + ":" + routineMetaInfo->featureMark().second, polyMethodDescriptor);
                 }
                 else {
                     this->_exprInfo[expr].isRTLcall = true;
-                    this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
+                    this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
                 }
 
                 this->_resolveCallArguments(userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
@@ -721,7 +749,7 @@ void ERoutine::_resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr) 
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(routineMetaInfo->implementation()->returnType().firstElemClassName());
 
                     if (dynamic_cast<EUserClass*>(checkcastClassInfo)) {
-                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(checkcastClassInfo->fullName()) );
+                        this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(checkcastClassInfo->fullName());
                     }
                 }
 
@@ -761,9 +789,9 @@ void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
     }
 
     createClassInfo = EProgram::current->getClassBy( this->_exprInfo[expr].resultType.firstElemClassName() );
-    this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass( userClass._constants.appendUtf8(createClassInfo->fullName()) );
+    this->_exprInfo[expr].constClass_constLink = userClass._constants.appendConstClass(createClassInfo->fullName());
 
-    userClass._constants.appendMethodRefStr(createClassInfo->fullName(), "<init>", "()V");
+    userClass._constants.appendMethodRef(createClassInfo->fullName(), "<init>", "()V");
 
     this->_exprInfo[expr].ownerClassFullName = createClassInfo->fullName();
 
@@ -785,16 +813,18 @@ void ERoutine::_resolveCreateExpr(EUserClass& userClass, expr_strct* expr) {
         }
         else {
             this->_resolveCallArguments(userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
-            this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRefStr(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+            this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
         }
     }
 }
 
 void ERoutine::_resolveCallArguments(EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess) {
+    std::vector<expr_strct*> argumentsExpr;
     std::vector<std::pair<std::string, EType>> argumentsType;
     argument_seq_strct* argumentSeqElem = (argument_seq_strct*)argumentSeq;
     while (argumentSeqElem != NULL) {
         this->_resolveExpr(userClass, argumentSeqElem->value);
+        argumentsExpr.push_back(argumentSeqElem->value);
         argumentsType.push_back({ "", this->_exprInfo.at(argumentSeqElem->value).resultType });
 
         argumentSeqElem = argumentSeqElem->next;
@@ -826,8 +856,8 @@ void ERoutine::_resolveCallArguments(EUserClass& userClass, const EFeature* feat
         EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
     }
     else {
-        EClass* ownerClass = EProgram::current->getClassBy(this->_ownerClassName);
-        ERoutine creatorRoutineInfoWithArgsTypes(featureInfo->name(), ownerClass, featureInfo->returnType(), argumentsType, {});
+        EClass* ownerClassInfo = EProgram::current->getClassBy(this->_ownerClassName);
+        ERoutine creatorRoutineInfoWithArgsTypes(featureInfo->name(), ownerClassInfo, featureInfo->returnType(), argumentsType, {});
 
         if (!creatorRoutineInfoWithArgsTypes.isConformingTo(*featureInfo, false)) {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
@@ -836,6 +866,16 @@ void ERoutine::_resolveCallArguments(EUserClass& userClass, const EFeature* feat
             errorMessage += "call        - " + creatorRoutineInfoWithArgsTypes.toString();
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE, errorMessage));
+        }
+        else {
+            for (int i=0; i<argumentsType.size(); i++) {
+                if (!((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && argumentsType.at(i).second.isClass()) {
+                    EClass* argOwnerClassInfo = EProgram::current->getClassBy(argumentsType.at(i).second.firstElemClassName());
+
+                    this->_exprInfo.at(argumentsExpr.at(i)).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+                    this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
+                }
+            }
         }
     }
 }

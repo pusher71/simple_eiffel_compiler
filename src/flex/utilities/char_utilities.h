@@ -18,22 +18,22 @@ void removeExclCharsFromStr(const char* inputStr, const char* exclChars, char* o
  * \param[in] decIntStr         string with decimal integer
  * \return decimal integer value
  */
-long int getDecIntFromStringWithDecInt_eiffel(const char* decIntStr);
+long long getDecIntFromStringWithDecInt_eiffel(const char* decIntStr);
 
 /* Convert string with binary integer to binary decimal value
  * \param[in] binIntStr         string with binary integer
  * \return decimal integer value
  */
-long int getDecIntFromStringWithBinInt_eiffel(const char* binIntStr);
+long long getDecIntFromStringWithBinInt_eiffel(const char* binIntStr);
 
 /* Convert string with octal integer to octal decimal value
  * \param[in] octIntStr         string with octal integer
  * \return decimal integer value
  */
-long int getDecIntFromStringWithOctInt_eiffel(const char* octIntStr);
+long long getDecIntFromStringWithOctInt_eiffel(const char* octIntStr);
 
 /* Convert string with hexadecimal integer to decimal integer value
  * \param[in] hexIntStr         string with hexadecimal integer
  * \return decimal integer value
  */
-long int getDecIntFromStringWithHexInt_eiffel(const char* hexIntStr);
+long long getDecIntFromStringWithHexInt_eiffel(const char* hexIntStr);

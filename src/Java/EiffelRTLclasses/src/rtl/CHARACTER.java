@@ -6,7 +6,7 @@ public class CHARACTER extends ANY {
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
-    public CHARACTER(char value) { this.SET(value); }
+    public CHARACTER() { this.SET('\0'); }
 
     // ----------------- contract -----------------
     public char GET()           { return this._value; }

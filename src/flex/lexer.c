@@ -1316,7 +1316,7 @@ YY_DECL
 
     int lexerErrorValue;
 
-    int oldCursorLineIndex         = 0;
+    int oldCursorLineIndex       = 0;
     int oldCursorColumnIndex     = 0;
 
     // Read buffers

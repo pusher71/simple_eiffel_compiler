@@ -95,6 +95,8 @@ public:
     const std::vector<const EFeatureMetaInfo*> attributesMetaInfo() const;
     const std::vector<const EFeatureMetaInfo*> routinesMetaInfo() const;
 
+    const EFeatureMetaInfo* getFeatureMetaInfoBy(const std::string& finalName) const;
+
 protected:
     void _addFeature(std::shared_ptr<EFeature> feature);
     const EFeature* _getSelfFeature(const std::string& featureName) const;

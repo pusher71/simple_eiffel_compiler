@@ -1,5 +1,6 @@
 #include "euserclass.h"
 #include "RTLclasses/eclassany.h"
+#include "RTLclasses/eclassconsoleio.h"
 #include "../../EiffelFeatureInfo/eattribute.h"
 #include "../../EiffelFeatureInfo/eroutine.h"
 #include "../../EiffelCompilation/bytecode.h"
@@ -18,22 +19,22 @@ EUserClass::EUserClass(const class_decl_strct* classNode)
 }
 
 void EUserClass::_fillConstantTableWithSelf() {
-    this->_constants.appendUtf8("Code");                        // "Code" attribute
-    this->_constants.appendUtf8(this->fullName());              // Self full name
-    this->_constants.appendConstClass(2);                       // Class constant of self
-    this->_constants.appendUtf8(EClass::javaObjectFullName());  // Java object full name
-    this->_constants.appendConstClass(4);                       // Class constant of self
+    this->_constants.append(JvmConstant::UTF8("Code"));                       // "Code" attribute
+    this->_constants.append(JvmConstant::UTF8(this->fullName()));             // Self full name
+    this->_constants.append(JvmConstant::ConstClass(2));                      // Class constant of self
+    this->_constants.append(JvmConstant::UTF8(EClass::javaObjectFullName())); // Java object full name
+    this->_constants.append(JvmConstant::ConstClass(4));                      // Class constant of parent
 
-    this->_constants.appendMethodRefStr(EClass::javaObjectFullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
+    this->_constants.appendMethodRef(EClass::javaObjectFullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
 
-    this->_constants.appendFieldRefStr(this->fullName(), "io", "Lrtl/CONSOLEIO;");
-    this->_constants.appendMethodRefStr("rtl/CONSOLEIO", "<init>", "()V");
+    this->_constants.appendFieldRef(this->fullName(), "IO", "L" + EClassCONSOLEIO::classRTLfullName() + ";");
+    this->_constants.appendMethodRef("rtl/CONSOLEIO", "<init>", "()V");
 }
 
 void EUserClass::fillConstantTableWithSelfFeatures() {
     for (auto& featureInfo : this->_features) {
-        featureInfo.second.get()->setLinkUtf8_name( this->_constants.appendUtf8(featureInfo.second.get()->name()) );
-        featureInfo.second.get()->setLinkUtf8_descriptor( this->_constants.appendUtf8(featureInfo.second.get()->descriptor()) );
+        featureInfo.second.get()->setLinkUtf8_name( this->_constants.append(JvmConstant::UTF8(featureInfo.second.get()->name())) );
+        featureInfo.second.get()->setLinkUtf8_descriptor( this->_constants.append(JvmConstant::UTF8(featureInfo.second.get()->descriptor())) );
     }
 }
 
@@ -128,10 +129,10 @@ void EUserClass::becomeMainClass() {
         this->_isMainClass = true;
         EProgram::mainClass = this;
 
-        this->_constants.appendUtf8(EProgram::javaMainFunctionName());
-        this->_constants.appendUtf8(EProgram::javaMainFunctionDescriptor());
-        this->_constants.appendMethodRefStr(this->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
-        this->_constants.appendMethodRefStr(this->fullName(), EProgram::eiffelMainFunctionName(), "()V");
+        this->_constants.append(JvmConstant::UTF8(EProgram::javaMainFunctionName()));
+        this->_constants.append(JvmConstant::UTF8(EProgram::javaMainFunctionDescriptor()));
+        this->_constants.appendMethodRef(this->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
+        this->_constants.appendMethodRef(this->fullName(), EProgram::eiffelMainFunctionName(), "()V");
 
         // Check that class has creator with name "make" (analysis of "main" function in Java)
         if (!std::count_if(this->_creators.begin(), this->_creators.end(), [&](const auto& creatorInfo) { return (creatorInfo.first == EProgram::eiffelMainFunctionName() &&
@@ -155,13 +156,13 @@ void EUserClass::addFeaturesTableInfoToConstantTable() {
 }
 
 void EUserClass::_addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
-    featureMetaInfo.setFeatureName_utf8Link(this->_constants.appendUtf8(featureMetaInfo.finalName()));
-    featureMetaInfo.setFeatureDescriptor_utf8Link(this->_constants.appendUtf8(featureMetaInfo.implementation()->descriptor()));
+    featureMetaInfo.setFeatureName_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMetaInfo.finalName())) );
+    featureMetaInfo.setFeatureDescriptor_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMetaInfo.implementation()->descriptor())) );
 }
 
 void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
     std::string featureMarkStr = featureMetaInfo.featureMark().first + ":" + featureMetaInfo.featureMark().second;
-    featureMetaInfo.setPolyMethodName_utf8Link(this->_constants.appendUtf8(featureMarkStr));
+    featureMetaInfo.setPolyMethodName_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMarkStr)) );
 
     std::string descriptorStr = "(L" + EClass::javaObjectFullName() + ";";
     if (featureMetaInfo.implementation()->featureType() == EFeature::efeature_routine) {
@@ -180,7 +181,7 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
         descriptorStr += featureMetaInfo.implementation()->returnType().descriptor();
     }
 
-    featureMetaInfo.setPolyMethodDescriptor_utf8Link(this->_constants.appendUtf8(descriptorStr));
+    featureMetaInfo.setPolyMethodDescriptor_utf8Link( this->_constants.append(JvmConstant::UTF8(descriptorStr)) );
 
     for (EClass* classInfo : EProgram::current->classes()) {
         if (this == classInfo || classInfo->isDescendantTo(this) || this->isDescendantTo(classInfo)) {
@@ -192,33 +193,19 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
             }
 
             if (featureMetaWithSameMark != nullptr) {
-                // Const class
-                short constClassLink = this->_constants.appendConstClass( this->_constants.appendUtf8(classInfo->fullName()) );
+                int16_t fieldOrMethodRef = 0;
 
-                // Field or method ref
-                short featureNameAndTypeLink = this->_constants.appendNameAndType({ this->_constants.appendUtf8(featureMetaWithSameMark->finalName()), this->_constants.appendUtf8(featureMetaWithSameMark->implementation()->descriptor()) });
+                if (featureMetaWithSameMark->featureType() == EFeature::efeature_attribute)     { fieldOrMethodRef = this->_constants.appendFieldRef(classInfo->fullName(), featureMetaWithSameMark->finalName(), featureMetaWithSameMark->implementation()->descriptor()); }
+                else                                                                            { fieldOrMethodRef = this->_constants.appendMethodRef(classInfo->fullName(), featureMetaWithSameMark->finalName(), featureMetaWithSameMark->implementation()->descriptor()); }
 
-                short fieldOrMethodRef = 0;
-
-                if (featureMetaWithSameMark->featureType() == EFeature::efeature_attribute)     { fieldOrMethodRef = this->_constants.appendFieldRef({constClassLink, featureNameAndTypeLink}); }
-                else                                                                            { fieldOrMethodRef = this->_constants.appendMethodRef({constClassLink, featureNameAndTypeLink}); }
-
-                featureMetaInfo.addPolyMethodImplementation(constClassLink, EPolymorphicImplementationInfo(featureMetaWithSameMark->featureType(), fieldOrMethodRef));
+                featureMetaInfo.addPolyMethodImplementation(this->_constants.appendConstClass(classInfo->fullName()), EPolymorphicImplementationInfo(featureMetaWithSameMark->featureType(), fieldOrMethodRef));
             }
             else {
-                // Const class
-                short constClass_constLink = this->_constants.appendConstClass( this->_constants.appendUtf8(classInfo->fullName()) );
+                short exceptionClass_constLink          = this->_constants.appendConstClass("java/lang/RuntimeException");
+                short exceptionMethodRef_constLink      = this->_constants.appendMethodRef("java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V");
+                short exceptionMessageString_constLink  = this->_constants.appendString("No attribute or routine \"" + featureMetaInfo.finalName() + "\" in class \"" + classInfo->fullName() + "\"");
 
-                // Exception method ref
-                short exceptionClass_constLink = this->_constants.appendConstClass( this->_constants.appendUtf8("java/lang/RuntimeException") );
-
-                short exceptionMethodNameAndType_constLink = this->_constants.appendNameAndType({ this->_constants.appendUtf8("<init>"), this->_constants.appendUtf8("(Ljava/lang/String;)V") });
-                short exceptionMethodRef_constLink = this->_constants.appendMethodRef({exceptionClass_constLink, exceptionMethodNameAndType_constLink});
-
-                // Exception message string
-                short exceptionMessageString_constLink = this->_constants.appendString( this->_constants.appendUtf8("No attribute or routine \"" + featureMetaInfo.finalName() + "\" in class \"" + classInfo->fullName() + "\"") );
-
-                featureMetaInfo.addPolyMethodImplementation(constClass_constLink, EPolymorphicImplementationInfo(exceptionClass_constLink, exceptionMethodRef_constLink, exceptionMessageString_constLink));
+                featureMetaInfo.addPolyMethodImplementation(this->_constants.appendConstClass(classInfo->fullName()), EPolymorphicImplementationInfo(exceptionClass_constLink, exceptionMethodRef_constLink, exceptionMessageString_constLink));
             }
         }
     }
@@ -237,6 +224,12 @@ void EUserClass::resolveRoutines() {
 
             ((ERoutine*)featureMetaInfo.implementation())->resolveBody();
         }
+    }
+}
+
+void EUserClass::checkUsageOfAttributesAndLocals() {
+    // Get list of attributes that must be initialized
+    for (const auto& attributeMetaInfo : this->attributesMetaInfo()) {
     }
 }
 

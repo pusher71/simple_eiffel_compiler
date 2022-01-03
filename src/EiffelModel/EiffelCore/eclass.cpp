@@ -447,6 +447,18 @@ const std::vector<const EFeatureMetaInfo*> EClass::routinesMetaInfo() const {
     return result;
 }
 
+const EFeatureMetaInfo* EClass::getFeatureMetaInfoBy(const std::string& finalName) const {
+    const EFeatureMetaInfo* result = nullptr;
+    for (auto& featureMetaInfo : this->_featuresTable) {
+        if (featureMetaInfo.finalName() == finalName) {
+            result = &featureMetaInfo;
+            break;
+        }
+    }
+
+    return result;
+}
+
 void EClass::_addFeature(std::shared_ptr<EFeature> feature) {
     if (!this->_features.count(feature->name())) {
         this->_features[feature->name()] = feature;

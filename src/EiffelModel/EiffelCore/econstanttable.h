@@ -3,61 +3,38 @@
 
 #include <string>
 #include <vector>
-#include <cstdint>
+#include <map>
+
+#include "jvmconstant.h"
 
 class EConstantTable {
-    // ============== INNER CLASSES ===========
-public:
-    union JvmConstant {
-        std::string* jvm_utf8 = nullptr;
-        int32_t jvm_integer;
-        short jvm_string;
-        short jvm_class;
-        std::pair<short, short> jvm_nameAndType;
-        std::pair<short, short> jvm_fieldRef;
-        std::pair<short, short> jvm_methodRef;
-
-        JvmConstant();
-
-        bool operator==(const JvmConstant& other) const;
-    };
-
-    enum JvmConstantType {
-        jvm_invalid         = -1,
-        jvm_utf8            = 1,
-        jvm_integer         = 3,
-        jvm_string          = 8,
-        jvm_class           = 7,
-        jvm_nameAndType     = 12,
-        jvm_fieldRef        = 9,
-        jvm_methodRef       = 10
-    };
-
     // ============== ATTRIBUTES ==============
 private:
-    std::vector<std::pair<JvmConstantType, JvmConstant>> _constants;
+    int16_t _nextAvailableIndex;
+    std::map<int16_t, JvmConstant> _constants;
 
     // ============== OPERATIONS ==============
+    // -------- creating --------
+public:
+    EConstantTable();
+
     // -------- contract --------
 public:
-    int size() const;
+    std::map<int16_t, JvmConstant> constants() const;
+    int16_t size() const;
 
-    std::pair<JvmConstantType, JvmConstant> getConstant(int constantIndex) const;
-    short searchUtf8By(const std::string& stringUtf8) const;
-    short searchClassConstBy(const std::string& classFullName) const;
-    short searchFieldRefBy(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor) const;
-    short searchMethodRefBy(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) const;
+    int16_t append(const JvmConstant& jvmConstant);
 
-    short appendUtf8(const std::string& stringUtf8);
-    short appendInteger(int32_t integerValue);
-    short appendString(short utf8Link_string);
-    short appendConstClass(short utf8Link_string);
-    short appendNameAndType(const std::pair<short, short>& utf8Links_nameAndType);
-    short appendFieldRef(const std::pair<short, short>& utf8Links_fieldRef);
-    short appendMethodRef(const std::pair<short, short>& utf8Links_methodRef);
+    int16_t appendConstClass(const std::string& classFullName);
+    int16_t appendString(const std::string& stringValue);
+    int16_t appendFieldRef(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor);
+    int16_t appendMethodRef(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor);
 
-    short appendFieldRefStr(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor);
-    short appendMethodRefStr(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor);
+    JvmConstant getConstant(int constantIndex) const;
+    int16_t searchUTF8By(const std::string& stringUTF8) const;
+    int16_t searchClassConstBy(const std::string& classFullName) const;
+    int16_t searchFieldRefBy(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor) const;
+    int16_t searchMethodRefBy(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) const;
 };
 
 #endif // ECONSTANTTABLE_H

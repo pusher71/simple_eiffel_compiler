@@ -7,7 +7,6 @@ public class STRING extends ANY {
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
     public STRING() { this.SET(""); }
-    public STRING(String value) { this.SET(value); }
 
     // ----------------- contract -----------------
     public String   GET()               { return this._value; }

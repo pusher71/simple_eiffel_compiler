@@ -4,7 +4,7 @@
 #include "../eclassrtl.h"
 
 class EClassCHARACTER : public EClassRTL {
-    // ================ STATIC ================
+    // ================== STATIC ==================
 public:
     static std::string classRTLname();
     static std::string classRTLfullName();

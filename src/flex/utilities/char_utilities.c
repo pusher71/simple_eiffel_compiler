@@ -31,14 +31,14 @@ void removeExclCharsFromStr(const char* inputStr, const char* exclChars, char* o
     outputStr[currIndex] = 0;
 }
 
-long int getDecIntFromStringWithDecInt_eiffel(const char* decIntStr) {
+long long getDecIntFromStringWithDecInt_eiffel(const char* decIntStr) {
     char buffer[1000];
     removeExclCharsFromStr(decIntStr, "_", buffer);
 
-    return atol(buffer);
+    return atoll(buffer);
 }
 
-long int getDecIntFromStringWithBinInt_eiffel(const char* binIntStr) {
+long long getDecIntFromStringWithBinInt_eiffel(const char* binIntStr) {
     char buffer[1000];
     removeExclCharsFromStr(binIntStr, "_", buffer);
 
@@ -52,10 +52,10 @@ long int getDecIntFromStringWithBinInt_eiffel(const char* binIntStr) {
         strcpy(buffer_1, buffer + 2);
     }
 
-    return strtol(buffer_1, NULL, 2);
+    return strtoll(buffer_1, NULL, 2);
 }
 
-long int getDecIntFromStringWithOctInt_eiffel(const char* octIntStr) {
+long long getDecIntFromStringWithOctInt_eiffel(const char* octIntStr) {
     char buffer[1000];
     removeExclCharsFromStr(octIntStr, "_", buffer);
 
@@ -69,10 +69,10 @@ long int getDecIntFromStringWithOctInt_eiffel(const char* octIntStr) {
         strcpy(buffer_1, buffer + 2);
     }
 
-    return strtol(buffer_1, NULL, 8);
+    return strtoll(buffer_1, NULL, 8);
 }
 
-long int getDecIntFromStringWithHexInt_eiffel(const char* hexIntStr) {
+long long getDecIntFromStringWithHexInt_eiffel(const char* hexIntStr) {
     char buffer[1000];
     removeExclCharsFromStr(hexIntStr, "_", buffer);
 
@@ -86,5 +86,5 @@ long int getDecIntFromStringWithHexInt_eiffel(const char* hexIntStr) {
         strcpy(buffer_1, buffer + 2);
     }
 
-    return strtol(buffer_1, NULL, 16);
+    return strtoll(buffer_1, NULL, 16);
 }

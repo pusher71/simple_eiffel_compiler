@@ -7,7 +7,6 @@ public class BOOLEAN extends ANY {
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
     public BOOLEAN() { this.SET(false); }
-    public BOOLEAN(boolean value) { this.SET(value); }
 
     // ----------------- contract -----------------
     public boolean  GET()               { return this._value; }

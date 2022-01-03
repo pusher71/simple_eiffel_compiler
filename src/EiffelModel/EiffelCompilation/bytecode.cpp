@@ -58,47 +58,58 @@ ByteCode::ByteCode(const EUserClass& userClass) {
 ByteCode::ByteCode(const EConstantTable& classConstantTable) {
     this->_appendTwoBytes(classConstantTable.size()+1);
 
-    for (int i=1; i<=classConstantTable.size(); i++) {
-        const auto& jvmConstantInfo = classConstantTable.getConstant(i);
+    for (const auto& jvmConstantInfo : classConstantTable.constants()) {
+        this->_appendByte(jvmConstantInfo.second.type());
 
-        this->_appendByte(jvmConstantInfo.first);
-
+        std::string stringValue;
         std::vector<char> stringBytes;
-        switch (jvmConstantInfo.first) {
-            case EConstantTable::jvm_utf8:
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_utf8->length());
 
-                stringBytes = std::vector<char>(jvmConstantInfo.second.jvm_utf8->begin(), jvmConstantInfo.second.jvm_utf8->end());
+        int64_t longValue;
+
+        switch (jvmConstantInfo.second.type()) {
+            case JvmConstant::jvm_utf8:
+                this->_appendTwoBytes(jvmConstantInfo.second.utf8_value().size());
+
+                stringValue = jvmConstantInfo.second.utf8_value();
+                stringBytes = std::vector<char>(stringValue.begin(), stringValue.end());
                 for (char stringByte : stringBytes) {
                     this->_appendByte(stringByte);
                 }
                 break;
 
-            case EConstantTable::jvm_integer:
-                this->_appendFourBytes(jvmConstantInfo.second.jvm_integer);
+            case JvmConstant::jvm_integer:
+                this->_appendFourBytes(jvmConstantInfo.second.integer_value());
                 break;
 
-            case EConstantTable::jvm_string:
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_string);
+            case JvmConstant::jvm_long:
+                longValue = jvmConstantInfo.second.long_value();
+
+                this->_appendFourBytes( *((int32_t*)&longValue + 1) );
+                this->_appendFourBytes( *((int32_t*)&longValue + 0) );
+
                 break;
 
-            case EConstantTable::jvm_class:
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_class);
+            case JvmConstant::jvm_string:
+                this->_appendTwoBytes(jvmConstantInfo.second.string_value());
                 break;
 
-            case EConstantTable::jvm_nameAndType:
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_nameAndType.first);
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_nameAndType.second);
+            case JvmConstant::jvm_class:
+                this->_appendTwoBytes(jvmConstantInfo.second.class_value());
                 break;
 
-            case EConstantTable::jvm_fieldRef:
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_fieldRef.first);
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_fieldRef.second);
+            case JvmConstant::jvm_nameAndType:
+                this->_appendTwoBytes(jvmConstantInfo.second.nameAndType_value().first);
+                this->_appendTwoBytes(jvmConstantInfo.second.nameAndType_value().second);
                 break;
 
-            case EConstantTable::jvm_methodRef:
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_methodRef.first);
-                this->_appendTwoBytes(jvmConstantInfo.second.jvm_methodRef.second);
+            case JvmConstant::jvm_fieldRef:
+                this->_appendTwoBytes(jvmConstantInfo.second.fieldRef_value().first);
+                this->_appendTwoBytes(jvmConstantInfo.second.fieldRef_value().second);
+                break;
+
+            case JvmConstant::jvm_methodRef:
+                this->_appendTwoBytes(jvmConstantInfo.second.methodRef_value().first);
+                this->_appendTwoBytes(jvmConstantInfo.second.methodRef_value().second);
                 break;
 
             default:
@@ -147,8 +158,8 @@ ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants
 ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass) {
     ByteCode result;
     result._appendTwoBytes(0x0009);
-    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaMainFunctionName()));
-    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaMainFunctionDescriptor()));
+    result._appendTwoBytes(userClassConstants.searchUTF8By(EProgram::javaMainFunctionName()));
+    result._appendTwoBytes(userClassConstants.searchUTF8By(EProgram::javaMainFunctionDescriptor()));
     result._appendTwoBytes(0x0001);
 
     // "Code" attribute of method
@@ -156,9 +167,9 @@ ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants
     codeAttribute._appendTwoBytes(0x1000);
     codeAttribute._appendTwoBytes(0x02);
 
-    // ByteCode routineBodyCode(userClassConstants, routineInfo->_routineBody);
-    ByteCode routineBodyCode;
     // Create main class
+    ByteCode routineBodyCode;
+
     routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy(mainClass.fullName())));
     routineBodyCode._append(ByteCode::dup());
     routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(mainClass.fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor()), 0));
@@ -265,8 +276,8 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
 ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassConstants, const EUserClass& userClass) {
     ByteCode result;
     result._appendTwoBytes(0x0001);
-    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaDefaultConstructorName()));
-    result._appendTwoBytes(userClassConstants.searchUtf8By(EProgram::javaDefaultConstructorDescriptor()));
+    result._appendTwoBytes(userClassConstants.searchUTF8By(EProgram::javaDefaultConstructorName()));
+    result._appendTwoBytes(userClassConstants.searchUTF8By(EProgram::javaDefaultConstructorDescriptor()));
     result._appendTwoBytes(0x0001);
 
     // "Code" attribute of method
@@ -315,7 +326,6 @@ ByteCode::ByteCode(const EConstantTable&                                        
     // Initialize local variables for its usage
     for (const auto& localVarInfo : routineInfo->_localVariables) {
         std::string localVarTypeClassName = localVarInfo.second.type().firstElemClassName();
-        EProgram* currentProgram = EProgram::current;
         EClass* localVarTypeClassInfo = EProgram::current->getClassBy(localVarInfo.second.type().firstElemClassName());
 
         this->_append(ByteCode::new_(userClassConstants.searchClassConstBy(localVarTypeClassInfo->fullName())));
@@ -391,6 +401,10 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable&              
         argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
         while (argumentSeqElem != NULL) {
             result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
+            if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
+                result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
+                result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
+            }
 
             argumentsCount++;
             argumentSeqElem = argumentSeqElem->next;
@@ -418,7 +432,18 @@ ByteCode ByteCode::assignInstructionByteCode(const EConstantTable&              
     }
 
     // Push expression
+    if (instructionInfo.at(assignInstruction).creatorMethodRef_constLink != 0) {
+        result._append(ByteCode::new_(instructionInfo.at(assignInstruction).constClass_constLink));
+        result._append(ByteCode::dup());
+        result._append(ByteCode::dup());
+        result._append(ByteCode::invokespecial(instructionInfo.at(assignInstruction).creatorMethodRef_constLink, 0));
+    }
+
     result._append(ByteCode(userClassConstants, assignInstruction->assign_expr, expressionInfo));
+
+    if (instructionInfo.at(assignInstruction).creatorMethodRef_constLink != 0) {
+        result._append(ByteCode::invokevirtual(instructionInfo.at(assignInstruction).methodRef_constLink, 0));
+    }
 
     // Store expression in field or local variable
     if (instructionInfo.at(assignInstruction).fieldRef_constLink != 0) {
@@ -486,16 +511,28 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* e
 
 ByteCode ByteCode::literExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
-    short intLiteral = 0;
+    int16_t shortIntLiteral = 0;
+    int32_t intLiteral = 0;
 
     switch(expression->type) {
         case expr_liter_bool:
             result._append(ByteCode::iconst(expression->liter_bool));
             break;
         case expr_liter_int:
-            intLiteral = expression->liter_int;
-            if (expression->liter_int == intLiteral)    { result._append(ByteCode::sipush(intLiteral)); }
-            else                                        { result._append(ByteCode::ldc_w(expressionInfo.at(expression).liter_constLink)); }
+            shortIntLiteral = expression->liter_int;
+            intLiteral      = expression->liter_int;
+
+            if (expression->liter_int == shortIntLiteral) {
+                result._append(ByteCode::sipush(shortIntLiteral));
+                result._append(ByteCode::i2l());
+            }
+            else if (expression->liter_int == intLiteral) {
+                result._append(ByteCode::ldc_w(expressionInfo.at(expression).liter_constLink));
+                result._append(ByteCode::i2l());
+            }
+            else {
+                result._append(ByteCode::ldc2_w(expressionInfo.at(expression).liter_constLink));
+            }
 
             break;
         case expr_liter_char:
@@ -531,6 +568,11 @@ ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassCo
     argument_seq_strct* argumentSeqElem = expression->argument_seq;
     while (argumentSeqElem != NULL) {
         result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
+        if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
+            result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
+            result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
+        }
+
         argumentSeqElem = argumentSeqElem->next;
 
         argumentsCount++;
@@ -558,6 +600,11 @@ ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConsta
     argument_seq_strct* argumentSeqElem = expression->argument_seq;
     while (argumentSeqElem != NULL) {
         result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
+        if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
+            result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
+            result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
+        }
+
         argumentSeqElem = argumentSeqElem->next;
 
         argumentsCount++;
@@ -587,6 +634,10 @@ ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, 
         argument_seq_strct* argumentSeqElem = expression->argument_seq;
         while (argumentSeqElem != NULL) {
             result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
+            if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
+                result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
+                result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
+            }
 
             argumentsCount++;
             argumentSeqElem = argumentSeqElem->next;
@@ -731,9 +782,10 @@ bool ByteCode::writeToFile(std::ofstream& outputClassFile) const {
     if (outputClassFile.is_open()) {
         outputClassFile.clear();
 
-        for (char byteValue : this->_bytes) {
-            outputClassFile.write(reinterpret_cast<char*>(&byteValue), sizeof(byteValue));
-        }
+        std::string resultByteCode;
+        for (char byte : this->_bytes) { resultByteCode += byte; }
+
+        outputClassFile << resultByteCode;
 
         return true;
     }
@@ -774,6 +826,13 @@ ByteCode ByteCode::sipush(short int s2) {
     return result;
 }
 
+ByteCode ByteCode::i2l() {
+    ByteCode result;
+    result._appendByte(0x85);
+
+    return result;
+}
+
 ByteCode ByteCode::ldc(char u1) {
     ByteCode result;
     result._appendByte(0x12);
@@ -785,6 +844,14 @@ ByteCode ByteCode::ldc(char u1) {
 ByteCode ByteCode::ldc_w(short int u2) {
     ByteCode result;
     result._appendByte(0x13);
+    result._appendTwoBytes(u2);
+
+    return result;
+}
+
+ByteCode ByteCode::ldc2_w(short int u2) {
+    ByteCode result;
+    result._appendByte(0x14);
     result._appendTwoBytes(u2);
 
     return result;

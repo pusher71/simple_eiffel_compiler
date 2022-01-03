@@ -150,8 +150,8 @@ std::string SemanticError::errorReason() const {
         case INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
             result += "ASSIGN TO FIELD OR LOCAL VARIABLE WITH UNKNOWN ID";
             break;
-        case INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_FIELD:
-            result += "CAN\'T CAST EXPR TO TYPE OF FIELD";
+        case INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_ATTRIBUTE:
+            result += "CAN\'T CAST EXPR TO TYPE OF ATTRIBUTE";
             break;
         case INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL:
             result += "CAN\'T CAST EXPR TO TYPE OF LOCAL VARIABLE";

@@ -19,6 +19,7 @@ public:
     static EType voidLiterType();
     static EType boolType(bool isClass = false);
     static EType intType(bool isClass = false);
+    static EType naturalType(bool isClass = false);
     static EType charType(bool isClass = false);
     static EType stringType(bool isClass = false);
     static EType classType(const std::string& classTypeName);

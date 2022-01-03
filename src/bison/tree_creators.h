@@ -116,7 +116,7 @@ struct argument_seq_strct* append_argument_seq(unsigned int                 node
 
 // ... Expression
 struct expr_strct* create_expr_liter_bool(unsigned int node_index, int liter_bool);
-struct expr_strct* create_expr_liter_int (unsigned int node_index, int liter_int);
+struct expr_strct* create_expr_liter_int (unsigned int node_index, long long liter_int);
 struct expr_strct* create_expr_liter_char(unsigned int node_index, char liter_char);
 struct expr_strct* create_expr_liter_str (unsigned int node_index, struct CharArray* liter_str);
 struct expr_strct* create_expr_liter_void(unsigned int node_index);

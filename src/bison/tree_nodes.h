@@ -210,7 +210,7 @@ struct expr_strct {
     int                         is_field_access;
 
     int                 liter_bool;
-    int                 liter_int;
+    long long           liter_int;
     char                liter_char;
     struct CharArray*   liter_str;
 

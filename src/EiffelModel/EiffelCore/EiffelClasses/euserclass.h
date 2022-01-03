@@ -51,10 +51,14 @@ public:
     // ----------------- contract -----------------
 public:
     void addFeaturesTableInfoToConstantTable();
+
+private:
     void _addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo);
     void _addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo);
 
+public:
     void resolveRoutines();
+    void checkUsageOfAttributesAndLocals();
 
     void compile(const std::string& outputDirectoryPath);
 };
