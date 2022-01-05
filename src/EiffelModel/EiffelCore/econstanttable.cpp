@@ -9,6 +9,8 @@ std::map<int16_t, JvmConstant> EConstantTable::constants() const { return this->
 int16_t EConstantTable::size() const { return this->_nextAvailableIndex-1; }
 
 int16_t EConstantTable::append(const JvmConstant& jvmConstant) {
+    if (jvmConstant.type() == JvmConstant::jvm_invalid) { throw std::runtime_error("Try to assign an invalid constant to the constant table"); }
+
     // Try to find constant in the constant table
     for (const auto& constInfo : this->_constants) {
         if (constInfo.second == jvmConstant) { return constInfo.first; }
@@ -52,7 +54,8 @@ short EConstantTable::appendMethodRef(const std::string& classFullName, const st
     int16_t methodDescriptor_constLink  = this->append(JvmConstant::UTF8(methodDescriptor));
     int16_t methodNameAndType_constLink = this->append(JvmConstant::NameAndType({methodName_constLink, methodDescriptor_constLink}));
 
-    return this->append(JvmConstant::MethodRef({constClass_constLink, methodNameAndType_constLink}));
+    int16_t result = this->append(JvmConstant::MethodRef({constClass_constLink, methodNameAndType_constLink}));
+    return result;
 }
 
 JvmConstant EConstantTable::getConstant(int constantIndex) const { return this->_constants.at(constantIndex); }

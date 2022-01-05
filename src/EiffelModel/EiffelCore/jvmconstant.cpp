@@ -149,37 +149,17 @@ std::pair<int16_t, int16_t> JvmConstant::methodRef_value() const {
 }
 
 bool JvmConstant::operator==(const JvmConstant& other) const {
-    bool result = true;
+    if (this->_type != other._type) { return false; }
 
     switch (this->_type) {
-        case jvm_invalid:
-            result = false;
-            break;
-        case jvm_utf8:
-            result = (this->_utf8_value == other._utf8_value);
-            break;
-        case jvm_integer:
-            result = (this->_integer_value == other._integer_value);
-            break;
-        case jvm_long:
-            result = (this->_long_value == other._long_value);
-            break;
-        case jvm_string:
-            result = (this->_string_value == other._string_value);
-            break;
-        case jvm_class:
-            result = (this->_constClass_value == other._constClass_value);
-            break;
-        case jvm_nameAndType:
-            result = (this->_nameAndType_value == other._nameAndType_value);
-            break;
-        case jvm_fieldRef:
-            result = (this->_fieldRef_value == other._fieldRef_value);
-            break;
-        case jvm_methodRef:
-            result = (this->_methodRef_value == other._methodRef_value);
-            break;
+        case jvm_invalid:       return true;
+        case jvm_utf8:          return (this->_utf8_value == other._utf8_value);
+        case jvm_integer:       return (this->_integer_value == other._integer_value);
+        case jvm_long:          return (this->_long_value == other._long_value);
+        case jvm_string:        return (this->_string_value == other._string_value);
+        case jvm_class:         return (this->_constClass_value == other._constClass_value);
+        case jvm_nameAndType:   return (this->_nameAndType_value == other._nameAndType_value);
+        case jvm_fieldRef:      return (this->_fieldRef_value == other._fieldRef_value);
+        case jvm_methodRef:     return (this->_methodRef_value == other._methodRef_value);
     }
-
-    return result;
 }

@@ -1,6 +1,14 @@
 #include "euserclass.h"
 #include "RTLclasses/eclassany.h"
 #include "RTLclasses/eclassconsoleio.h"
+#include "RTLclasses/eclassboolean.h"
+#include "RTLclasses/eclassinteger.h"
+#include "RTLclasses/eclassnatural.h"
+#include "RTLclasses/eclasscharacter.h"
+#include "RTLclasses/eclassstring.h"
+#include "RTLclasses/eclassarray.h"
+#include "RTLclasses/eclassany.h"
+
 #include "../../EiffelFeatureInfo/eattribute.h"
 #include "../../EiffelFeatureInfo/eroutine.h"
 #include "../../EiffelCompilation/bytecode.h"
@@ -28,7 +36,14 @@ void EUserClass::_fillConstantTableWithSelf() {
     this->_constants.appendMethodRef(EClass::javaObjectFullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
 
     this->_constants.appendFieldRef(this->fullName(), "IO", "L" + EClassCONSOLEIO::classRTLfullName() + ";");
-    this->_constants.appendMethodRef("rtl/CONSOLEIO", "<init>", "()V");
+    this->_constants.appendMethodRef(EClassCONSOLEIO::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassBOOLEAN::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassINTEGER::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassNATURAL::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassCHARACTER::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassSTRING::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassARRAY::classRTLfullName(), "<init>", "()V");
+    this->_constants.appendMethodRef(EClassANY::classRTLfullName(), "<init>", "()V");
 }
 
 void EUserClass::fillConstantTableWithSelfFeatures() {
@@ -158,6 +173,10 @@ void EUserClass::addFeaturesTableInfoToConstantTable() {
 void EUserClass::_addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
     featureMetaInfo.setFeatureName_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMetaInfo.finalName())) );
     featureMetaInfo.setFeatureDescriptor_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMetaInfo.implementation()->descriptor())) );
+
+    if (featureMetaInfo.featureType() == EFeature::efeature_attribute && featureMetaInfo.implementation()->returnType().hasDefaultInitialization()) {
+        this->_constants.appendFieldRef(this->fullName(), featureMetaInfo.finalName(), featureMetaInfo.implementation()->descriptor());
+    }
 }
 
 void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& featureMetaInfo) {
@@ -196,7 +215,7 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
                 int16_t fieldOrMethodRef = 0;
 
                 if (featureMetaWithSameMark->featureType() == EFeature::efeature_attribute)     { fieldOrMethodRef = this->_constants.appendFieldRef(classInfo->fullName(), featureMetaWithSameMark->finalName(), featureMetaWithSameMark->implementation()->descriptor()); }
-                else                                                                            { fieldOrMethodRef = this->_constants.appendMethodRef(classInfo->fullName(), featureMetaWithSameMark->finalName(), featureMetaWithSameMark->implementation()->descriptor()); }
+                else if (featureMetaWithSameMark->featureType() == EFeature::efeature_routine)  { fieldOrMethodRef = this->_constants.appendMethodRef(classInfo->fullName(), featureMetaWithSameMark->finalName(), featureMetaWithSameMark->implementation()->descriptor()); }
 
                 featureMetaInfo.addPolyMethodImplementation(this->_constants.appendConstClass(classInfo->fullName()), EPolymorphicImplementationInfo(featureMetaWithSameMark->featureType(), fieldOrMethodRef));
             }

@@ -155,6 +155,8 @@ ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants
     return result;
 }
 
+#include <iostream>
+
 ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass) {
     ByteCode result;
     result._appendTwoBytes(0x0009);
@@ -290,17 +292,25 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
     routineBodyCode._append(ByteCode::aload(0x0));
     routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(EClass::javaObjectFullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor() ), 0));
 
-    // Initialize all IO variables
+    // Initialize all IO variables and attributes that has default initialization
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
-        std::string attributeName = attributeMetaInfo->finalName();
         std::string attributeTypeFirstClassName = attributeMetaInfo->implementation()->returnType().firstElemClassName();
+        std::string attributeTypeFirstClassFullName = EProgram::current->getClassBy( attributeTypeFirstClassName )->fullName();
 
-        if (attributeTypeFirstClassName == EClassCONSOLEIO::classRTLname()) {
+        std::string attributeDescriptor;
+        if (attributeMetaInfo->implementation()->returnType().hasDefaultInitialization()) {
+            attributeDescriptor= attributeMetaInfo->implementation()->descriptor();
+        }
+        else if (attributeTypeFirstClassName == EClassCONSOLEIO::classRTLname()) {
+            attributeDescriptor = "L" + attributeTypeFirstClassFullName + ";";
+        }
+
+        if (!attributeDescriptor.empty()) {
             routineBodyCode._append(ByteCode::aload(0x0));
-            routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy("rtl/CONSOLEIO")));
+            routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy(attributeTypeFirstClassFullName)));
             routineBodyCode._append(ByteCode::dup());
-            routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy("rtl/CONSOLEIO", "<init>", "()V"), 0));
-            short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), attributeName, "L" + EClassCONSOLEIO::classRTLfullName() + ";");
+            routineBodyCode._append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(attributeTypeFirstClassFullName, "<init>", "()V"), 0));
+            short fieldRef = userClassConstants.searchFieldRefBy(userClass.fullName(), attributeMetaInfo->finalName(), attributeDescriptor);
             routineBodyCode._append(ByteCode::putfield(fieldRef));
         }
     }
@@ -325,13 +335,15 @@ ByteCode::ByteCode(const EConstantTable&                                        
 {
     // Initialize local variables for its usage
     for (const auto& localVarInfo : routineInfo->_localVariables) {
-        std::string localVarTypeClassName = localVarInfo.second.type().firstElemClassName();
-        EClass* localVarTypeClassInfo = EProgram::current->getClassBy(localVarInfo.second.type().firstElemClassName());
+        if (localVarInfo.second.type().hasDefaultInitialization()) {
+            std::string localVarTypeClassName = localVarInfo.second.type().firstElemClassName();
+            EClass* localVarTypeClassInfo = EProgram::current->getClassBy(localVarInfo.second.type().firstElemClassName());
 
-        this->_append(ByteCode::new_(userClassConstants.searchClassConstBy(localVarTypeClassInfo->fullName())));
-        this->_append(ByteCode::dup());
-        this->_append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(localVarTypeClassInfo->fullName(), "<init>", "()V"), 0));
-        this->_append(ByteCode::astore(localVarInfo.second.index()));
+            this->_append(ByteCode::new_(userClassConstants.searchClassConstBy(localVarTypeClassInfo->fullName())));
+            this->_append(ByteCode::dup());
+            this->_append(ByteCode::invokespecial(userClassConstants.searchMethodRefBy(localVarTypeClassInfo->fullName(), "<init>", "()V"), 0));
+            this->_append(ByteCode::astore(localVarInfo.second.index()));
+        }
     }
 
     // Compile routine body

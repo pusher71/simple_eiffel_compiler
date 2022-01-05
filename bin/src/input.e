@@ -5,22 +5,47 @@ class
 create
     make
 feature
+    a1 : INTEGER
+    a2 : NATURAL
+    a3 : STRING
+    a4 : CHARACTER
+    a5 : BOOLEAN
+    a6 : ARRAY[INTEGER]
+    a7 : ANY
+
     make
-    local
-        obj : A
-        l_nat : NATURAL
-        ent : ENTITY
     do
-        l_nat := 0xFFFF_FFFF
-        io.put_integer(l_nat)
+        -- create a1
+        io.put_integer(a1)
+        io.new_line
 
-        obj := create {C}.make
-        obj.f
+        -- create a2
+        io.put_integer(a2)
+        io.new_line
 
-        ent := create {ENTITY}
-        ent.f1
-        ent := create {SUB_ENTITY}
-        ent.f1
+        a3 := ""
+        io.put_string(a3)
+        io.new_line
+
+        -- create a4
+        io.put_character(a4)
+        io.new_line
+
+        -- create a5
+        io.put_boolean(a5)
+        io.new_line
+
+        -- create a6.make_empty
+        -- io.put_integer(a6.capacity)
+        -- io.new_line
+
+        create a7
+        a7.io.put_string("ANY")
+        io.new_line
+    end
+
+    return_int : INTEGER
+    do
     end
 end
 -- EOF
@@ -34,6 +59,7 @@ create
 
 feature
     field : STRING
+    some_value : INTEGER
 
     make
     local
@@ -146,3 +172,4 @@ feature
     end
 end
 -- EOF
+

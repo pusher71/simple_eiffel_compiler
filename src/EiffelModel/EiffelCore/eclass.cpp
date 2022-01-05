@@ -1,7 +1,5 @@
 #include "eclass.h"
 
-#include <iostream>
-
 #include <set>
 #include "eprogram.h"
 
@@ -403,13 +401,6 @@ void EClass::_checkOnFeaturesRepeatInheritConflict() const {
 
 void EClass::_addPrecursorNeededInfo() {
     for (auto& selfFeatureMetaInfo : this->_featuresTable) {
-        std::cout << "SELF: " << this->name() << "::" << selfFeatureMetaInfo.finalName() << std::endl;
-        std::cout << "#: " << (selfFeatureMetaInfo.implementation()->ownerClassName() == this->name()) << std::endl;
-        std::cout << "#: " << (selfFeatureMetaInfo.featureMark().first + ":" + selfFeatureMetaInfo.featureMark().second != this->name() + ":" + selfFeatureMetaInfo.finalName()) << std::endl;
-        std::cout << "#: " << (selfFeatureMetaInfo.redefinedFeatures().empty()) << std::endl;
-        for (const auto& redefInfo : selfFeatureMetaInfo.redefinedFeatures()) {
-            std::cout << " % " << redefInfo.first << " -> " << redefInfo.second << std::endl;
-        }
 
         if (selfFeatureMetaInfo.implementation()->ownerClassName() == this->name() &&
             selfFeatureMetaInfo.featureMark().first + ":" + selfFeatureMetaInfo.featureMark().second != this->name() + ":" + selfFeatureMetaInfo.finalName() &&
@@ -423,8 +414,6 @@ void EClass::_addPrecursorNeededInfo() {
                         std::string redefinedFinalName = "{" + parentInfo.first + "," + this->name() + "}|" + parentFeatureMetaInfo.finalName();
                         selfFeatureMetaInfo.setRedefinedFeature(parentInfo.first, redefinedFinalName);
 
-                        std::cout << " - FOUND: " << parentInfo.first << "#" << parentFeatureMetaInfo.currentOwnerClassName() << "::" << parentFeatureMetaInfo.finalName() << " - " << redefinedFinalName << std::endl;
-
                         EFeatureMetaInfo redefinedFeatureMetaInfo(parentFeatureMetaInfo);
                         redefinedFeatureMetaInfo.setFinalName(redefinedFinalName);
                         redefinedFeatureMetaInfo.setFeatureMark(this->name(), redefinedFinalName);
@@ -435,8 +424,6 @@ void EClass::_addPrecursorNeededInfo() {
                 }
             }
         }
-
-        std::cout << std::endl;
     }
 }
 

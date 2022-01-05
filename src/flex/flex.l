@@ -7,12 +7,12 @@
 %x VERBATIM_STRING
 %x STRIPSOFF_STRING
 
-DEC_INT_PTTRN \-?[0-9]+(_[0-9]+)*
-BIN_INT_PTTRN \-?0b[01]+(_[01]+)*
-OCT_INT_PTTRN \-?0c[0-7]+(_[0-7]+)*
-HEX_INT_PTTRN \-?0x[0-9a-f]+(_[0-9a-f]+)*
+DEC_INT_PTTRN [0-9]+(_[0-9]+)*
+BIN_INT_PTTRN 0b[01]+(_[01]+)*
+OCT_INT_PTTRN 0c[0-7]+(_[0-7]+)*
+HEX_INT_PTTRN 0x[0-9a-f]+(_[0-9a-f]+)*
 
-INVALID_VALUE_TOKEN \-?[0-9]+\w+
+INVALID_VALUE_TOKEN [0-9]+\w+
 
 %{
     #include <ctype.h>
