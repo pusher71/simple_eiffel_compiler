@@ -30,13 +30,16 @@ int main(int argc, char** argv) {
     compilerState.isPrintingTreeNodes = false;
 
     // ================== READ CONFIGURATION FILE OF EIFFEL ==================
+    /*
     if (argc != 2) {
         std::cerr << "INPUT ERROR :: No configure file has been provided." << std::endl;
         return -1;
     }
+    */
 
     // Read configuration file
-    std::ifstream configureFile(argv[1]);
+    // std::ifstream configureFile(argv[1]);
+    std::ifstream configureFile("build.econf");
     if (!configureFile.is_open()) {
         std::cerr << "INPUT ERROR :: Failed to open configuration file at: \"" << argv[1] << "\"" << std::endl;
     }

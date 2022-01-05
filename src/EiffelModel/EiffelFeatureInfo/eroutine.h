@@ -5,6 +5,7 @@
 #include <map>
 
 #include "../EiffelCore/efeature.h"
+#include "../EiffelCore/efeaturemetainfo.h"
 #include "einnervariable.h"
 #include "../../bison/tree_nodes.h"
 
@@ -95,24 +96,25 @@ private:
     void _checkOnLocalVarNameClashing() const;
 
 public:
-    void resolveBody();
+    void resolveBody(const EFeatureMetaInfo& selfMetaInfo);
+
 
 private:
-    void _resolveInstruction(EUserClass& userClass, instruction_strct* instruction);
-    void _resolveCreateInstruction(EUserClass& userClass, instruction_strct* createInstruction);
-    void _resolveAssignInstruction(EUserClass& userClass, instruction_strct* assignInstruction);
-    void _resolveIfInstruction(EUserClass& userClass, instruction_strct* ifInstruction);
-    void _resolveLoopInstruction(EUserClass& userClass, instruction_strct* loopInstruction);
-    void _resolveExprAsInstruction(EUserClass& userClass, instruction_strct* exprAsInstruction);
+    void _resolveInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* instruction);
+    void _resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* createInstruction);
+    void _resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* assignInstruction);
+    void _resolveIfInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* ifInstruction);
+    void _resolveLoopInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* loopInstruction);
+    void _resolveExprAsInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* exprAsInstruction);
 
-    void _resolveExpr(EUserClass& userClass, expr_strct* expr);
-    void _resolveCallSelffeatureExpr(EUserClass& userClass, expr_strct* expr);
-    void _resolveCallPrecursorExpr(EUserClass& userClass, expr_strct* expr);
-    void _resolveCallSubcallExpr(EUserClass& userClass, expr_strct* expr);
-    void _resolveCreateExpr(EUserClass& userClass, expr_strct* expr);
-    void _resolveCallArguments(EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
+    void _resolveExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
+    void _resolveCallSelffeatureExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
+    void _resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
+    void _resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
+    void _resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
+    void _resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
 
-    void _resolveArrElemExpr(EUserClass& userClass, expr_strct* expr);
+    void _resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
 
 public:
     bool isConformingTo(const EFeature& other, bool areDeclarationsCompared = true) const override;

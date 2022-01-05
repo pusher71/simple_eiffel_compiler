@@ -3,6 +3,7 @@
 
 #include "efeature.h"
 #include <map>
+#include <vector>
 
 #include "../EiffelFeatureInfo/epolymorphicimplementationinfo.h"
 
@@ -22,8 +23,11 @@ private:
     std::string                         _finalName;
     std::pair<std::string, std::string> _featureMark;       // Name of the class + final name of the feature
     EFeature*                           _implementation;
+
+    std::string                         _currentOwnerClassName;
     std::string                         _parentClassName;
     int                                 _parentClassIndex;
+
     EFeature::EFeatureType              _featureType;
     EReturnType                         _returnType;
 
@@ -32,6 +36,7 @@ private:
     short                               _polyMethodName_utf8Link;
     short                               _polyMethodDescriptor_utf8Link;
 
+    std::map<std::string, std::string>  _redefinedFeatures;
     std::map<short, EPolymorphicImplementationInfo> _polyMethodImplementations;
 
     // ================ OPERATIONS ================
@@ -56,10 +61,12 @@ public:
     void setImplementation(EFeature* implementation);
     void setReturnType(EReturnType returnType);
 
-    // Parent info
+    // Owner and parent info
+    std::string currentOwnerClassName() const;
     std::string parentClassName() const;
     int parentClassIndex() const;
 
+    void setCurrentOwnerClassName(const std::string& currentOwnerClassName);
     void setParentClassName(const std::string& parentClassName);
     void setParentClassIndex(int parentClassIndex);
 
@@ -68,12 +75,17 @@ public:
     short featureDescriptor_utf8Link() const;
     short polyMethodName_utf8Link() const;
     short polyMethodDescriptor_utf8Link() const;
-    const std::map<short, EPolymorphicImplementationInfo>& polyMethodImplementations() const;
 
     void setFeatureName_utf8Link(short featureName_utf8Link);
     void setFeatureDescriptor_utf8Link(short featureDescriptor_utf8Link);
     void setPolyMethodName_utf8Link(short polyMethodName_utf8Link);
     void setPolyMethodDescriptor_utf8Link(short polyMethodDescriptor_utf8Link);
+
+    const std::map<std::string, std::string> redefinedFeatures() const;
+    const std::map<short, EPolymorphicImplementationInfo>& polyMethodImplementations() const;
+
+    void setRedefinedFeature(const std::string& parentName, const std::string& redefinedFeatureMetaFinalName);
+    void clearRedefinedFeatures();
     void addPolyMethodImplementation(short constClassLink, const EPolymorphicImplementationInfo& polyImplementation);
 
     // ----------------- contract -----------------

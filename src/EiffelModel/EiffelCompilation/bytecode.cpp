@@ -397,18 +397,8 @@ ByteCode ByteCode::createInstructionByteCode(const EConstantTable&              
     if (instructionInfo.at(createInstruction).creatorMethodRef_constLink != 0) {
         result._append(ByteCode::dup());
 
-        short argumentsCount = 0;
-        argument_seq_strct* argumentSeqElem = createInstruction->argument_seq;
-        while (argumentSeqElem != NULL) {
-            result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
-            if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
-                result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
-                result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
-            }
-
-            argumentsCount++;
-            argumentSeqElem = argumentSeqElem->next;
-        }
+        int16_t argumentsCount = 0;
+        result._append(ByteCode::argumentsByteCode(userClassConstants, createInstruction->argument_seq, expressionInfo, argumentsCount));
 
         result._append(ByteCode::invokevirtual(instructionInfo.at(createInstruction).creatorMethodRef_constLink, argumentsCount));
     }
@@ -484,7 +474,7 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* e
 
         case expr_current:              this->_append(ByteCode::currentExprByteCode(userClassConstants, expression, expressionInfo)); break;
         case expr_call_selffeature:     this->_append(ByteCode::exprCallSelffeatureByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_call_precursor:       this->_append(ByteCode::exprCallPrecursorByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_call_precursor:       this->_append(ByteCode::exprCallSelffeatureByteCode(userClassConstants, expression, expressionInfo)); break;
         case expr_subcall:              this->_append(ByteCode::exprCallSubcallByteCode(userClassConstants, expression, expressionInfo)); break;
         case expr_create:               this->_append(ByteCode::createExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
@@ -564,19 +554,8 @@ ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassCo
         result._append(ByteCode::aload(0x0));
     }
 
-    int argumentsCount = 0;
-    argument_seq_strct* argumentSeqElem = expression->argument_seq;
-    while (argumentSeqElem != NULL) {
-        result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
-        if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
-            result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
-            result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
-        }
-
-        argumentSeqElem = argumentSeqElem->next;
-
-        argumentsCount++;
-    }
+    int16_t argumentsCount = 0;
+    result._append(ByteCode::argumentsByteCode(userClassConstants, expression->argument_seq, expressionInfo, argumentsCount));
 
     if (expressionInfo.at(expression).fieldRef_constLink != 0)          { result._append(ByteCode::getfield(expressionInfo.at(expression).fieldRef_constLink)); }
     else if (expressionInfo.at(expression).methodRef_constLink != 0)    { result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, argumentsCount)); }
@@ -585,30 +564,12 @@ ByteCode ByteCode::exprCallSelffeatureByteCode(const EConstantTable& userClassCo
     return result;
 }
 
-ByteCode ByteCode::exprCallPrecursorByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
 ByteCode ByteCode::exprCallSubcallByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
-
     result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
 
-    int argumentsCount = 0;
-    argument_seq_strct* argumentSeqElem = expression->argument_seq;
-    while (argumentSeqElem != NULL) {
-        result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
-        if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
-            result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
-            result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
-        }
-
-        argumentSeqElem = argumentSeqElem->next;
-
-        argumentsCount++;
-    }
+    int16_t argumentsCount = 0;
+    result._append(ByteCode::argumentsByteCode(userClassConstants, expression->argument_seq, expressionInfo, argumentsCount));
 
     if (expressionInfo.at(expression).fieldRef_constLink != 0) { result._append(ByteCode::getfield(expressionInfo.at(expression).fieldRef_constLink)); }
     else if (expressionInfo.at(expression).methodRef_constLink != 0) {
@@ -630,23 +591,32 @@ ByteCode ByteCode::createExprByteCode(const EConstantTable& userClassConstants, 
     if (expressionInfo.at(expression).methodRef_constLink != 0) {
         result._append(ByteCode::dup());
 
-        short argumentsCount = 0;
-        argument_seq_strct* argumentSeqElem = expression->argument_seq;
-        while (argumentSeqElem != NULL) {
-            result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
-            if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
-                result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
-                result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
-            }
-
-            argumentsCount++;
-            argumentSeqElem = argumentSeqElem->next;
-        }
+        int16_t argumentsCount = 0;
+        result._append(ByteCode::argumentsByteCode(userClassConstants, expression->argument_seq, expressionInfo, argumentsCount));
 
         result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, argumentsCount));
     }
 
     result._append(ByteCode::checkcast(expressionInfo.at(expression).constClass_constLink));
+
+    return result;
+}
+
+ByteCode ByteCode::argumentsByteCode(const EConstantTable& userClassConstants, const argument_seq_strct* argumentsSeq, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo, int16_t& argumentsCount) {
+    ByteCode result;
+
+    argumentsCount = 0;
+    const argument_seq_strct* argumentSeqElem = argumentsSeq;
+    while (argumentSeqElem != NULL) {
+        result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
+        if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
+            result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
+            result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
+        }
+
+        argumentsCount++;
+        argumentSeqElem = argumentSeqElem->next;
+    }
 
     return result;
 }

@@ -150,6 +150,9 @@ std::string SemanticError::errorReason() const {
         case INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
             result += "ASSIGN TO FIELD OR LOCAL VARIABLE WITH UNKNOWN ID";
             break;
+        case INSTR_ASSIGN__ROUTINE_ASSIGNMENT:
+            result += "ASSIGN TO ROUTINE";
+            break;
         case INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_ATTRIBUTE:
             result += "CAN\'T CAST EXPR TO TYPE OF ATTRIBUTE";
             break;
@@ -179,6 +182,16 @@ std::string SemanticError::errorReason() const {
             break;
         case EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE:
             result += "CALL HAS NON-CONFORMING ARGUMENTS SEQUENCE";
+            break;
+
+        case EXPR__CALL_NONEXISTENT_PRECURSOR:
+            result += "CALL NON-EXISTENT PRECURSOR";
+            break;
+        case EXPR__AMBIGIOUS_CALL_PRECURSOR:
+            result += "AMBIGIOUS CALL PRECURSOR";
+            break;
+        case EXPR__CALL_PRECURSOR_OF_UNKNOWN_PARENT:
+            result += "CALL PRECURSOR OF UNKNOWN PARENT";
             break;
 
         case EXPR__CALL_REMOVED_DEFAULT_CREATOR:

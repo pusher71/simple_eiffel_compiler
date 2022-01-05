@@ -83,6 +83,8 @@ private:
     void _checkOnFeaturesNameClashing() const;
     void _checkOnFeaturesRepeatInheritConflict() const;
 
+    void _addPrecursorNeededInfo();
+
     // ---------------- attributes ----------------
 public:
     virtual std::string name() const = 0;
@@ -96,6 +98,7 @@ public:
     const std::vector<const EFeatureMetaInfo*> routinesMetaInfo() const;
 
     const EFeatureMetaInfo* getFeatureMetaInfoBy(const std::string& finalName) const;
+    const EFeatureMetaInfo* getFeatureMetaInfoBy(const std::pair<std::string, std::string>& featureMark) const;
 
 protected:
     void _addFeature(std::shared_ptr<EFeature> feature);

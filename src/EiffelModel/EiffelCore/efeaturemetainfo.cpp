@@ -23,9 +23,11 @@ void EFeatureMetaInfo::setFeatureMark(const std::string& className, const std::s
 void EFeatureMetaInfo::setImplementation(EFeature* implementation) { this->_implementation = implementation; }
 void EFeatureMetaInfo::setReturnType(EFeatureMetaInfo::EReturnType returnType) { this->_returnType = returnType; }
 
+std::string EFeatureMetaInfo::currentOwnerClassName() const { return this->_currentOwnerClassName; }
 std::string EFeatureMetaInfo::parentClassName() const { return this->_parentClassName; }
 int EFeatureMetaInfo::parentClassIndex() const { return this->_parentClassIndex; }
 
+void EFeatureMetaInfo::setCurrentOwnerClassName(const std::string& currentOwnerClassName) { this->_currentOwnerClassName = currentOwnerClassName; }
 void EFeatureMetaInfo::setParentClassName(const std::string& parentClassName) { this->_parentClassName = parentClassName; }
 void EFeatureMetaInfo::setParentClassIndex(int parentClassIndex) { this->_parentClassIndex = parentClassIndex; }
 
@@ -33,12 +35,17 @@ short EFeatureMetaInfo::featureName_utf8Link() const { return this->_featureName
 short EFeatureMetaInfo::featureDescriptor_utf8Link() const { return this->_featureDescriptor_utf8Link; }
 short EFeatureMetaInfo::polyMethodName_utf8Link() const { return this->_polyMethodName_utf8Link; }
 short EFeatureMetaInfo::polyMethodDescriptor_utf8Link() const { return this->_polyMethodDescriptor_utf8Link; }
-const std::map<short, EPolymorphicImplementationInfo>& EFeatureMetaInfo::polyMethodImplementations() const { return this->_polyMethodImplementations; }
 
 void EFeatureMetaInfo::setFeatureName_utf8Link(short featureName_utf8Link) { this->_featureName_utf8Link = featureName_utf8Link; }
 void EFeatureMetaInfo::setFeatureDescriptor_utf8Link(short featureDescriptor_utf8Link) { this->_featureDescriptor_utf8Link = featureDescriptor_utf8Link; }
 void EFeatureMetaInfo::setPolyMethodName_utf8Link(short polyMethodName_utf8Link) { this->_polyMethodName_utf8Link = polyMethodName_utf8Link; }
 void EFeatureMetaInfo::setPolyMethodDescriptor_utf8Link(short polyMethodDescriptor_utf8Link) { this->_polyMethodDescriptor_utf8Link = polyMethodDescriptor_utf8Link; }
+
+const std::map<std::string, std::string> EFeatureMetaInfo::redefinedFeatures() const { return this->_redefinedFeatures; }
+const std::map<short, EPolymorphicImplementationInfo>& EFeatureMetaInfo::polyMethodImplementations() const { return this->_polyMethodImplementations; }
+
+void EFeatureMetaInfo::setRedefinedFeature(const std::string& parentName, const std::string& redefinedFeatureMetaFinalName) { this->_redefinedFeatures[parentName] = redefinedFeatureMetaFinalName; }
+void EFeatureMetaInfo::clearRedefinedFeatures() { this->_redefinedFeatures.clear(); }
 void EFeatureMetaInfo::addPolyMethodImplementation(short constClassLink, const EPolymorphicImplementationInfo& polyImplementation) { this->_polyMethodImplementations[constClassLink] = polyImplementation; }
 
 bool EFeatureMetaInfo::operator==(const EFeatureMetaInfo& other) const {

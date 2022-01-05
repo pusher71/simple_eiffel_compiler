@@ -1,5 +1,7 @@
 #include "eclass.h"
 
+#include <iostream>
+
 #include <set>
 #include "eprogram.h"
 
@@ -188,6 +190,14 @@ void EClass::setupFeaturesTable(const std::vector<std::string>& classInheritPath
         this->_checkOnFeaturesRepeatInheritConflict();
     }
 
+    // Add precursor needed info
+    this->_addPrecursorNeededInfo();
+
+    // Set real owner for self features table
+    for (auto& selfFeatureMetaInfo : this->_featuresTable) {
+        selfFeatureMetaInfo.setCurrentOwnerClassName(this->name());
+    }
+
     // Stop filling features table with features
     this->_featuresTableState = DONE;
 }
@@ -213,6 +223,7 @@ void EClass::_fillFeaturesTableUsingParent(const EClass* parent, const EParentIn
                 for (auto& selfFeatureInfo : this->_features) {
                     if (selfFeatureInfo.first == result.finalName()) {
                         if (selfFeatureInfo.second.get()->isConformingTo(*result.implementation())) {
+                            result.clearRedefinedFeatures();
                             result.setImplementation(selfFeatureInfo.second.get());
                         }
                         else {
@@ -390,6 +401,45 @@ void EClass::_checkOnFeaturesRepeatInheritConflict() const {
     }
 }
 
+void EClass::_addPrecursorNeededInfo() {
+    for (auto& selfFeatureMetaInfo : this->_featuresTable) {
+        std::cout << "SELF: " << this->name() << "::" << selfFeatureMetaInfo.finalName() << std::endl;
+        std::cout << "#: " << (selfFeatureMetaInfo.implementation()->ownerClassName() == this->name()) << std::endl;
+        std::cout << "#: " << (selfFeatureMetaInfo.featureMark().first + ":" + selfFeatureMetaInfo.featureMark().second != this->name() + ":" + selfFeatureMetaInfo.finalName()) << std::endl;
+        std::cout << "#: " << (selfFeatureMetaInfo.redefinedFeatures().empty()) << std::endl;
+        for (const auto& redefInfo : selfFeatureMetaInfo.redefinedFeatures()) {
+            std::cout << " % " << redefInfo.first << " -> " << redefInfo.second << std::endl;
+        }
+
+        if (selfFeatureMetaInfo.implementation()->ownerClassName() == this->name() &&
+            selfFeatureMetaInfo.featureMark().first + ":" + selfFeatureMetaInfo.featureMark().second != this->name() + ":" + selfFeatureMetaInfo.finalName() &&
+            selfFeatureMetaInfo.redefinedFeatures().empty())
+        {
+            for (const auto& parentInfo : this->_parents) {
+                EClass* parentClassInfo = EProgram::current->getClassBy(parentInfo.first);
+
+                for (const auto& parentFeatureMetaInfo : parentClassInfo->_featuresTable) {
+                    if (selfFeatureMetaInfo.featureMark() == parentFeatureMetaInfo.featureMark()) {
+                        std::string redefinedFinalName = "{" + parentInfo.first + "," + this->name() + "}|" + parentFeatureMetaInfo.finalName();
+                        selfFeatureMetaInfo.setRedefinedFeature(parentInfo.first, redefinedFinalName);
+
+                        std::cout << " - FOUND: " << parentInfo.first << "#" << parentFeatureMetaInfo.currentOwnerClassName() << "::" << parentFeatureMetaInfo.finalName() << " - " << redefinedFinalName << std::endl;
+
+                        EFeatureMetaInfo redefinedFeatureMetaInfo(parentFeatureMetaInfo);
+                        redefinedFeatureMetaInfo.setFinalName(redefinedFinalName);
+                        redefinedFeatureMetaInfo.setFeatureMark(this->name(), redefinedFinalName);
+                        this->_featuresTable.push_back(redefinedFeatureMetaInfo);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        std::cout << std::endl;
+    }
+}
+
 void EClass::setupCreators() {
     for (auto& creatorInfo : this->_creators) {
         const auto& featureMetaInfo = std::find_if(this->_featuresTable.begin(), this->_featuresTable.end(), [&](const auto& featureMetaInfo){ return (featureMetaInfo.finalName() == creatorInfo.first); });
@@ -451,6 +501,18 @@ const EFeatureMetaInfo* EClass::getFeatureMetaInfoBy(const std::string& finalNam
     const EFeatureMetaInfo* result = nullptr;
     for (auto& featureMetaInfo : this->_featuresTable) {
         if (featureMetaInfo.finalName() == finalName) {
+            result = &featureMetaInfo;
+            break;
+        }
+    }
+
+    return result;
+}
+
+const EFeatureMetaInfo* EClass::getFeatureMetaInfoBy(const std::pair<std::string, std::string>& featureMark) const {
+    const EFeatureMetaInfo* result = nullptr;
+    for (auto& featureMetaInfo : this->_featuresTable) {
+        if (featureMetaInfo.featureMark() == featureMark) {
             result = &featureMetaInfo;
             break;
         }
