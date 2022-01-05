@@ -10,16 +10,16 @@ feature
     a3 : STRING
     a4 : CHARACTER
     a5 : BOOLEAN
-    a6 : ARRAY[INTEGER]
+    a6 : ARRAY[ARRAY[INTEGER]]
     a7 : ANY
 
     make
     do
-        a1 := 0xFAFA
-        a3 := "HELLO"
+        -- a6 := create {ARRAY[INTEGER]}.make_filled(2, -2, 2)
+        create a6.make_filled(create {ARRAY[INTEGER]}.make_filled(0xFA, 2, 2), 2, 3)
 
-        print_int(0xFFFF, "WHAT?!?")
-        print_int(a1, a3)
+        io.put_integer(a6 @ 2 @ 2)
+        print_int(a6 @ 3 @ 2, "")
     end
 
     print_int(val : INTEGER; val2 : STRING)

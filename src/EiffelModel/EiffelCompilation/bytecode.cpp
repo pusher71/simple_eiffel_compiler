@@ -644,8 +644,13 @@ ByteCode ByteCode::argumentsByteCode(const EConstantTable& userClassConstants, c
     return result;
 }
 
+#include <iostream>
+
 ByteCode ByteCode::arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+    result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, 1));
 
     return result;
 }

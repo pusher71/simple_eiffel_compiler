@@ -28,6 +28,7 @@ public:
 public:
     bool isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) const;
     bool isClass() const;
+    bool isType(type_enum type) const;
     EType arraySubtype() const;
     bool hasDefaultInitialization() const;
 

@@ -7,6 +7,7 @@
 #include "../EiffelCore/EiffelClasses/euserclass.h"
 #include "../EiffelCore/EiffelClasses/eclassrtl.h"
 #include "../EiffelCore/EiffelClasses/RTLclasses/eclassconsoleio.h"
+#include "../EiffelCore/EiffelClasses/RTLclasses/eclassarray.h"
 
 #include "../../flex/utilities/chararray_utilities.h"
 
@@ -914,12 +915,21 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
                     this->_exprInfo.at(argumentsExpr.at(i)).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
                     this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
                 }
-                else if (((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && !argumentsType.at(i).second.isClass()) {
-                    EClass* formalParamOwnerClassInfo = EProgram::current->getClassBy(((ERoutine*)featureInfo)->getInnerVar(i+1)->type().firstElemClassName());
+                else if (!((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() &&
+                         argumentsType.at(i).second.isType(dtype_array) &&
+                         argumentsType.at(i).second.arraySubtype().isClass())
+                {
+                    EClass* argOwnerClassInfo = EProgram::current->getClassBy(argumentsType.at(i).second.arraySubtype().firstElemClassName());
 
-                    this->_exprInfo.at(argumentsExpr.at(i)).methodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
-                    this->_exprInfo.at(argumentsExpr.at(i)).setterConstClass_constLink = userClass.constants().appendConstClass(formalParamOwnerClassInfo->fullName());
-                    this->_exprInfo.at(argumentsExpr.at(i)).setterMethodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), "SET", "(" + argumentsType.at(i).second.descriptor() + ")V");
+                    this->_exprInfo.at(argumentsExpr.at(i)).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+                    this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
+                }
+                else if (((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && !argumentsType.at(i).second.isClass()) {
+                    EClass* argOwnerClassInfo = EProgram::current->getClassBy(argumentsType.at(i).second.firstElemClassName());
+
+                    this->_exprInfo.at(argumentsExpr.at(i)).methodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
+                    this->_exprInfo.at(argumentsExpr.at(i)).setterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+                    this->_exprInfo.at(argumentsExpr.at(i)).setterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "SET", "(" + argumentsType.at(i).second.descriptor() + ")V");
                 }
             }
         }
@@ -927,6 +937,26 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
 }
 
 void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_right);
+
+    if (this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_array)) {
+        if (this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_integer) || this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_natural)) {
+            this->_exprInfo[expr].resultType = this->_exprInfo.at(expr->expr_left).resultType.arraySubtype();
+
+            this->_exprInfo[expr].methodRef_constLink = userClass.constants().appendMethodRef(EClassARRAY::classRTLfullName(), "GET", "(J)L" + EClass::javaObjectFullName() + ";");
+        }
+        else {
+            std::string errorMessage = "";
+
+            EProgram::current->semanticErrors.push_back(SemanticError(EXPR__INVALID_TYPE_IN_CREATE_EXPR, errorMessage));
+        }
+    }
+    else {
+        std::string errorMessage = "";
+
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR__INVALID_TYPE_IN_CREATE_EXPR, errorMessage));
+    }
 }
 
 bool ERoutine::isConformingTo(const EFeature& other, bool areDeclarationsCompared) const {
