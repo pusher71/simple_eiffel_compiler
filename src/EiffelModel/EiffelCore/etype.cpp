@@ -125,6 +125,8 @@ bool EType::isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) co
 
 bool EType::isClass() const { return (this->_type->id_name != NULL); }
 
+EType EType::arraySubtype() const { return EType(this->_type != nullptr ? this->_type->arrayelem_type : nullptr); }
+
 bool EType::hasDefaultInitialization() const {
     switch (this->_type->type) {
         case dtype_boolean:

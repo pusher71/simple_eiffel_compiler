@@ -6,6 +6,7 @@
 #include "../EiffelCore/eclass.h"
 #include "../EiffelCore/EiffelClasses/euserclass.h"
 #include "../EiffelCore/EiffelClasses/eclassrtl.h"
+#include "../EiffelCore/EiffelClasses/RTLclasses/eclassconsoleio.h"
 
 #include "../../flex/utilities/chararray_utilities.h"
 
@@ -858,10 +859,12 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
     std::vector<expr_strct*> argumentsExpr;
     std::vector<std::pair<std::string, EType>> argumentsType;
     argument_seq_strct* argumentSeqElem = (argument_seq_strct*)argumentSeq;
+
+    int argumentCount = 0;
     while (argumentSeqElem != NULL) {
         this->_resolveExpr(selfMetaInfo, userClass, argumentSeqElem->value);
         argumentsExpr.push_back(argumentSeqElem->value);
-        argumentsType.push_back({ "", this->_exprInfo.at(argumentSeqElem->value).resultType });
+        argumentsType.push_back({ "fp_" + std::to_string(argumentCount++), this->_exprInfo.at(argumentSeqElem->value).resultType });
 
         argumentSeqElem = argumentSeqElem->next;
     }
@@ -911,6 +914,13 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
                     this->_exprInfo.at(argumentsExpr.at(i)).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
                     this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
                 }
+                else if (((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && !argumentsType.at(i).second.isClass()) {
+                    EClass* formalParamOwnerClassInfo = EProgram::current->getClassBy(((ERoutine*)featureInfo)->getInnerVar(i+1)->type().firstElemClassName());
+
+                    this->_exprInfo.at(argumentsExpr.at(i)).methodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
+                    this->_exprInfo.at(argumentsExpr.at(i)).setterConstClass_constLink = userClass.constants().appendConstClass(formalParamOwnerClassInfo->fullName());
+                    this->_exprInfo.at(argumentsExpr.at(i)).setterMethodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), "SET", "(" + argumentsType.at(i).second.descriptor() + ")V");
+                }
             }
         }
     }
@@ -947,8 +957,17 @@ bool ERoutine::isConformingTo(const EFeature& other, bool areDeclarationsCompare
 std::string ERoutine::descriptor() const {
     std::string result = "(";
 
-    if ( dynamic_cast<EClassRTL*>(EProgram::current->getClassBy(this->_ownerClassName)) ) {
-        for (const auto& formalParamInfo : this->_formalParameters) { result += formalParamInfo.second.type().descriptor(); }
+    if (dynamic_cast<EClassRTL*>(EProgram::current->getClassBy(this->_ownerClassName))) {
+        for (int i=0; i<this->_formalParameters.size(); i++) {
+            const EInnerVariable* formalParamInfo = this->getInnerVar(i+1);
+            if (formalParamInfo->type().isClass()) {
+                result += "L" + EClass::javaObjectFullName() + ";";
+            }
+            else {
+                result += this->getInnerVar(i+1)->type().descriptor();
+            }
+        }
+
         result += ")" + this->_returnType.descriptor();
     }
     else {

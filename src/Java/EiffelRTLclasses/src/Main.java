@@ -1,13 +1,21 @@
+import rtl.ARRAY;
+import rtl.INTEGER;
 import rtl.NATURAL;
 
 public class Main {
     static public void main(String[] args) {
-        long val = 0xFFFFFFFFL;
-        System.out.println(val);
-        System.out.println(1L << 32);
+        ARRAY array = new ARRAY();
+        array.MAKE_FILLED(new INTEGER(), 0, 3);
 
-        NATURAL natural = new NATURAL();
-        natural.SET(val);
-        System.out.println(natural.GET());
+        array = null;
+        array.GET(0);
+
+        /*
+        INTEGER val = new INTEGER();
+        val.SET(2);
+        array.SET(val, 0);
+
+        System.out.println(((INTEGER)array.GET(0)).GET());
+         */
     }
 }

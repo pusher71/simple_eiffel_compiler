@@ -38,6 +38,8 @@ public:
         short       methodRef_constLink         = 0;
         short       getterConstClass_constLink  = 0;
         short       getterMethodRef_constLink   = 0;
+        short       setterConstClass_constLink  = 0;
+        short       setterMethodRef_constLink   = 0;
 
         short       constClass_constLink        = 0;
         std::string ownerClassFullName          = "";

@@ -14,8 +14,6 @@ EClassCONSOLEIO::EClassCONSOLEIO() {
 void EClassCONSOLEIO::_defineParents() { this->_parents.push_back({EClassANY::classRTLname(), {}}); }
 void EClassCONSOLEIO::_defineCreators() {}
 void EClassCONSOLEIO::_defineFeatures() {
-    std::vector<EFeature> features;
-
     this->_addFeature( std::make_shared<ERoutine>(ERoutine("PUT_BOOLEAN", this, EType::noType(), {{"input_value", EType::boolType()}}, {})) );
     this->_addFeature( std::make_shared<ERoutine>(ERoutine("PUT_INTEGER", this, EType::noType(), {{"input_value", EType::intType()}}, {})) );
     this->_addFeature( std::make_shared<ERoutine>(ERoutine("PUT_CHARACTER", this, EType::noType(), {{"input_value", EType::charType()}}, {})) );

@@ -620,8 +620,19 @@ ByteCode ByteCode::argumentsByteCode(const EConstantTable& userClassConstants, c
     argumentsCount = 0;
     const argument_seq_strct* argumentSeqElem = argumentsSeq;
     while (argumentSeqElem != NULL) {
+        if (expressionInfo.at(argumentSeqElem->value).setterConstClass_constLink != 0) {
+            result._append(ByteCode::new_(expressionInfo.at(argumentSeqElem->value).setterConstClass_constLink));
+            result._append(ByteCode::dup());
+            result._append(ByteCode::dup());
+            result._append(ByteCode::invokespecial(expressionInfo.at(argumentSeqElem->value).methodRef_constLink, 0));
+        }
+
         result._append(ByteCode(userClassConstants, argumentSeqElem->value, expressionInfo));
-        if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
+
+        if (expressionInfo.at(argumentSeqElem->value).setterConstClass_constLink != 0) {
+            result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).setterMethodRef_constLink, 0));
+        }
+        else if (expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink != 0) {
             result._append(ByteCode::checkcast(expressionInfo.at(argumentSeqElem->value).getterConstClass_constLink));
             result._append(ByteCode::invokevirtual(expressionInfo.at(argumentSeqElem->value).getterMethodRef_constLink, 0));
         }

@@ -15,37 +15,18 @@ feature
 
     make
     do
-        -- create a1
-        io.put_integer(a1)
-        io.new_line
+        a1 := 0xFAFA
+        a3 := "HELLO"
 
-        -- create a2
-        io.put_integer(a2)
-        io.new_line
-
-        a3 := ""
-        io.put_string(a3)
-        io.new_line
-
-        -- create a4
-        io.put_character(a4)
-        io.new_line
-
-        -- create a5
-        io.put_boolean(a5)
-        io.new_line
-
-        -- create a6.make_empty
-        -- io.put_integer(a6.capacity)
-        -- io.new_line
-
-        create a7
-        a7.io.put_string("ANY")
-        io.new_line
+        print_int(0xFFFF, "WHAT?!?")
+        print_int(a1, a3)
     end
 
-    return_int : INTEGER
+    print_int(val : INTEGER; val2 : STRING)
     do
+        io.put_integer(val)
+        io.put_string(val2)
+        io.new_line
     end
 end
 -- EOF
