@@ -30,6 +30,7 @@ public:
     };
 
     struct ExpressionInfo {
+        bool        isValid                     = true;
         EType       resultType                  = EType::noType();
 
         short       innerVarNumber              = 0;
@@ -114,7 +115,7 @@ private:
     void _resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
     void _resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
     void _resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
-    void _resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
+    bool _resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
 
     void _resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
 

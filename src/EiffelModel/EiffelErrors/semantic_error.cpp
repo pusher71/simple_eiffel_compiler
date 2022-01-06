@@ -213,6 +213,15 @@ std::string SemanticError::errorReason() const {
         case EXPR__INVALID_TYPE_IN_CREATE_EXPR:
             result += "UNKNOWN TYPE IN CREATE EXPR";
             break;
+
+        // ... Operators ...
+        // ... ... Array element access
+        case EXPR_ARRAY_ELEMENT_ACCESS__GETTING_ELEMENT_OF_NON_ARRAY_OBJECT:
+            result += "GETTING ELEMENT OF NON-ARRAY OBJECT";
+            break;
+        case EXPR_ARRAY_ELEMENT_ACCESS__ELEMENT_INDEX_ISNT_INTEGER_NUMBER:
+            result += "INDEX OF ARRAY ELEMENT ISN\'T A INTEGER NUMBER";
+            break;
     }
     result += " :: " + this->_errorMessage;
 

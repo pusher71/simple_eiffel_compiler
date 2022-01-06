@@ -5,80 +5,22 @@ class
 create
     make
 feature
-    a1 : INTEGER
-    a2 : NATURAL
-    a3 : STRING
-    a4 : CHARACTER
-    a5 : BOOLEAN
-    a6 : ARRAY[ARRAY[BOOLEAN]]
-    a7 : ANY
-
     make
+    local
+        objects : ARRAY[A]
+        int : INTEGER
     do
-        -- a6 := create {ARRAY[INTEGER]}.make_filled(2, -2, 2)
-        create a6.make_filled(create {ARRAY[BOOLEAN]}.make_filled(False, 2, 4), 2, 4)
-        a6.set(create {ARRAY[BOOLEAN]}.make_filled(False, 2, 4), 2)
-        a6.set(create {ARRAY[BOOLEAN]}.make_filled(True, 2, 5), 3)
-        a6.set(create {ARRAY[BOOLEAN]}.make_filled(False, 2, 7), 4)
-        (a6 @ 2).set(True, 2)
+        create objects.make_filled(create {A}.make, 0, 2)
 
-        if (True)
-        then
-            io.put_string("BRANCH TRUE START%N")
-            io.put_string("TRUE%N")
-            io.put_string("BRANCH TRUE FINISH%N")
-        else
-        end
+        objects.set(create {B}.make, 1)
+        objects.set(create {C}.make, 2)
 
-        if (True)
-        then
-        else
-            io.put_string("BRANCH FALSE START%N")
-            io.put_string("FALSE%N")
-            io.put_string("BRANCH FALSE FINISH%N")
-        end
+        (objects @ 0).F;
+        (objects @ 1).F;
+        (objects @ 2).F;
 
-        if (True)
-        then
-        else
-        end
-
-
-        if (True)
-        then
-        end
-
-        if (True)
-        then
-            io.put_string("BRANCH TRUE START%N")
-            io.put_string("TRUE%N")
-            io.put_string("BRANCH TRUE FINISH%N")
-        end
-
-        a5 := True
-
-        if (a5)
-        then
-            io.put_string("BRANCH TRUE START%N")
-            io.put_string("TRUE%N")
-            io.put_string("BRANCH TRUE FINISH%N")
-        else
-            io.put_string("BRANCH FALSE START%N")
-            io.put_string("FALSE%N")
-            io.put_string("BRANCH FALSE FINISH%N")
-        end
-
-        from
-            a5 := False
-        until
-            False
-        loop
-            io.put_string("LOOP START%N")
-            io.put_string("INCREMENT%N")
-            io.put_string("LOOP FINISH%N")
-
-            a5 := True
-        end
+        -- objects @ 0.F;
+        -- io.put_integer(int.GET());
     end
 
     print_int(val : INTEGER; val2 : STRING)

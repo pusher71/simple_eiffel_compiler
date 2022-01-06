@@ -390,8 +390,7 @@ void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, E
 void ERoutine::_resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* assignInstruction) {
     // Resolve name of left variable
     this->_resolveExpr(selfMetaInfo, userClass, assignInstruction->assign_expr);
-
-    if (!EProgram::current->semanticErrors.empty()) { return; }
+    if (!this->_exprInfo.at(assignInstruction->assign_expr).isValid) { return; }
 
     // Resolve variable of creation
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
@@ -471,11 +470,10 @@ void ERoutine::_resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, E
     }
 }
 
-#include <iostream>
-
 void ERoutine::_resolveIfInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* ifInstruction) {
     // Resolve condition
     this->_resolveExpr(selfMetaInfo, userClass, ifInstruction->condition);
+    if (!this->_exprInfo.at(ifInstruction->condition).isValid) { return; }
 
     if (this->_exprInfo.at(ifInstruction->condition).resultType.isType(dtype_boolean)) {
         // Set getter method for condition expression if it is an object
@@ -515,6 +513,7 @@ void ERoutine::_resolveIfInstruction(const EFeatureMetaInfo& selfMetaInfo, EUser
 void ERoutine::_resolveLoopInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* loopInstruction) {
     // Resolve condition
     this->_resolveExpr(selfMetaInfo, userClass, loopInstruction->condition);
+    if (!this->_exprInfo.at(loopInstruction->condition).isValid) { return; }
 
     if (this->_exprInfo.at(loopInstruction->condition).resultType.isType(dtype_boolean)) {
         // Set getter method for condition expression if it is an object
@@ -671,7 +670,7 @@ void ERoutine::_resolveCallSelffeatureExpr(const EFeatureMetaInfo& selfMetaInfo,
     if (realFeatureMetaInfo != nullptr) {
         const EFeatureMetaInfo* currentFeatureMetaInfo = userClass.getFeatureMetaInfoBy(realFeatureMetaInfo->featureMark());
 
-        this->_resolveCallArguments(selfMetaInfo, userClass, currentFeatureMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+        this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, currentFeatureMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
         this->_exprInfo[expr].resultType = EType(currentFeatureMetaInfo->implementation()->returnType());
 
         if (currentFeatureMetaInfo->featureType() == efeature_attribute) {
@@ -691,9 +690,10 @@ void ERoutine::_resolveCallSelffeatureExpr(const EFeatureMetaInfo& selfMetaInfo,
 
                 EClass* ownerClassInfo = EProgram::current->getClassBy(formalParam.second.type().firstElemClassName());
                 EAttribute innerVarInfo("", ownerClassInfo, formalParam.second.type());
-                this->_resolveCallArguments(selfMetaInfo, userClass, &innerVarInfo, expr->argument_seq, expr->is_field_access);
 
+                this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, &innerVarInfo, expr->argument_seq, expr->is_field_access);
                 this->_exprInfo[expr].resultType = EType(formalParam.second.type());
+
                 if (formalParam.second.type() != EType::noType()) {
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(formalParam.second.type().firstElemClassName());
 
@@ -715,9 +715,10 @@ void ERoutine::_resolveCallSelffeatureExpr(const EFeatureMetaInfo& selfMetaInfo,
 
                 EClass* ownerClassInfo = EProgram::current->getClassBy(localVar.second.type().firstElemClassName());
                 EAttribute innerVarInfo("", ownerClassInfo, localVar.second.type());
-                this->_resolveCallArguments(selfMetaInfo, userClass, &innerVarInfo, expr->argument_seq, expr->is_field_access);
 
+                this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, &innerVarInfo, expr->argument_seq, expr->is_field_access);
                 this->_exprInfo[expr].resultType = EType(localVar.second.type());
+
                 if (localVar.second.type() != EType::noType()) {
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(localVar.second.type().firstElemClassName());
 
@@ -738,6 +739,7 @@ void ERoutine::_resolveCallSelffeatureExpr(const EFeatureMetaInfo& selfMetaInfo,
         errorMessage += std::string("in class \"") + userClass.name() + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
+        this->_exprInfo[expr].isValid = false;
     }
 }
 
@@ -748,6 +750,7 @@ void ERoutine::_resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, E
         std::string errorMessage = "feature \"" + userClass.name() + "::" + selfMetaInfo.finalName() + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONEXISTENT_PRECURSOR, errorMessage));
+        this->_exprInfo[expr].isValid = false;
     }
     else if (selfMetaInfo.redefinedFeatures().size() == 1) {
         if (expr->class_id_name == NULL || selfMetaInfo.redefinedFeatures().count(expr->class_id_name)) {
@@ -758,6 +761,7 @@ void ERoutine::_resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, E
             errorMessage += ":: unknown parent \"" + std::string(expr->class_id_name) + "\"";
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_PRECURSOR_OF_UNKNOWN_PARENT, errorMessage));
+            this->_exprInfo[expr].isValid = false;
         }
     }
     else {
@@ -768,12 +772,14 @@ void ERoutine::_resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, E
             }
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__AMBIGIOUS_CALL_PRECURSOR, errorMessage));
+            this->_exprInfo[expr].isValid = false;
         }
         else if (selfMetaInfo.redefinedFeatures().count(expr->class_id_name) == 0) {
             std::string errorMessage = "feature \"" + userClass.name() + "::" + selfMetaInfo.finalName() + "\" ";
             errorMessage += ":: unknown parent \"" + std::string(expr->class_id_name) + "\"";
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_PRECURSOR_OF_UNKNOWN_PARENT, errorMessage));
+            this->_exprInfo[expr].isValid = false;
         }
         else {
             foundFeatureMetaInfoName = selfMetaInfo.redefinedFeatures().at(expr->class_id_name);
@@ -782,6 +788,8 @@ void ERoutine::_resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, E
 
     if (foundFeatureMetaInfoName != "") {
         const EFeatureMetaInfo* foundFeatureMetaInfo = userClass.getFeatureMetaInfoBy(foundFeatureMetaInfoName);
+
+        this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, foundFeatureMetaInfo->implementation(), expr->argument_seq, false);
         this->_exprInfo[expr].methodRef_constLink = userClass.constants().appendMethodRef(userClass.fullName(), foundFeatureMetaInfoName, foundFeatureMetaInfo->implementation()->descriptor());
     }
 }
@@ -793,18 +801,25 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
         errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__SUBCALL_WITH_NONPARENTHESIZED_CREATE_EXPR_OPERAND, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+        return;
     }
 
     // Resolve call target
     this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
 
-    if (!EProgram::semanticErrors.empty()) { return; }
+    if (!this->_exprInfo.at(expr->expr_left).isValid) {
+        this->_exprInfo[expr].isValid = false;
+        return;
+    }
 
     if (this->_exprInfo[expr->expr_left].resultType == EType::noType() || !this->_exprInfo[expr->expr_left].resultType.isClass()) {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
         errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+        return;
     }
 
     EClass* targetOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo[expr->expr_left].resultType.firstElemClassName());
@@ -821,7 +836,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
                 this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRef(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
             }
 
-            this->_resolveCallArguments(selfMetaInfo, userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+            this->_exprInfo.at(expr).isValid = this->_resolveCallArguments(selfMetaInfo, userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
 
             this->_exprInfo[expr].resultType = EType(attributeMetaInfo->implementation()->returnType());
             if (attributeMetaInfo->implementation()->returnType() != EType::noType()) {
@@ -851,7 +866,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
                     this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
                 }
 
-                this->_resolveCallArguments(selfMetaInfo, userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+                this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
 
                 this->_exprInfo[expr].resultType = EType(routineMetaInfo->implementation()->returnType());
                 if (routineMetaInfo->implementation()->returnType() != EType::noType()) {
@@ -874,13 +889,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
         errorMessage += std::string("in class \"") + this->_exprInfo[expr->expr_left].resultType.firstElemClassName() + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
-    }
-
-    // Resolve arguments
-    argument_seq_strct* argumentSeqElem = expr->argument_seq;
-    while (argumentSeqElem != NULL) {
-        this->_resolveExpr(selfMetaInfo, userClass, argumentSeqElem->value);
-        argumentSeqElem = argumentSeqElem->next;
+        this->_exprInfo[expr].isValid = false;
     }
 }
 
@@ -894,6 +903,7 @@ void ERoutine::_resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCla
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: no user defined subtype \"" + userDefinedSubtype + "\"";
         EProgram::semanticErrors.push_back(SemanticError(EXPR__INVALID_TYPE_IN_CREATE_EXPR, errorMessage));
 
+        this->_exprInfo[expr].isValid = false;
         return;
     }
 
@@ -909,25 +919,28 @@ void ERoutine::_resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCla
         errorMessage += "creating entity of type \"" + this->_exprInfo[expr].resultType.toString() + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_REMOVED_DEFAULT_CREATOR, errorMessage));
+        this->_exprInfo[expr].isValid = false;
     }
     else if (expr->method_id_name != NULL) {
         const auto& creatorInfo = std::find_if(createClassInfo->_creators.begin(), createClassInfo->_creators.end(), [&](const auto& creatorInfo) { return (creatorInfo.first == expr->method_id_name); });
 
-        if (creatorInfo == createClassInfo->_creators.end()) {
+        if (creatorInfo != createClassInfo->_creators.end()) {
+            this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
+
+            this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+        }
+        else {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
             errorMessage += "creating entity of type \"" + this->_exprInfo[expr].resultType.toString() + "\" ";
             errorMessage += "with unknown creator with name \"" + std::string(expr->method_id_name) + "\"";
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_UNKNOWN_CREATOR_METHOD, errorMessage));
-        }
-        else {
-            this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
-            this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+            this->_exprInfo[expr].isValid = false;
         }
     }
 }
 
-void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess) {
+bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess) {
     std::vector<expr_strct*> argumentsExpr;
     std::vector<std::pair<std::string, EType>> argumentsType;
     argument_seq_strct* argumentSeqElem = (argument_seq_strct*)argumentSeq;
@@ -935,6 +948,8 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
     int argumentCount = 0;
     while (argumentSeqElem != NULL) {
         this->_resolveExpr(selfMetaInfo, userClass, argumentSeqElem->value);
+        if (!this->_exprInfo.at(argumentSeqElem->value).isValid) { return false; }
+
         argumentsExpr.push_back(argumentSeqElem->value);
         argumentsType.push_back({ "fp_" + std::to_string(argumentCount++), this->_exprInfo.at(argumentSeqElem->value).resultType });
 
@@ -948,15 +963,17 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
             errorMessage += "requires [0] arguments but got [" + std::to_string(argumentsType.size()) + "]";
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
+            return false;
         }
         else if (!isFieldAccess) {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
             errorMessage += "try to call attribute \"" + featureInfo->toString() + "\" like routine";
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_ATTRIBUTE_AS_ROUTINE, errorMessage));
+            return false;
         }
 
-        return;
+        return true;
     }
 
     if (argumentsType.size() != ((ERoutine*)featureInfo)->_formalParameters.size()) {
@@ -965,6 +982,7 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
         errorMessage += "requires [" + std::to_string(((ERoutine*)featureInfo)->_formalParameters.size()) + "] arguments but got [" + std::to_string(argumentsType.size()) + "]";
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_INVALID_ARGUMENTS_COUNT, errorMessage));
+        return false;
     }
     else {
         EClass* ownerClassInfo = EProgram::current->getClassBy(this->_ownerClassName);
@@ -977,6 +995,7 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
             errorMessage += "call        - " + creatorRoutineInfoWithArgsTypes.toString();
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE, errorMessage));
+            return false;
         }
         else {
             for (int i=0; i<argumentsType.size(); i++) {
@@ -1005,11 +1024,18 @@ void ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
             }
         }
     }
+
+    return true;
 }
 
 void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
     this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
     this->_resolveExpr(selfMetaInfo, userClass, expr->expr_right);
+
+    if (!this->_exprInfo.at(expr->expr_left).isValid || !this->_exprInfo.at(expr->expr_right).isValid) {
+        this->_exprInfo[expr].isValid = false;
+        return;
+    }
 
     if (this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_array)) {
         if (this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_integer) || this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_natural)) {
@@ -1018,15 +1044,19 @@ void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCl
             this->_exprInfo[expr].methodRef_constLink = userClass.constants().appendMethodRef(EClassARRAY::classRTLfullName(), "GET", "(J)L" + EClass::javaObjectFullName() + ";");
         }
         else {
-            std::string errorMessage = "";
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+            errorMessage += "index of array element type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
 
-            EProgram::current->semanticErrors.push_back(SemanticError(EXPR__INVALID_TYPE_IN_CREATE_EXPR, errorMessage));
+            EProgram::current->semanticErrors.push_back(SemanticError(EXPR_ARRAY_ELEMENT_ACCESS__ELEMENT_INDEX_ISNT_INTEGER_NUMBER, errorMessage));
+            this->_exprInfo[expr].isValid = false;
         }
     }
     else {
-        std::string errorMessage = "";
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "object type: " + this->_exprInfo.at(expr->expr_left).resultType.toString();
 
-        EProgram::current->semanticErrors.push_back(SemanticError(EXPR__INVALID_TYPE_IN_CREATE_EXPR, errorMessage));
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_ARRAY_ELEMENT_ACCESS__GETTING_ELEMENT_OF_NON_ARRAY_OBJECT, errorMessage));
+        this->_exprInfo[expr].isValid = false;
     }
 }
 
