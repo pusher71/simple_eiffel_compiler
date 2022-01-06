@@ -155,8 +155,6 @@ ByteCode ByteCode::routinesMetaByteCode(const EConstantTable& userClassConstants
     return result;
 }
 
-#include <iostream>
-
 ByteCode ByteCode::mainFunctionByteCode(const EConstantTable& userClassConstants, const EUserClass& mainClass) {
     ByteCode result;
     result._appendTwoBytes(0x0009);
@@ -348,7 +346,6 @@ ByteCode::ByteCode(const EConstantTable&                                        
 
     // Compile routine body
     const instruction_seq_strct* instructionSeqElem = routineInfo->_routineBody->next;
-    instructionSeqElem = instructionSeqElem;
 
     while (instructionSeqElem != NULL) {
         this->_append(ByteCode(userClassConstants, instructionSeqElem->value, instructionInfo, expressionInfo));
@@ -464,6 +461,35 @@ ByteCode ByteCode::ifInstructionByteCode(const EConstantTable&                  
                                          const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo)
 {
     ByteCode result;
+    result._append(ByteCode(userClassConstants, ifInstruction->condition, expressionInfo));
+
+    if (expressionInfo.at(ifInstruction->condition).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(ifInstruction->condition).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(ifInstruction->condition).getterMethodRef_constLink, 0));
+    }
+
+    ByteCode branchTrue;
+    const instruction_seq_strct* branchTrueInstructionSeqElem = ifInstruction->branch_true->next;
+    while (branchTrueInstructionSeqElem != NULL) {
+        branchTrue._append(ByteCode(userClassConstants, branchTrueInstructionSeqElem->value, instructionInfo, expressionInfo));
+        branchTrueInstructionSeqElem = branchTrueInstructionSeqElem->next;
+    }
+
+    ByteCode branchFalse;
+    if (ifInstruction->branch_false != NULL) {
+        const instruction_seq_strct* branchFalseInstructionSeqElem = ifInstruction->branch_false->next;
+        while (branchFalseInstructionSeqElem != NULL) {
+            branchFalse._append(ByteCode(userClassConstants, branchFalseInstructionSeqElem->value, instructionInfo, expressionInfo));
+            branchFalseInstructionSeqElem = branchFalseInstructionSeqElem->next;
+        }
+    }
+
+    branchTrue._append(ByteCode::goto_(0x03 + branchFalse._bytes.size()));
+
+    result._append(ByteCode::ifeq(0x03 + branchTrue._bytes.size()));
+    result._append(branchTrue);
+    result._append(branchFalse);
+
     return result;
 }
 
@@ -473,6 +499,37 @@ ByteCode ByteCode::loopInstructionByteCode(const EConstantTable&                
                                          const std::map<const expr_strct*, ERoutine::ExpressionInfo>&           expressionInfo)
 {
     ByteCode result;
+
+    // Generate bytecode of loop init block
+    const instruction_seq_strct* loopInitInstructionSeqElem = loopInstruction->init->next;
+    while (loopInitInstructionSeqElem != NULL) {
+        result._append(ByteCode(userClassConstants, loopInitInstructionSeqElem->value, instructionInfo, expressionInfo));
+        loopInitInstructionSeqElem = loopInitInstructionSeqElem->next;
+    }
+
+    // Generate bytecode of expression in loop condition
+    ByteCode condition;
+    condition._append(ByteCode(userClassConstants, loopInstruction->condition, expressionInfo));
+
+    if (expressionInfo.at(loopInstruction->condition).getterConstClass_constLink != 0) {
+        condition._append(ByteCode::checkcast(expressionInfo.at(loopInstruction->condition).getterConstClass_constLink));
+        condition._append(ByteCode::invokevirtual(expressionInfo.at(loopInstruction->condition).getterMethodRef_constLink, 0));
+    }
+
+    // Generate bytecode of loop body block
+    ByteCode loopBody;
+    const instruction_seq_strct* loopBodyInstructionSeqElem = loopInstruction->body->next;
+    while (loopBodyInstructionSeqElem != NULL) {
+        loopBody._append(ByteCode(userClassConstants, loopBodyInstructionSeqElem->value, instructionInfo, expressionInfo));
+        loopBodyInstructionSeqElem = loopBodyInstructionSeqElem->next;
+    }
+
+    loopBody._append(ByteCode::goto_(-(condition._bytes.size() + 0x03 + loopBody._bytes.size())));
+
+    result._append(condition);
+    result._append(ByteCode::ifne(0x03 + loopBody._bytes.size()));
+    result._append(loopBody);
+
     return result;
 }
 

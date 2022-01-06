@@ -10,16 +10,75 @@ feature
     a3 : STRING
     a4 : CHARACTER
     a5 : BOOLEAN
-    a6 : ARRAY[ARRAY[INTEGER]]
+    a6 : ARRAY[ARRAY[BOOLEAN]]
     a7 : ANY
 
     make
     do
         -- a6 := create {ARRAY[INTEGER]}.make_filled(2, -2, 2)
-        create a6.make_filled(create {ARRAY[INTEGER]}.make_filled(0xFA, 2, 2), 2, 3)
+        create a6.make_filled(create {ARRAY[BOOLEAN]}.make_filled(False, 2, 4), 2, 4)
+        a6.set(create {ARRAY[BOOLEAN]}.make_filled(False, 2, 4), 2)
+        a6.set(create {ARRAY[BOOLEAN]}.make_filled(True, 2, 5), 3)
+        a6.set(create {ARRAY[BOOLEAN]}.make_filled(False, 2, 7), 4)
+        (a6 @ 2).set(True, 2)
 
-        io.put_integer(a6 @ 2 @ 2)
-        print_int(a6 @ 3 @ 2, "")
+        if (True)
+        then
+            io.put_string("BRANCH TRUE START%N")
+            io.put_string("TRUE%N")
+            io.put_string("BRANCH TRUE FINISH%N")
+        else
+        end
+
+        if (True)
+        then
+        else
+            io.put_string("BRANCH FALSE START%N")
+            io.put_string("FALSE%N")
+            io.put_string("BRANCH FALSE FINISH%N")
+        end
+
+        if (True)
+        then
+        else
+        end
+
+
+        if (True)
+        then
+        end
+
+        if (True)
+        then
+            io.put_string("BRANCH TRUE START%N")
+            io.put_string("TRUE%N")
+            io.put_string("BRANCH TRUE FINISH%N")
+        end
+
+        a5 := True
+
+        if (a5)
+        then
+            io.put_string("BRANCH TRUE START%N")
+            io.put_string("TRUE%N")
+            io.put_string("BRANCH TRUE FINISH%N")
+        else
+            io.put_string("BRANCH FALSE START%N")
+            io.put_string("FALSE%N")
+            io.put_string("BRANCH FALSE FINISH%N")
+        end
+
+        from
+            a5 := False
+        until
+            False
+        loop
+            io.put_string("LOOP START%N")
+            io.put_string("INCREMENT%N")
+            io.put_string("LOOP FINISH%N")
+
+            a5 := True
+        end
     end
 
     print_int(val : INTEGER; val2 : STRING)

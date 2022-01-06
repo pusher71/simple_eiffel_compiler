@@ -160,6 +160,16 @@ std::string SemanticError::errorReason() const {
             result += "CAN\'T CAST EXPR TO TYPE OF LOCAL VARIABLE";
             break;
 
+        // ... If instruction
+        case INSTR_IF__CONDITION_ISNT_BOOLEAN:
+            result += "CONDITION OF IF INSTRUCTION ISN\'T A BOOLEAN VALUE";
+            break;
+
+        // ... Loop instruction
+        case INSTR_LOOP__CONDITION_ISNT_BOOLEAN:
+            result += "CONDITION OF LOOP INSTRUCTION ISN\'T A BOOLEAN VALUE";
+            break;
+
         // ... Expression as instruction
         case INSTR_AS_EXPR__INSTRUCTION_RETURNS_SOME_VALUE:
             result += "INSTRUCTION RETURNS SOME VALUE";

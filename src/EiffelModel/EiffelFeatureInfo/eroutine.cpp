@@ -471,11 +471,82 @@ void ERoutine::_resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, E
     }
 }
 
-void ERoutine::_resolveIfInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* ifInstruction) {
+#include <iostream>
 
+void ERoutine::_resolveIfInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* ifInstruction) {
+    // Resolve condition
+    this->_resolveExpr(selfMetaInfo, userClass, ifInstruction->condition);
+
+    if (this->_exprInfo.at(ifInstruction->condition).resultType.isType(dtype_boolean)) {
+        // Set getter method for condition expression if it is an object
+        if (this->_exprInfo.at(ifInstruction->condition).resultType.isClass()) {
+            EClass* condExprOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(ifInstruction->condition).resultType.firstElemClassName());
+
+            this->_exprInfo.at(ifInstruction->condition).getterConstClass_constLink = userClass.constants().appendConstClass(condExprOwnerClassInfo->fullName());
+            this->_exprInfo.at(ifInstruction->condition).getterMethodRef_constLink = userClass.constants().appendMethodRef(condExprOwnerClassInfo->fullName(), "GET", "()" + EType::boolType().descriptor());
+        }
+
+        // Resolve branch true
+        instruction_seq_strct* branchTrueInstructionSeqElem = ifInstruction->branch_true->next; // First instruction is NULL instruction
+
+        while (branchTrueInstructionSeqElem != NULL) {
+            this->_resolveInstruction(selfMetaInfo, userClass, branchTrueInstructionSeqElem->value);
+            branchTrueInstructionSeqElem = branchTrueInstructionSeqElem->next;
+        }
+
+        // Resolve branch false
+        if (ifInstruction->branch_false != NULL) {
+            instruction_seq_strct* branchFalseInstructionSeqElem = ifInstruction->branch_false->next; // First instruction is NULL instruction
+
+            while (branchFalseInstructionSeqElem != NULL) {
+                this->_resolveInstruction(selfMetaInfo, userClass, branchFalseInstructionSeqElem->value);
+                branchFalseInstructionSeqElem = branchFalseInstructionSeqElem->next;
+            }
+        }
+    }
+    else {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += "type of condition: " + this->_exprInfo.at(ifInstruction->condition).resultType.toString();
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_IF__CONDITION_ISNT_BOOLEAN, errorMessage));
+    }
 }
 
 void ERoutine::_resolveLoopInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* loopInstruction) {
+    // Resolve condition
+    this->_resolveExpr(selfMetaInfo, userClass, loopInstruction->condition);
+
+    if (this->_exprInfo.at(loopInstruction->condition).resultType.isType(dtype_boolean)) {
+        // Set getter method for condition expression if it is an object
+        if (this->_exprInfo.at(loopInstruction->condition).resultType.isClass()) {
+            EClass* condExprOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(loopInstruction->condition).resultType.firstElemClassName());
+
+            this->_exprInfo.at(loopInstruction->condition).getterConstClass_constLink = userClass.constants().appendConstClass(condExprOwnerClassInfo->fullName());
+            this->_exprInfo.at(loopInstruction->condition).getterMethodRef_constLink = userClass.constants().appendMethodRef(condExprOwnerClassInfo->fullName(), "GET", "()" + EType::boolType().descriptor());
+        }
+
+        // Resolve loop init block
+        instruction_seq_strct* initInstructionSeqElem = loopInstruction->init->next; // First instruction is NULL instruction
+
+        while (initInstructionSeqElem != NULL) {
+            this->_resolveInstruction(selfMetaInfo, userClass, initInstructionSeqElem->value);
+            initInstructionSeqElem = initInstructionSeqElem->next;
+        }
+
+        // Resolve loop body block
+        instruction_seq_strct* bodyInstructionSeqElem = loopInstruction->body->next; // First instruction is NULL instruction
+
+        while (bodyInstructionSeqElem != NULL) {
+            this->_resolveInstruction(selfMetaInfo, userClass, bodyInstructionSeqElem->value);
+            bodyInstructionSeqElem = bodyInstructionSeqElem->next;
+        }
+    }
+    else {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
+        errorMessage += "type of condition: " + this->_exprInfo.at(loopInstruction->condition).resultType.toString();
+
+        EProgram::semanticErrors.push_back(SemanticError(INSTR_LOOP__CONDITION_ISNT_BOOLEAN, errorMessage));
+    }
 }
 
 void ERoutine::_resolveExprAsInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* exprAsInstruction) {

@@ -68,7 +68,11 @@ enum SemanticErrorCode {
     INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL,
 
     // ... If instruction
+    INSTR_IF__CONDITION_ISNT_BOOLEAN,
+
     // ... Loop instruction
+    INSTR_LOOP__CONDITION_ISNT_BOOLEAN,
+
     // ... Expression as instruction
     INSTR_AS_EXPR__INSTRUCTION_RETURNS_SOME_VALUE,
 

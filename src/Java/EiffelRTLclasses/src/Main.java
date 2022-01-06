@@ -7,10 +7,16 @@ public class Main {
         ARRAY array = new ARRAY();
         array.MAKE_FILLED(new INTEGER(), 0, 3);
 
-        array = null;
-        array.GET(0);
+        boolean var = true;
+        if (var) {
+            System.out.println("INNER HELLO");
+        }
+
+        System.out.println("HELLO");
 
         /*
+        array = null;
+        array.GET(0);
         INTEGER val = new INTEGER();
         val.SET(2);
         array.SET(val, 0);
