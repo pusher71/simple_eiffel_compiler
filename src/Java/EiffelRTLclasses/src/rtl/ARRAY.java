@@ -10,9 +10,7 @@ public class ARRAY extends ANY {
 
     // ================ OPERATIONS ================
     // ----------------- creating -----------------
-    public void MAKE_EMPTY() {
-        System.out.println("!!! MAKE EMPTY !!!");
-    }
+    public void MAKE_EMPTY() {}
 
     public void MAKE_FILLED(Object value, long lower, long upper) {
         if ((int)lower != lower) { throw new RuntimeException("Invalid lower index for ARRAY (must be signed 32-bit integer)."); }

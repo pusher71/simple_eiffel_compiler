@@ -7,19 +7,16 @@ create
 feature
     make
     local
-        objects : ARRAY[A]
+        objects : ARRAY[ARRAY[A]]
         int : INTEGER
     do
-        create objects.make_filled(create {A}.make, 0, 2)
+        -- create objects.make_filled(create {ARRAY[B]}.make_empty, 0, 2)
+        objects := create {ARRAY[ARRAY[B]]}.make_filled(create {ARRAY[B]}.make_filled(create {B}.make, 0, 2), 0, 2)
 
-        objects.set(create {B}.make, 1)
-        objects.set(create {C}.make, 2)
+        objects.set(create {ARRAY[B]}.make_filled(create {B}.make, 0, 11), 1)
+        objects.set(create {ARRAY[C]}.make_filled(create {C}.make, 0, 11), 2)
 
-        (objects @ 0).F;
-        (objects @ 1).F;
-        (objects @ 2).F;
-
-        -- objects @ 0.F;
+        (objects @ 2 @ 0).F;
         -- io.put_integer(int.GET());
     end
 

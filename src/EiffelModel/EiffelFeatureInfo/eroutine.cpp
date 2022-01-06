@@ -328,9 +328,12 @@ void ERoutine::_resolveInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserCl
     }
 }
 
+#include <iostream>
+
 void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* createInstruction) {
     // Resolve variable of creation
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
+    EType fieldOrLocalReturnType = EType::noType();
 
     for (const auto& attributeMetaInfo : userClass.attributesMetaInfo()) {
         if (attributeMetaInfo->finalName() == createInstruction->first_id_name) {
@@ -338,6 +341,7 @@ void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, E
             this->_instrInfo[createInstruction].fieldRef_constLink = userClass._constants.appendFieldRef(ownerClassFullName, attributeMetaInfo->finalName(), "L" + EClass::javaObjectFullName() + ";");
 
             fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( attributeMetaInfo->implementation()->returnType().firstElemClassName() );
+            fieldOrLocalReturnType = attributeMetaInfo->implementation()->returnType();
         }
     }
 
@@ -348,6 +352,7 @@ void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, E
                 const auto& createdVarType = EType(localVar.second.type());
 
                 fieldOrLocalOwnerClassInfo = EProgram::current->getClassBy( localVar.second.type().firstElemClassName() );
+                fieldOrLocalReturnType = localVar.second.type();
             }
         }
     }
@@ -381,8 +386,22 @@ void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, E
             EProgram::semanticErrors.push_back(SemanticError(INSTR_CREATE__UNKNOWN_CREATOR, errorMessage));
         }
         else {
-            this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, createInstruction->argument_seq, 0);
+            bool isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, createInstruction->argument_seq, 0);
+            if (!isValid) { return; }
+
             this->_instrInfo[createInstruction].creatorMethodRef_constLink = userClass._constants.appendMethodRef(fieldOrLocalOwnerClassInfo->fullName(), createInstruction->second_id_name, creatorInfo->second->descriptor());
+
+            // Check if type of first argument in "MAKE_FILLED" creator can cast to type of array element
+            if (fieldOrLocalReturnType.isType(dtype_array) && std::string(createInstruction->second_id_name) == "MAKE_FILLED") {
+                EType firstArgumentType = this->_exprInfo.at(createInstruction->argument_seq->value).resultType;
+                if (!firstArgumentType.canCastTo(fieldOrLocalReturnType.arraySubtype())) {
+                    std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\"\n";
+                    errorMessage += " - array element type: " + fieldOrLocalReturnType.arraySubtype().toString() + "\n";
+                    errorMessage += " - argument type:      " + firstArgumentType.toString();
+
+                    EProgram::semanticErrors.push_back(SemanticError(CREATING__CANT_CAST_TO_ARRAY_ELEMENT_TYPE, errorMessage));
+                }
+            }
         }
     }
 }
@@ -794,6 +813,8 @@ void ERoutine::_resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, E
     }
 }
 
+#include <iostream>
+
 void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
     // Check if left expression is create expression without brackets
     if (expr->expr_left->type == expr_create && !expr->expr_left->is_parenthesized) {
@@ -815,7 +836,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
 
     if (this->_exprInfo[expr->expr_left].resultType == EType::noType() || !this->_exprInfo[expr->expr_left].resultType.isClass()) {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ";
-        errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\"";
+        errorMessage += std::string(":: subcall id \"") + expr->method_id_name + "\" of type: " + this->_exprInfo[expr->expr_left].resultType.toString();
 
         EProgram::semanticErrors.push_back(SemanticError(EXPR__SUBCALL_WITH_PRIMITIVE_TYPE_OR_VOID_OPERAND, errorMessage));
         this->_exprInfo[expr].isValid = false;
@@ -891,6 +912,23 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
         EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
         this->_exprInfo[expr].isValid = false;
     }
+    // Check if type of first argument in "SET" creator can cast to type of array element
+    else if (this->_exprInfo.at(expr).isValid &&
+             this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_array) &&
+             std::string(expr->method_id_name) == "SET")
+    {
+        EType firstArgumentType = this->_exprInfo.at(expr->argument_seq->value).resultType;
+        std::cout << "@HELLO" << std::endl;
+
+        if (!firstArgumentType.canCastTo(this->_exprInfo.at(expr->expr_left).resultType.arraySubtype())) {
+            std::cout << "@@@HELLO" << std::endl;
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\"\n";
+            errorMessage += " - array element type: " + this->_exprInfo.at(expr->expr_left).resultType.arraySubtype().toString() + "\n";
+            errorMessage += " - argument type:      " + firstArgumentType.toString();
+
+            EProgram::semanticErrors.push_back(SemanticError(EXPR__CANT_CAST_TO_ARRAY_ELEMENT_TYPE_IN_ARRAY_SET_METHOD, errorMessage));
+        }
+    }
 }
 
 void ERoutine::_resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
@@ -926,8 +964,21 @@ void ERoutine::_resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCla
 
         if (creatorInfo != createClassInfo->_creators.end()) {
             this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
-
             this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
+
+            // Check if type of first argument in "MAKE_FILLED" creator can cast to type of array element
+            if (this->_exprInfo.at(expr).resultType.isType(dtype_array) && std::string(expr->method_id_name) == "MAKE_FILLED") {
+                EType firstArgumentType = this->_exprInfo.at(expr->argument_seq->value).resultType;
+
+                if (!firstArgumentType.canCastTo(this->_exprInfo.at(expr).resultType.arraySubtype())) {
+                    std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\"\n";
+                    errorMessage += " - array element type: " + this->_exprInfo.at(expr).resultType.arraySubtype().toString() + "\n";
+                    errorMessage += " - argument type:      " + firstArgumentType.toString();
+
+                    EProgram::semanticErrors.push_back(SemanticError(CREATING__CANT_CAST_TO_ARRAY_ELEMENT_TYPE, errorMessage));
+                    this->_exprInfo[expr].isValid = false;
+                }
+            }
         }
         else {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";

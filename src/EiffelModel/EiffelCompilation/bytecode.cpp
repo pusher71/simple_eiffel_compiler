@@ -965,37 +965,37 @@ ByteCode ByteCode::dup2() {
     return result;
 }
 
-ByteCode ByteCode::iadd() {
+ByteCode ByteCode::ladd() {
     ByteCode result;
-    result._appendByte(0x60);
+    result._appendByte(0x61);
 
     return result;
 }
 
-ByteCode ByteCode::imul() {
+ByteCode ByteCode::lmul() {
     ByteCode result;
-    result._appendByte(0x68);
+    result._appendByte(0x69);
 
     return result;
 }
 
-ByteCode ByteCode::isub() {
+ByteCode ByteCode::lsub() {
     ByteCode result;
-    result._appendByte(0x64);
+    result._appendByte(0x65);
 
     return result;
 }
 
-ByteCode ByteCode::ineg() {
+ByteCode ByteCode::lneg() {
     ByteCode result;
-    result._appendByte(0x74);
+    result._appendByte(0x75);
 
     return result;
 }
 
-ByteCode ByteCode::idiv() {
+ByteCode ByteCode::ldiv() {
     ByteCode result;
-    result._appendByte(0x6C);
+    result._appendByte(0x6D);
 
     return result;
 }

@@ -118,6 +118,7 @@ private:
     bool _resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
 
     void _resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
+    void _resolveBinaryArithmExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
 
 public:
     bool isConformingTo(const EFeature& other, bool areDeclarationsCompared = true) const override;

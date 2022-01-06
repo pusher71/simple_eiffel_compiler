@@ -145,6 +145,9 @@ std::string SemanticError::errorReason() const {
         case INSTR_CREATE__UNKNOWN_CREATOR:
             result += "CALL UNKNOWN CREATOR";
             break;
+        case CREATING__CANT_CAST_TO_ARRAY_ELEMENT_TYPE:
+            result += "CAN\'T CAST ARGUMENT TYPE TO ARRAY ELEMENT TYPE IN CREATOR INSTRUCTION OR EXPRESSION";
+            break;
 
         // ... Assign instruction
         case INSTR_ASSIGN__FIELD_OR_LOCAL_WITH_UNKNOWN_ID:
@@ -192,6 +195,9 @@ std::string SemanticError::errorReason() const {
             break;
         case EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE:
             result += "CALL HAS NON-CONFORMING ARGUMENTS SEQUENCE";
+            break;
+        case EXPR__CANT_CAST_TO_ARRAY_ELEMENT_TYPE_IN_ARRAY_SET_METHOD:
+            result += "CAN\'T CAST ARGUMENT TYPE TO ARRAY ELEMENT TYPE IN ARRAY SET METHOD";
             break;
 
         case EXPR__CALL_NONEXISTENT_PRECURSOR:

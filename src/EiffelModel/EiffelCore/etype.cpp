@@ -125,7 +125,7 @@ bool EType::isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) co
 
 bool EType::isClass() const { return (this->_type->id_name != NULL); }
 
-bool EType::isType(type_enum type) const { return (this->_type->type == type); }
+bool EType::isType(type_enum type) const { return (this->_type != NULL && this->_type->type == type); }
 
 EType EType::arraySubtype() const { return EType(this->_type != nullptr ? this->_type->arrayelem_type : nullptr); }
 

@@ -121,11 +121,11 @@ private:
     static ByteCode dup();
     static ByteCode dup2();
 
-    static ByteCode iadd();
-    static ByteCode imul();
-    static ByteCode isub();
-    static ByteCode ineg();
-    static ByteCode idiv();
+    static ByteCode ladd();
+    static ByteCode lmul();
+    static ByteCode lsub();
+    static ByteCode lneg();
+    static ByteCode ldiv();
     static ByteCode iinc(char u1, signed char i);
 
     // Control transfer commands ...
