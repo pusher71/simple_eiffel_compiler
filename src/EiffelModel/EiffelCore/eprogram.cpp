@@ -120,7 +120,6 @@ void EProgram::runSemanticStage_0(const program_strct* programNode) {
         this->_classes[classDeclSeqElem->value->id_name] = std::make_shared<EUserClass>(EUserClass(classDeclSeqElem->value));
         classDeclSeqElem = classDeclSeqElem->next;
     }
-
 }
 
 void EProgram::runSemanticStage_1() {

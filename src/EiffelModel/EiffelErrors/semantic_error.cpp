@@ -228,6 +228,14 @@ std::string SemanticError::errorReason() const {
         case EXPR_ARRAY_ELEMENT_ACCESS__ELEMENT_INDEX_ISNT_INTEGER_NUMBER:
             result += "INDEX OF ARRAY ELEMENT ISN\'T A INTEGER NUMBER";
             break;
+
+        // ... ... Binary arithmetic operators
+        case EXPR_BIN_ARITHM__TYPE_OF_LEFT_OPERAND_IS_INVALID:
+            result += "TYPE OF LEFT OPERAND IN BINARY ARITHMETIC OPERATOR IS INVALID";
+            break;
+        case EXPR_BIN_ARITHM__TYPE_OF_RIGHT_OPERAND_IS_INVALID:
+            result += "TYPE OF RIGHT OPERAND IN BINARY ARITHMETIC OPERATOR IS INVALID";
+            break;
     }
     result += " :: " + this->_errorMessage;
 

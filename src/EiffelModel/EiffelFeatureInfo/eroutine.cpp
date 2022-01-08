@@ -328,8 +328,6 @@ void ERoutine::_resolveInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserCl
     }
 }
 
-#include <iostream>
-
 void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* createInstruction) {
     // Resolve variable of creation
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
@@ -407,11 +405,11 @@ void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, E
 }
 
 void ERoutine::_resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, instruction_strct* assignInstruction) {
-    // Resolve name of left variable
+    // Resolve assign expression
     this->_resolveExpr(selfMetaInfo, userClass, assignInstruction->assign_expr);
     if (!this->_exprInfo.at(assignInstruction->assign_expr).isValid) { return; }
 
-    // Resolve variable of creation
+    // Resolve assign instruction
     const EClass* fieldOrLocalOwnerClassInfo = nullptr;
     EType leftOperandType = EType::noType();
 
@@ -585,9 +583,7 @@ void ERoutine::_resolveExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& us
     char* userClassName = nullptr;
 
     switch(expr->type) {
-        case expr_liter_bool:
-            this->_exprInfo[expr].resultType = EType::boolType();
-            break;
+        case expr_liter_bool:   this->_exprInfo[expr].resultType = EType::boolType(); break;
         case expr_liter_int:
             this->_exprInfo[expr].resultType = EType::intType();
 
@@ -604,9 +600,7 @@ void ERoutine::_resolveExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& us
             }
 
             break;
-        case expr_liter_char:
-            this->_exprInfo[expr].resultType = EType::charType();
-            break;
+        case expr_liter_char:   this->_exprInfo[expr].resultType = EType::charType(); break;
         case expr_liter_str:
             this->_exprInfo[expr].resultType = EType::stringType();
 
@@ -614,38 +608,21 @@ void ERoutine::_resolveExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& us
             this->_exprInfo[expr].liter_constLink = userClass.constants().appendString(stringLiteral);
 
             break;
-        case expr_liter_void:
-            this->_exprInfo[expr].resultType = EType::voidLiterType();
-            break;
 
-        case expr_current:
-            this->_exprInfo[expr].resultType = EType::classType(userClass.name());
-            break;
+        case expr_liter_void:   this->_exprInfo[expr].resultType = EType::voidLiterType(); break;
+        case expr_current:      this->_exprInfo[expr].resultType = EType::classType(userClass.name()); break;
 
-        case expr_call_selffeature: // TODO
-            this->_resolveCallSelffeatureExpr(selfMetaInfo, userClass, expr);
-            break;
-        case expr_call_precursor: // TODO
-            this->_resolveCallPrecursorExpr(selfMetaInfo, userClass, expr);
-            break;
-        case expr_subcall: // TODO
-            this->_resolveCallSubcallExpr(selfMetaInfo, userClass, expr);
-            break;
-        case expr_create: // TODO
-            this->_resolveCreateExpr(selfMetaInfo, userClass, expr);
-            break;
+        case expr_call_selffeature:     this->_resolveCallSelffeatureExpr(selfMetaInfo, userClass, expr); break;
+        case expr_call_precursor:       this->_resolveCallPrecursorExpr(selfMetaInfo, userClass, expr); break;
+        case expr_subcall:              this->_resolveCallSubcallExpr(selfMetaInfo, userClass, expr); break;
+        case expr_create:               this->_resolveCreateExpr(selfMetaInfo, userClass, expr); break;
 
-        case expr_arrelem: // TODO
-            this->_resolveArrElemExpr(selfMetaInfo, userClass, expr);
-            break;
+        case expr_arrelem: this->_resolveArrElemExpr(selfMetaInfo, userClass, expr); break;
+
         case expr_plus:
-            break;
         case expr_bminus:
-            break;
         case expr_mul:
-            break;
-        case expr_idiv:
-            break;
+        case expr_idiv:     this->_resolveBinaryArithmExpr(selfMetaInfo, userClass, expr); break;
         case expr_uminus:
             break;
 
@@ -813,8 +790,6 @@ void ERoutine::_resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, E
     }
 }
 
-#include <iostream>
-
 void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
     // Check if left expression is create expression without brackets
     if (expr->expr_left->type == expr_create && !expr->expr_left->is_parenthesized) {
@@ -918,10 +893,8 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
              std::string(expr->method_id_name) == "SET")
     {
         EType firstArgumentType = this->_exprInfo.at(expr->argument_seq->value).resultType;
-        std::cout << "@HELLO" << std::endl;
 
         if (!firstArgumentType.canCastTo(this->_exprInfo.at(expr->expr_left).resultType.arraySubtype())) {
-            std::cout << "@@@HELLO" << std::endl;
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\"\n";
             errorMessage += " - array element type: " + this->_exprInfo.at(expr->expr_left).resultType.arraySubtype().toString() + "\n";
             errorMessage += " - argument type:      " + firstArgumentType.toString();
@@ -1108,6 +1081,48 @@ void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCl
 
         EProgram::current->semanticErrors.push_back(SemanticError(EXPR_ARRAY_ELEMENT_ACCESS__GETTING_ELEMENT_OF_NON_ARRAY_OBJECT, errorMessage));
         this->_exprInfo[expr].isValid = false;
+    }
+}
+
+void ERoutine::_resolveBinaryArithmExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_right);
+
+    if (!this->_exprInfo.at(expr->expr_left).isValid || !this->_exprInfo.at(expr->expr_right).isValid) {
+        this->_exprInfo[expr].isValid = false;
+        return;
+    }
+
+    if (!this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_integer) && !this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_natural)) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString();
+
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_BIN_ARITHM__TYPE_OF_LEFT_OPERAND_IS_INVALID, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+    }
+    else if (this->_exprInfo.at(expr->expr_left).resultType.isClass()) {
+        EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_left).resultType.firstElemClassName());
+
+        this->_exprInfo.at(expr->expr_left).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+        this->_exprInfo.at(expr->expr_left).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()J");
+    }
+
+    if (!this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_integer) && !this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_natural)) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
+
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_BIN_ARITHM__TYPE_OF_RIGHT_OPERAND_IS_INVALID, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+    }
+    else if (this->_exprInfo.at(expr->expr_right).resultType.isClass()) {
+        EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_right).resultType.firstElemClassName());
+
+        this->_exprInfo.at(expr->expr_right).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+        this->_exprInfo.at(expr->expr_right).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()J");
+    }
+
+    if (this->_exprInfo[expr].isValid) {
+        this->_exprInfo[expr].resultType = EType::intType();
     }
 }
 

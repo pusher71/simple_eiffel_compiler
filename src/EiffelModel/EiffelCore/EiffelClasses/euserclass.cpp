@@ -236,7 +236,6 @@ void EUserClass::resolveRoutines() {
             // Make copy of routine implementation if routine doesn't belong to self
             if (featureMetaInfo.implementation()->ownerClassName() != this->name()) {
                 ERoutine* routineCopy = new ERoutine(*((ERoutine*)featureMetaInfo.implementation()));
-                // routineCopy->changeOwnerClass(this);
 
                 featureMetaInfo.setImplementation(routineCopy);
                 featureMetaInfo.setCurrentOwnerClassName(this->name());

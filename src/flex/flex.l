@@ -657,7 +657,7 @@ array           { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_ARRAY
 "+"     { debug_moveCursorToNextCharacter(yyleng); return '+'; }
 "-"     { debug_moveCursorToNextCharacter(yyleng); return '-'; }
 "*"     { debug_moveCursorToNextCharacter(yyleng); return '*'; }
-"\\"    { debug_moveCursorToNextCharacter(yyleng); return INTEGER_DIVISION; }
+"//"  { debug_moveCursorToNextCharacter(yyleng); return INTEGER_DIVISION; }
 
 "="     { debug_moveCursorToNextCharacter(yyleng); return '='; }
 "/="    { debug_moveCursorToNextCharacter(yyleng); return NOTEQUAL; }
