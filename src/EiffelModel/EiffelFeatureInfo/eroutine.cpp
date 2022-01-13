@@ -1211,8 +1211,8 @@ void ERoutine::_resolveEqualityCompareExpr(const EFeatureMetaInfo& selfMetaInfo,
 
     bool areSameTypes = this->_exprInfo.at(expr->expr_left).resultType == this->_exprInfo.at(expr->expr_right).resultType;
 
-    bool isLeftClass = this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_user_defined);
-    bool isRightClass = this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_user_defined);
+    bool isLeftClass = !this->_exprInfo.at(expr->expr_left).resultType.isExpanded();
+    bool isRightClass = !this->_exprInfo.at(expr->expr_right).resultType.isExpanded();
 
     bool isLeftInt = this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_integer);
     bool isLeftNat = this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_natural);
@@ -1224,14 +1224,18 @@ void ERoutine::_resolveEqualityCompareExpr(const EFeatureMetaInfo& selfMetaInfo,
         (isLeftInt && (isRightInt || isRightNat)) ||
         (isLeftNat && (isRightInt || isRightNat)))
     {
-        if (this->_exprInfo.at(expr->expr_left).resultType.isClass() && this->_exprInfo.at(expr->expr_left).resultType.descriptor(true) != "") {
+        if (this->_exprInfo.at(expr->expr_left).resultType.isClass() &&
+            ( this->_exprInfo.at(expr->expr_left).resultType.isExpanded() || this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_string) ))
+        {
             EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_left).resultType.firstElemClassName());
 
             this->_exprInfo.at(expr->expr_left).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
             this->_exprInfo.at(expr->expr_left).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + this->_exprInfo.at(expr->expr_left).resultType.descriptor(true));
         }
 
-        if (this->_exprInfo.at(expr->expr_right).resultType.isClass() && this->_exprInfo.at(expr->expr_right).resultType.descriptor(true) != "") {
+        if (this->_exprInfo.at(expr->expr_right).resultType.isClass() &&
+            ( this->_exprInfo.at(expr->expr_right).resultType.isExpanded() || this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_string) ))
+        {
             EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_right).resultType.firstElemClassName());
 
             this->_exprInfo.at(expr->expr_right).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());

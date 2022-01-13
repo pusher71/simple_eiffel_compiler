@@ -192,6 +192,7 @@ bool EType::isExpanded() const {
     bool result = *this == EType::noType() ||
                   (this->_type->type == dtype_boolean) ||
                   (this->_type->type == dtype_integer) ||
+                  (this->_type->type == dtype_natural) ||
                   (this->_type->type == dtype_character);
 
     return result;

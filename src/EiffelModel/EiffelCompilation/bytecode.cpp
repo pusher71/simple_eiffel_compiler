@@ -804,6 +804,55 @@ ByteCode ByteCode::compareExprByteCode(const EConstantTable& userClassConstants,
 }
 
 ByteCode ByteCode::equalityCompareExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+    ByteCode result;
+    int16_t isEqualOperator = (expression->type == expr_equal ? 0x1 : 0x0);
+
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+    if (expressionInfo.at(expression->expr_left).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
+    }
+    if (expressionInfo.at(expression->expr_left).resultType.isType(dtype_character) ||
+        expressionInfo.at(expression->expr_left).resultType.isType(dtype_boolean))
+    {
+        result._append(ByteCode::i2l());
+    }
+
+    result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+    if (expressionInfo.at(expression->expr_right).resultType.isType(dtype_character) ||
+        expressionInfo.at(expression->expr_right).resultType.isType(dtype_boolean))
+    {
+        result._append(ByteCode::i2l());
+    }
+
+    if (expressionInfo.at(expression->expr_left).resultType.isExpanded()) {
+        result._append(ByteCode::lcmp());
+
+        ByteCode cmpBlock;
+
+        cmpBlock._append(ByteCode::iconst(0x1 - isEqualOperator));
+        cmpBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+        result._append(ByteCode::ifeq(0x3 + cmpBlock._bytes.size()));
+        result._append(cmpBlock);
+        result._append(ByteCode::iconst(isEqualOperator));
+    }
+    else {
+        ByteCode cmpBlock;
+
+        cmpBlock._append(ByteCode::iconst(0x1 - isEqualOperator));
+        cmpBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+        result._append(ByteCode::if_acmpeq(0x3 + cmpBlock._bytes.size()));
+        result._append(cmpBlock);
+        result._append(ByteCode::iconst(isEqualOperator));
+    }
+
+    return result;
 }
 
 ByteCode ByteCode::logicAndExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {

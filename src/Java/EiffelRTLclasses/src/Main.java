@@ -5,7 +5,7 @@ import rtl.NATURAL;
 
 public class Main {
     static public void main(String[] args) {
-        boolean var2 = true;
+        boolean var2 = "HELLO" == args[0];
         if (System.currentTimeMillis() == 0) {
             var2 = false;
         }

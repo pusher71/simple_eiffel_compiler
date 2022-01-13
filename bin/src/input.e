@@ -9,44 +9,17 @@ feature
     make
     local
         nums : ARRAY[INTEGER]
+        nums2 : ANY
+
         chr : CHARACTER
         bool : BOOLEAN
     do
-        chr := 'A'
-        bool := True
-        bool := bool
-
-        io.put_boolean(True and True)
-        io.new_line
-        io.put_boolean(bool and True)
-        io.new_line
-        io.put_boolean(True and False)
-        io.new_line
-        io.put_boolean(bool and False)
-        io.new_line
-        io.put_boolean(False and bool)
-        io.new_line
+        io.put_boolean(nums /= nums2)
         io.new_line
 
-        io.put_boolean(True or True)
-        io.new_line
-        io.put_boolean(bool or True)
-        io.new_line
-        io.put_boolean(True or False)
-        io.new_line
-        io.put_boolean(bool or False)
-        io.new_line
-        io.put_boolean(False or bool)
-        io.new_line
-        io.new_line
+        create nums2
 
-        io.put_boolean(True xor True)
-        io.new_line
-        io.put_boolean(bool xor True)
-        io.new_line
-        io.put_boolean(True xor False)
-        io.new_line
-        io.put_boolean(False xor bool)
+        io.put_boolean(nums /= nums2)
         io.new_line
     end
 
