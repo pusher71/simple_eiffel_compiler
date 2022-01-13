@@ -434,8 +434,8 @@ void ERoutine::_resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, E
             }
             else {
                 std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: attribute \"" + currentFeatureMetaInfo->finalName() + "\"\n";
-                errorMessage += std::string("type of attribute - \"") + currentFeatureMetaInfo->implementation()->returnType().toString() + "\"\n";
-                errorMessage += std::string("type of expr      - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
+                errorMessage += std::string(" - type of attribute - \"") + currentFeatureMetaInfo->implementation()->returnType().toString() + "\"\n";
+                errorMessage += std::string(" - type of expr      - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
 
                 EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_ATTRIBUTE, errorMessage));
             }
@@ -460,8 +460,8 @@ void ERoutine::_resolveAssignInstruction(const EFeatureMetaInfo& selfMetaInfo, E
                 }
                 else {
                     std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: local variable \"" + localVar.first + "\"\n";
-                    errorMessage += std::string("type of local - \"") + EType(localVar.second.type()).toString() + "\"\n";
-                    errorMessage += std::string("type of expr  - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
+                    errorMessage += std::string(" - type of local - \"") + EType(localVar.second.type()).toString() + "\"\n";
+                    errorMessage += std::string(" - type of expr  - \"") + this->_exprInfo.at(assignInstruction->assign_expr).resultType.toString() + "\"";
 
                     EProgram::semanticErrors.push_back(SemanticError(INSTR_ASSIGN__CANT_CAST_EXPR_TO_TYPE_OF_LOCAL, errorMessage));
                 }
@@ -1004,8 +1004,8 @@ bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
         if (!creatorRoutineInfoWithArgsTypes.isConformingTo(*featureInfo, false)) {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
             errorMessage += "call of routine \"" + featureInfo->toString() + "\"\n";
-            errorMessage += "declaration - " + featureInfo->toString() + "\n";
-            errorMessage += "call        - " + creatorRoutineInfoWithArgsTypes.toString();
+            errorMessage += " - declaration - " + featureInfo->toString() + "\n";
+            errorMessage += " - call        - " + creatorRoutineInfoWithArgsTypes.toString();
 
             EProgram::semanticErrors.push_back(SemanticError(EXPR__CALL_NONCONFORMING_ARGUMENTS_SEQUENCE, errorMessage));
             return false;
@@ -1188,8 +1188,8 @@ void ERoutine::_resolveCompareExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCl
     }
     else {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ::\n";
-        errorMessage += "left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString() + '\n';
-        errorMessage += "right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
+        errorMessage += " - left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString() + '\n';
+        errorMessage += " - right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
 
         EProgram::current->semanticErrors.push_back(SemanticError(EXPR_COMPARE__TYPE_OF_OPERANDS_ARE_INVALID, errorMessage));
         this->_exprInfo[expr].isValid = false;
@@ -1244,8 +1244,8 @@ void ERoutine::_resolveEqualityCompareExpr(const EFeatureMetaInfo& selfMetaInfo,
     }
     else {
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" ::\n";
-        errorMessage += "left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString() + '\n';
-        errorMessage += "right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
+        errorMessage += " - left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString() + '\n';
+        errorMessage += " - right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
 
         EProgram::current->semanticErrors.push_back(SemanticError(EXPR_COMPARE__TYPE_OF_OPERANDS_ARE_INVALID, errorMessage));
         this->_exprInfo[expr].isValid = false;
