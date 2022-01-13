@@ -71,6 +71,7 @@
 %token FROM
 %token UNTIL
 %token LOOP
+%token CONSOLEIO
 
 // --------------- DATA TYPES ---------------
 %token DATATYPE_BOOLEAN

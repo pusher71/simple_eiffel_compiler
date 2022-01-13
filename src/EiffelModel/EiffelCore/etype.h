@@ -32,7 +32,7 @@ public:
     EType arraySubtype() const;
     bool hasDefaultInitialization() const;
 
-    std::string descriptor() const;
+    std::string descriptor(bool forceGettingPrimitiveType = false) const;
     bool isExpanded() const;
 
     type_strct* getRawTypeCopy() const;

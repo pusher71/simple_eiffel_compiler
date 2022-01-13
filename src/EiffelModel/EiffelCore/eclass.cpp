@@ -104,9 +104,6 @@ void EClass::_fillFeaturesTableWithSelfFeatures() {
             if (featureInfo.second.get()->returnType() == EType::noType()) {
                 featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_void);
             }
-            else if (featureInfo.second.get()->returnType() == EType::intType()) {
-                featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_integer);
-            }
             else {
                 featureMetaInfo.setReturnType(EFeatureMetaInfo::ereturntype_object);
             }

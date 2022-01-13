@@ -174,8 +174,10 @@ void EUserClass::_addFeatureInfoFromMetaToConstantTable(EFeatureMetaInfo& featur
     featureMetaInfo.setFeatureName_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMetaInfo.finalName())) );
     featureMetaInfo.setFeatureDescriptor_utf8Link( this->_constants.append(JvmConstant::UTF8(featureMetaInfo.implementation()->descriptor())) );
 
-    if (featureMetaInfo.featureType() == EFeature::efeature_attribute && featureMetaInfo.implementation()->returnType().hasDefaultInitialization()) {
-        this->_constants.appendFieldRef(this->fullName(), featureMetaInfo.finalName(), featureMetaInfo.implementation()->descriptor());
+    if (featureMetaInfo.featureType() == EFeature::efeature_attribute) {
+        if (featureMetaInfo.implementation()->returnType().hasDefaultInitialization()) {
+            this->_constants.appendFieldRef(this->fullName(), featureMetaInfo.finalName(), featureMetaInfo.implementation()->descriptor());
+        }
     }
 }
 

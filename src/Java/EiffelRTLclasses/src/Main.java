@@ -1,27 +1,25 @@
 import rtl.ARRAY;
+import rtl.CHARACTER;
 import rtl.INTEGER;
 import rtl.NATURAL;
 
 public class Main {
     static public void main(String[] args) {
-        ARRAY array = new ARRAY();
-        array.MAKE_FILLED(new INTEGER(), 0, 3);
+        ARRAY chars = new ARRAY();
 
-        boolean var = true;
-        if (var) {
-            System.out.println("INNER HELLO");
+        chars.ADD_FIRST(new CHARACTER());
+        chars.ADD_FIRST(new CHARACTER());
+        chars.ADD_FIRST(new CHARACTER());
+
+        ((CHARACTER)chars.GET(1)).SET('a');
+        ((CHARACTER)chars.GET(2)).SET('b');
+        ((CHARACTER)chars.GET(3)).SET('c');
+
+        chars.REMOVE_LAST();
+        chars.REMOVE_FIRST();
+
+        for (int i=(int)chars.LOWER(); i<=chars.UPPER(); i++) {
+            System.out.println(i + ": " + ((CHARACTER)chars.GET(i)).GET());
         }
-
-        System.out.println("HELLO");
-
-        /*
-        array = null;
-        array.GET(0);
-        INTEGER val = new INTEGER();
-        val.SET(2);
-        array.SET(val, 0);
-
-        System.out.println(((INTEGER)array.GET(0)).GET());
-         */
     }
 }

@@ -48,40 +48,41 @@
      FROM = 264,
      UNTIL = 265,
      LOOP = 266,
-     DATATYPE_BOOLEAN = 267,
-     DATATYPE_CHARACTER = 268,
-     DATATYPE_INTEGER = 269,
-     DATATYPE_NATURAL = 270,
-     DATATYPE_STRING = 271,
-     DATATYPE_ARRAY = 272,
-     ASSIGNMENT = 273,
-     XOR = 274,
-     OR = 275,
-     AND = 276,
-     NOTEQUAL = 277,
-     GREAT_EQUAL = 278,
-     LESS_EQUAL = 279,
-     INTEGER_DIVISION = 280,
-     NOT = 281,
-     UMINUS = 282,
-     LITER_BOOLEAN = 283,
-     LITER_INTEGER = 284,
-     LITER_CHAR = 285,
-     LITER_STRING = 286,
-     LITER_VOID = 287,
-     INHERIT = 288,
-     RENAME = 289,
-     UNDEFINE = 290,
-     REDEFINE = 291,
-     SELECT = 292,
-     AS = 293,
-     CREATE = 294,
-     FEATURE = 295,
-     LOCAL = 296,
-     DO = 297,
-     CURRENT = 298,
-     RESULT = 299,
-     PRECURSOR = 300
+     CONSOLEIO = 267,
+     DATATYPE_BOOLEAN = 268,
+     DATATYPE_CHARACTER = 269,
+     DATATYPE_INTEGER = 270,
+     DATATYPE_NATURAL = 271,
+     DATATYPE_STRING = 272,
+     DATATYPE_ARRAY = 273,
+     ASSIGNMENT = 274,
+     XOR = 275,
+     OR = 276,
+     AND = 277,
+     NOTEQUAL = 278,
+     GREAT_EQUAL = 279,
+     LESS_EQUAL = 280,
+     INTEGER_DIVISION = 281,
+     NOT = 282,
+     UMINUS = 283,
+     LITER_BOOLEAN = 284,
+     LITER_INTEGER = 285,
+     LITER_CHAR = 286,
+     LITER_STRING = 287,
+     LITER_VOID = 288,
+     INHERIT = 289,
+     RENAME = 290,
+     UNDEFINE = 291,
+     REDEFINE = 292,
+     SELECT = 293,
+     AS = 294,
+     CREATE = 295,
+     FEATURE = 296,
+     LOCAL = 297,
+     DO = 298,
+     CURRENT = 299,
+     RESULT = 300,
+     PRECURSOR = 301
    };
 #endif
 /* Tokens.  */
@@ -94,40 +95,41 @@
 #define FROM 264
 #define UNTIL 265
 #define LOOP 266
-#define DATATYPE_BOOLEAN 267
-#define DATATYPE_CHARACTER 268
-#define DATATYPE_INTEGER 269
-#define DATATYPE_NATURAL 270
-#define DATATYPE_STRING 271
-#define DATATYPE_ARRAY 272
-#define ASSIGNMENT 273
-#define XOR 274
-#define OR 275
-#define AND 276
-#define NOTEQUAL 277
-#define GREAT_EQUAL 278
-#define LESS_EQUAL 279
-#define INTEGER_DIVISION 280
-#define NOT 281
-#define UMINUS 282
-#define LITER_BOOLEAN 283
-#define LITER_INTEGER 284
-#define LITER_CHAR 285
-#define LITER_STRING 286
-#define LITER_VOID 287
-#define INHERIT 288
-#define RENAME 289
-#define UNDEFINE 290
-#define REDEFINE 291
-#define SELECT 292
-#define AS 293
-#define CREATE 294
-#define FEATURE 295
-#define LOCAL 296
-#define DO 297
-#define CURRENT 298
-#define RESULT 299
-#define PRECURSOR 300
+#define CONSOLEIO 267
+#define DATATYPE_BOOLEAN 268
+#define DATATYPE_CHARACTER 269
+#define DATATYPE_INTEGER 270
+#define DATATYPE_NATURAL 271
+#define DATATYPE_STRING 272
+#define DATATYPE_ARRAY 273
+#define ASSIGNMENT 274
+#define XOR 275
+#define OR 276
+#define AND 277
+#define NOTEQUAL 278
+#define GREAT_EQUAL 279
+#define LESS_EQUAL 280
+#define INTEGER_DIVISION 281
+#define NOT 282
+#define UMINUS 283
+#define LITER_BOOLEAN 284
+#define LITER_INTEGER 285
+#define LITER_CHAR 286
+#define LITER_STRING 287
+#define LITER_VOID 288
+#define INHERIT 289
+#define RENAME 290
+#define UNDEFINE 291
+#define REDEFINE 292
+#define SELECT 293
+#define AS 294
+#define CREATE 295
+#define FEATURE 296
+#define LOCAL 297
+#define DO 298
+#define CURRENT 299
+#define RESULT 300
+#define PRECURSOR 301
 
 
 
@@ -177,7 +179,7 @@ typedef union YYSTYPE
     char*       id_field;
 }
 /* Line 1529 of yacc.c.  */
-#line 181 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
+#line 183 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

@@ -1,6 +1,7 @@
 #include "etype.h"
 #include "eprogram.h"
 #include "EiffelClasses/RTLclasses/eclassany.h"
+#include "EiffelClasses/RTLclasses/eclassconsoleio.h"
 #include "EiffelClasses/RTLclasses/eclassboolean.h"
 #include "EiffelClasses/RTLclasses/eclassinteger.h"
 #include "EiffelClasses/RTLclasses/eclassnatural.h"
@@ -114,7 +115,8 @@ bool EType::isUserDefinedSubtypeValid(std::string& outputInvalidUserTypeName) co
 
     // Validate type if it is user defined
     if (typeLevel->type == dtype_user_defined) {
-        if (EProgram::current->getClassBy(typeLevel->id_name) == nullptr) {
+        std::string className = typeLevel->id_name;
+        if (EProgram::current->getClassBy(className) == nullptr) {
             result = false;
             outputInvalidUserTypeName = typeLevel->id_name;
         }
@@ -142,7 +144,7 @@ bool EType::hasDefaultInitialization() const {
     }
 }
 
-std::string EType::descriptor() const {
+std::string EType::descriptor(bool forceGettingPrimitiveType) const {
     std::string result;
 
     if (this->_type == nullptr) { return "V"; }
@@ -159,7 +161,7 @@ std::string EType::descriptor() const {
         classInfo = EProgram::current->getClassBy(typeLevel->id_name);
     }
 
-    if (typeLevel->id_name == NULL) {
+    if (typeLevel->id_name == NULL || forceGettingPrimitiveType) {
         switch (typeLevel->type) {
             case dtype_boolean:         result += "Z"; break;
             case dtype_character:       result += "C"; break;
@@ -167,7 +169,7 @@ std::string EType::descriptor() const {
             case dtype_natural:         result += "J"; break;
             case dtype_string:          result += "L" + EClass::javaStringFullName() + ";"; break;
 
-            default: break;
+            default: result = ""; break;
         }
     }
     else {
@@ -284,13 +286,15 @@ bool EType::canCastTo(const EType& other) const {
     {
         return true;
     }
-    else if (firstTypeArrElemType->type == dtype_integer &&
-             secondTypeArrElemType->type == dtype_natural
-             ||
-             firstTypeArrElemType->type == dtype_natural &&
-             secondTypeArrElemType->type == dtype_integer)
-    {
-        return true;
+    else {
+        if (firstTypeArrElemType->type == dtype_integer &&
+            secondTypeArrElemType->type == dtype_natural
+            ||
+            firstTypeArrElemType->type == dtype_natural &&
+            secondTypeArrElemType->type == dtype_integer)
+        {
+            return true;
+        }
     }
 
     return false;

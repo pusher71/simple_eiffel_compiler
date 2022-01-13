@@ -623,30 +623,19 @@ void ERoutine::_resolveExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& us
         case expr_bminus:
         case expr_mul:
         case expr_idiv:     this->_resolveBinaryArithmExpr(selfMetaInfo, userClass, expr); break;
-        case expr_uminus:
-            break;
+        case expr_uminus:   this->_resolveUnaryArithmExpr(selfMetaInfo, userClass, expr); break;
 
         case expr_less:
-            break;
         case expr_great:
-            break;
         case expr_less_equal:
-            break;
-        case expr_great_equal:
-            break;
+        case expr_great_equal:  this->_resolveCompareExpr(selfMetaInfo, userClass, expr); break;
         case expr_equal:
-            break;
-        case expr_notequal:
-            break;
+        case expr_notequal:     this->_resolveEqualityCompareExpr(selfMetaInfo, userClass, expr); break;
 
         case expr_and:
-            break;
         case expr_or:
-            break;
-        case expr_not:
-            break;
-        case expr_xor:
-            break;
+        case expr_xor:  this->_resolveBinaryLogicExpr(selfMetaInfo, userClass, expr); break;
+        case expr_not:  this->_resolveUnaryLogicExpr(selfMetaInfo, userClass, expr); break;
     }
 }
 
@@ -1052,6 +1041,8 @@ bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
     return true;
 }
 
+#include <iostream>
+
 void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
     this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
     this->_resolveExpr(selfMetaInfo, userClass, expr->expr_right);
@@ -1066,6 +1057,14 @@ void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCl
             this->_exprInfo[expr].resultType = this->_exprInfo.at(expr->expr_left).resultType.arraySubtype();
 
             this->_exprInfo[expr].methodRef_constLink = userClass.constants().appendMethodRef(EClassARRAY::classRTLfullName(), "GET", "(J)L" + EClass::javaObjectFullName() + ";");
+
+            if (this->_exprInfo.at(expr->expr_right).resultType.isClass()) {
+                EClass* exprRightOwnerClass = EProgram::current->getClassBy( this->_exprInfo.at(expr->expr_right).resultType.firstElemClassName() );
+                std::string indexTypeDescriptor = this->_exprInfo.at(expr->expr_right).resultType.descriptor(true);
+
+                this->_exprInfo[expr->expr_right].getterConstClass_constLink = userClass.constants().appendConstClass(exprRightOwnerClass->fullName());
+                this->_exprInfo[expr->expr_right].getterMethodRef_constLink = userClass.constants().appendMethodRef(exprRightOwnerClass->fullName(), "GET", "()" + indexTypeDescriptor);
+            }
         }
         else {
             std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
@@ -1097,7 +1096,76 @@ void ERoutine::_resolveBinaryArithmExpr(const EFeatureMetaInfo& selfMetaInfo, EU
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
         errorMessage += "left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString();
 
-        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_BIN_ARITHM__TYPE_OF_LEFT_OPERAND_IS_INVALID, errorMessage));
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_BIN_ARITHM__TYPE_OF_OPERAND_IS_INVALID, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+    }
+    else if (this->_exprInfo.at(expr->expr_left).resultType.isClass()) {
+        EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_left).resultType.firstElemClassName());
+
+        this->_exprInfo.at(expr->expr_left).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+        this->_exprInfo.at(expr->expr_left).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + this->_exprInfo.at(expr->expr_left).resultType.descriptor(true));
+    }
+
+    if (!this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_integer) && !this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_natural)) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
+
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_BIN_ARITHM__TYPE_OF_OPERAND_IS_INVALID, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+    }
+    else if (this->_exprInfo.at(expr->expr_right).resultType.isClass()) {
+        EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_right).resultType.firstElemClassName());
+
+        this->_exprInfo.at(expr->expr_right).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+        this->_exprInfo.at(expr->expr_right).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + this->_exprInfo.at(expr->expr_right).resultType.descriptor(true));
+    }
+
+    if (this->_exprInfo[expr].isValid) {
+        this->_exprInfo[expr].resultType = EType::intType();
+    }
+}
+
+void ERoutine::_resolveUnaryArithmExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_right);
+
+    if (!this->_exprInfo.at(expr->expr_right).isValid) {
+        this->_exprInfo[expr].isValid = false;
+        return;
+    }
+
+    if (!this->_exprInfo.at(expr->expr_right).resultType.isType(dtype_integer)) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
+
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_UN_ARITHM__TYPE_OF_OPERAND_IS_INVALID, errorMessage));
+        this->_exprInfo[expr].isValid = false;
+    }
+    else if (this->_exprInfo.at(expr->expr_right).resultType.isClass()) {
+        EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_right).resultType.firstElemClassName());
+
+        this->_exprInfo.at(expr->expr_right).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+        this->_exprInfo.at(expr->expr_right).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + this->_exprInfo.at(expr->expr_right).resultType.descriptor(true));
+    }
+
+    if (this->_exprInfo[expr].isValid) {
+        this->_exprInfo[expr].resultType = EType::intType();
+    }
+}
+
+void ERoutine::_resolveCompareExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
+    this->_resolveExpr(selfMetaInfo, userClass, expr->expr_right);
+
+    if (!this->_exprInfo.at(expr->expr_left).isValid || !this->_exprInfo.at(expr->expr_right).isValid) {
+        this->_exprInfo[expr].isValid = false;
+        return;
+    }
+
+    if (!this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_integer) && !this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_natural)) {
+        std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
+        errorMessage += "left operand type: " + this->_exprInfo.at(expr->expr_left).resultType.toString();
+
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_COMPARE__TYPE_OF_OPERAND_IS_INVALID, errorMessage));
         this->_exprInfo[expr].isValid = false;
     }
     else if (this->_exprInfo.at(expr->expr_left).resultType.isClass()) {
@@ -1111,7 +1179,7 @@ void ERoutine::_resolveBinaryArithmExpr(const EFeatureMetaInfo& selfMetaInfo, EU
         std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" :: ";
         errorMessage += "right operand type: " + this->_exprInfo.at(expr->expr_right).resultType.toString();
 
-        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_BIN_ARITHM__TYPE_OF_RIGHT_OPERAND_IS_INVALID, errorMessage));
+        EProgram::current->semanticErrors.push_back(SemanticError(EXPR_COMPARE__TYPE_OF_OPERAND_IS_INVALID, errorMessage));
         this->_exprInfo[expr].isValid = false;
     }
     else if (this->_exprInfo.at(expr->expr_right).resultType.isClass()) {
@@ -1121,9 +1189,37 @@ void ERoutine::_resolveBinaryArithmExpr(const EFeatureMetaInfo& selfMetaInfo, EU
         this->_exprInfo.at(expr->expr_right).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()J");
     }
 
-    if (this->_exprInfo[expr].isValid) {
-        this->_exprInfo[expr].resultType = EType::intType();
+    if (true) {
+
     }
+    else {
+        if (this->_exprInfo.at(expr->expr_left).resultType.isClass()) {
+            EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_left).resultType.firstElemClassName());
+
+            this->_exprInfo.at(expr->expr_left).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+            this->_exprInfo.at(expr->expr_left).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()J");
+        }
+
+        if (this->_exprInfo.at(expr->expr_right).resultType.isClass()) {
+            EClass* argOwnerClassInfo = EProgram::current->getClassBy(this->_exprInfo.at(expr->expr_right).resultType.firstElemClassName());
+
+            this->_exprInfo.at(expr->expr_right).getterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
+            this->_exprInfo.at(expr->expr_right).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()J");
+        }
+    }
+
+    if (this->_exprInfo[expr].isValid) {
+        this->_exprInfo[expr].resultType = EType::boolType();
+    }
+}
+
+void ERoutine::_resolveEqualityCompareExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
+}
+
+void ERoutine::_resolveBinaryLogicExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
+}
+
+void ERoutine::_resolveUnaryLogicExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
 }
 
 bool ERoutine::isConformingTo(const EFeature& other, bool areDeclarationsCompared) const {

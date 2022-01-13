@@ -24,6 +24,14 @@ void EClassARRAY::_defineFeatures() {
 
     this->_addFeature( std::make_shared<ERoutine>(ERoutine("GET", this, EType::classType(EClassANY::classRTLname()), {{"index", EType::intType()}}, {})) );
     this->_addFeature( std::make_shared<ERoutine>(ERoutine("SET", this, EType::noType(), {{"value", EType::classType(EClassANY::classRTLname())}, {"index", EType::intType()}}, {})) );
+
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("ADD_FIRST", this, EType::noType(), {{"value", EType::classType(EClassANY::classRTLname())}}, {})) );
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("ADD_LAST", this, EType::noType(), {{"value", EType::classType(EClassANY::classRTLname())}}, {})) );
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("ADD", this, EType::noType(), {{"value", EType::classType(EClassANY::classRTLname())}, {"index", EType::intType()}}, {})) );
+
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("REMOVE_FIRST", this, EType::noType(), {}, {})) );
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("REMOVE_LAST", this, EType::noType(), {}, {})) );
+    this->_addFeature( std::make_shared<ERoutine>(ERoutine("REMOVE", this, EType::noType(), {{"index", EType::intType()}}, {})) );
 }
 
 std::string EClassARRAY::name() const { return EClassARRAY::classRTLname(); }

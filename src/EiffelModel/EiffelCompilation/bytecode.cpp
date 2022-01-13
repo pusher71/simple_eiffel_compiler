@@ -3,13 +3,15 @@
 #include "../EiffelCore/EiffelClasses/RTLclasses/eclassconsoleio.h"
 #include "../EiffelCore/eprogram.h"
 
+#include <iostream>
+
 ByteCode::ByteCode() {}
 
 ByteCode::ByteCode(const EUserClass& userClass) {
     // Main bytecode values
     this->_appendFourBytes(0xCAFEBABE);     // "Magic" java constant
     this->_appendTwoBytes(0x0000);          // Minor version of java
-    this->_appendTwoBytes(0x003C);          // Major version of java
+    this->_appendTwoBytes(0x0037);          // Major version of java
 
     // Bytecode of constant table
     ByteCode constantTableByteCode(userClass._constants);
@@ -304,6 +306,8 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
         }
 
         if (!attributeDescriptor.empty()) {
+            std::cout << userClass.fullName() << " :: " << attributeMetaInfo->finalName() << ", " << attributeDescriptor << std::endl;
+
             routineBodyCode._append(ByteCode::aload(0x0));
             routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy(attributeTypeFirstClassFullName)));
             routineBodyCode._append(ByteCode::dup());
@@ -553,19 +557,19 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* e
         case expr_bminus:
         case expr_mul:
         case expr_idiv:                 this->_append(ByteCode::binArithmExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_uminus:               this->_append(ByteCode::unminusExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_uminus:               this->_append(ByteCode::unArithmExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_less:                 this->_append(ByteCode::lessExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_great:                this->_append(ByteCode::greatExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_less_equal:           this->_append(ByteCode::lessequalExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_great_equal:          this->_append(ByteCode::greatequalExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_equal:                this->_append(ByteCode::equalExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_notequal:             this->_append(ByteCode::notequalExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_less:
+        case expr_great:
+        case expr_less_equal:
+        case expr_great_equal:          this->_append(ByteCode::compareExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_equal:
+        case expr_notequal:             this->_append(ByteCode::equalityCompareExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_and:                  this->_append(ByteCode::andExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_or:                   this->_append(ByteCode::orExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_not:                  this->_append(ByteCode::notExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_xor:                  this->_append(ByteCode::xorExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_and:
+        case expr_or:
+        case expr_xor:                  this->_append(ByteCode::binLogicExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_not:                  this->_append(ByteCode::unLogicExprByteCode(userClassConstants, expression, expressionInfo)); break;
     }
 }
 
@@ -702,12 +706,16 @@ ByteCode ByteCode::argumentsByteCode(const EConstantTable& userClassConstants, c
     return result;
 }
 
-#include <iostream>
-
 ByteCode ByteCode::arrElemExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
     result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+
     result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
     result._append(ByteCode::invokevirtual(expressionInfo.at(expression).methodRef_constLink, 1));
 
     return result;
@@ -740,70 +748,64 @@ ByteCode ByteCode::binArithmExprByteCode(const EConstantTable& userClassConstant
     return result;
 }
 
-ByteCode ByteCode::unminusExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+ByteCode ByteCode::unArithmExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
+    result._append(ByteCode::lneg());
 
     return result;
 }
 
-ByteCode ByteCode::lessExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+ByteCode ByteCode::compareExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
     ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+    if (expressionInfo.at(expression->expr_left).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
+    }
+
+    result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
+    result._append(ByteCode::lcmp());
+
+    ByteCode cmpBlock;
+
+    cmpBlock._append(ByteCode::iconst(0x0));
+    cmpBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+    switch (expression->type) {
+        case expr_great:        result._append(ByteCode::ifgt(0x3 + cmpBlock._bytes.size())); break;
+        case expr_great_equal:  result._append(ByteCode::ifge(0x3 + cmpBlock._bytes.size())); break;
+        case expr_less:         result._append(ByteCode::iflt(0x3 + cmpBlock._bytes.size())); break;
+        case expr_less_equal:   result._append(ByteCode::ifle(0x3 + cmpBlock._bytes.size())); break;
+
+        default: break;
+    }
+
+    result._append(cmpBlock);
+    result._append(ByteCode::iconst(0x1));
 
     return result;
 }
 
-ByteCode ByteCode::greatExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
+ByteCode ByteCode::equalityCompareExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
 }
 
-ByteCode ByteCode::lessequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
+ByteCode ByteCode::binLogicExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
 }
 
-ByteCode ByteCode::greatequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
-ByteCode ByteCode::equalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
-ByteCode ByteCode::notequalExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
-ByteCode ByteCode::andExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
-ByteCode ByteCode::orExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
-ByteCode ByteCode::notExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
-}
-
-ByteCode ByteCode::xorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
-    ByteCode result;
-
-    return result;
+ByteCode ByteCode::unLogicExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
 }
 
 ByteCode& ByteCode::_appendByte(unsigned char value) {
@@ -1009,6 +1011,13 @@ ByteCode ByteCode::iinc(char u1, signed char i) {
     result._appendByte(0x84);
     result._appendByte(u1);
     result._appendByte(i);
+
+    return result;
+}
+
+ByteCode ByteCode::lcmp() {
+    ByteCode result;
+    result._appendByte(0x94);
 
     return result;
 }
@@ -1252,6 +1261,13 @@ ByteCode ByteCode::invokestatic(short int u2, short int argCount) {
     return result;
 }
 
+ByteCode ByteCode::_return() {
+    ByteCode result;
+    result._appendByte(0xB1);
+
+    return result;
+}
+
 ByteCode ByteCode::ireturn() {
     ByteCode result;
     result._appendByte(0xAC);
@@ -1259,16 +1275,16 @@ ByteCode ByteCode::ireturn() {
     return result;
 }
 
-ByteCode ByteCode::areturn() {
+ByteCode ByteCode::lreturn() {
     ByteCode result;
-    result._appendByte(0xB0);
+    result._appendByte(0xAD);
 
     return result;
 }
 
-ByteCode ByteCode::_return() {
+ByteCode ByteCode::areturn() {
     ByteCode result;
-    result._appendByte(0xB1);
+    result._appendByte(0xB0);
 
     return result;
 }

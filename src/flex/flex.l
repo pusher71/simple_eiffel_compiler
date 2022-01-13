@@ -653,6 +653,7 @@ integer         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_INTEG
 natural         { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_NATURAL; }
 string          { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_STRING; }
 array           { debug_moveCursorToNextCharacter(yyleng); return DATATYPE_ARRAY; }
+consoleio       { debug_moveCursorToNextCharacter(yyleng); return CONSOLEIO; }
 
 "+"     { debug_moveCursorToNextCharacter(yyleng); return '+'; }
 "-"     { debug_moveCursorToNextCharacter(yyleng); return '-'; }
