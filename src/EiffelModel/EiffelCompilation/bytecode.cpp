@@ -306,8 +306,6 @@ ByteCode ByteCode::defaultConstructorByteCode(const EConstantTable& userClassCon
         }
 
         if (!attributeDescriptor.empty()) {
-            std::cout << userClass.fullName() << " :: " << attributeMetaInfo->finalName() << ", " << attributeDescriptor << std::endl;
-
             routineBodyCode._append(ByteCode::aload(0x0));
             routineBodyCode._append(ByteCode::new_(userClassConstants.searchClassConstBy(attributeTypeFirstClassFullName)));
             routineBodyCode._append(ByteCode::dup());
@@ -566,10 +564,10 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* e
         case expr_equal:
         case expr_notequal:             this->_append(ByteCode::equalityCompareExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
-        case expr_and:
-        case expr_or:
-        case expr_xor:                  this->_append(ByteCode::binLogicExprByteCode(userClassConstants, expression, expressionInfo)); break;
-        case expr_not:                  this->_append(ByteCode::unLogicExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_and:                  this->_append(ByteCode::logicAndExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_or:                   this->_append(ByteCode::logicOrExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_xor:                  this->_append(ByteCode::logicXorExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_not:                  this->_append(ByteCode::logicNotExprByteCode(userClassConstants, expression, expressionInfo)); break;
     }
 }
 
@@ -808,10 +806,116 @@ ByteCode ByteCode::compareExprByteCode(const EConstantTable& userClassConstants,
 ByteCode ByteCode::equalityCompareExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
 }
 
-ByteCode ByteCode::binLogicExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+ByteCode ByteCode::logicAndExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+    ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+    if (expressionInfo.at(expression->expr_left).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
+    }
+
+    ByteCode leftIsTrueLogicBlock;
+
+    ByteCode rightIsTrueLogicBlock;
+    rightIsTrueLogicBlock._append(ByteCode::iconst(0x1));
+    rightIsTrueLogicBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+    leftIsTrueLogicBlock._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        leftIsTrueLogicBlock._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        leftIsTrueLogicBlock._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
+    leftIsTrueLogicBlock._append(ByteCode::ifeq(0x3 + rightIsTrueLogicBlock._bytes.size()));
+    leftIsTrueLogicBlock._append(rightIsTrueLogicBlock);
+
+    result._append(ByteCode::ifeq(0x3 + leftIsTrueLogicBlock._bytes.size()));
+    result._append(leftIsTrueLogicBlock);
+    result._append(ByteCode::iconst(0x0));
+
+    return result;
 }
 
-ByteCode ByteCode::unLogicExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+ByteCode ByteCode::logicOrExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+    ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+    if (expressionInfo.at(expression->expr_left).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
+    }
+
+    ByteCode leftIsFalseLogicBlock;
+
+    ByteCode rightIsFalseLogicBlock;
+    rightIsFalseLogicBlock._append(ByteCode::iconst(0x0));
+    rightIsFalseLogicBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+    leftIsFalseLogicBlock._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        leftIsFalseLogicBlock._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        leftIsFalseLogicBlock._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
+    leftIsFalseLogicBlock._append(ByteCode::ifne(0x3 + rightIsFalseLogicBlock._bytes.size()));
+    leftIsFalseLogicBlock._append(rightIsFalseLogicBlock);
+
+    result._append(ByteCode::ifne(0x3 + leftIsFalseLogicBlock._bytes.size()));
+    result._append(leftIsFalseLogicBlock);
+    result._append(ByteCode::iconst(0x1));
+
+    return result;
+}
+
+ByteCode ByteCode::logicXorExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+    ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+    if (expressionInfo.at(expression->expr_left).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
+    }
+
+    result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
+    ByteCode logicBlock;
+
+    logicBlock._append(ByteCode::iconst(0x1));
+    logicBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+    result._append(ByteCode::if_icmpeq(0x3 + logicBlock._bytes.size()));
+
+    result._append(logicBlock);
+    result._append(ByteCode::iconst(0x0));
+
+    return result;
+}
+
+ByteCode ByteCode::logicNotExprByteCode(const EConstantTable& userClassConstants, const expr_strct* expression, const std::map<const expr_strct*, ERoutine::ExpressionInfo>& expressionInfo) {
+    ByteCode result;
+
+    result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+    if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+        result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+        result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+
+    ByteCode logicBlock;
+
+    logicBlock._append(ByteCode::iconst(0x0));
+    logicBlock._append(ByteCode::goto_(0x3 + 0x1));
+
+    result._append(ByteCode::ifeq(0x3 + logicBlock._bytes.size()));
+
+    result._append(logicBlock);
+    result._append(ByteCode::iconst(0x1));
+
+    return result;
 }
 
 ByteCode& ByteCode::_appendByte(unsigned char value) {

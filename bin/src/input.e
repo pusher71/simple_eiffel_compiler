@@ -10,9 +10,44 @@ feature
     local
         nums : ARRAY[INTEGER]
         chr : CHARACTER
+        bool : BOOLEAN
     do
         chr := 'A'
-        io.put_boolean(chr < 65)
+        bool := True
+        bool := bool
+
+        io.put_boolean(True and True)
+        io.new_line
+        io.put_boolean(bool and True)
+        io.new_line
+        io.put_boolean(True and False)
+        io.new_line
+        io.put_boolean(bool and False)
+        io.new_line
+        io.put_boolean(False and bool)
+        io.new_line
+        io.new_line
+
+        io.put_boolean(True or True)
+        io.new_line
+        io.put_boolean(bool or True)
+        io.new_line
+        io.put_boolean(True or False)
+        io.new_line
+        io.put_boolean(bool or False)
+        io.new_line
+        io.put_boolean(False or bool)
+        io.new_line
+        io.new_line
+
+        io.put_boolean(True xor True)
+        io.new_line
+        io.put_boolean(bool xor True)
+        io.new_line
+        io.put_boolean(True xor False)
+        io.new_line
+        io.put_boolean(False xor bool)
+        io.new_line
     end
 
     bubble_sort(nums : ARRAY[INTEGER])
