@@ -103,7 +103,7 @@ enum SemanticErrorCode {
     EXPR_UN_ARITHM__TYPE_OF_OPERAND_IS_INVALID,
 
     // ... ... Compare operators
-    EXPR_COMPARE__TYPE_OF_OPERAND_IS_INVALID,
+    EXPR_COMPARE__TYPE_OF_OPERANDS_ARE_INVALID,
 
     // ... ... Logic operators
     EXPR_BIN_LOGIC__TYPE_OF_OPERAND_IS_INVALID,

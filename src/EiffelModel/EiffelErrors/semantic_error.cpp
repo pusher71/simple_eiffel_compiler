@@ -238,8 +238,8 @@ std::string SemanticError::errorReason() const {
             break;
 
         // ... ... Compare operators
-        case EXPR_COMPARE__TYPE_OF_OPERAND_IS_INVALID:
-            result += "TYPE OF OPERAND IN COMPARE OPERATOR IS INVALID";
+        case EXPR_COMPARE__TYPE_OF_OPERANDS_ARE_INVALID:
+            result += "TYPE OF OPERANDS IN COMPARE OPERATOR ARE INVALID";
             break;
 
         // ... ... Logic operators

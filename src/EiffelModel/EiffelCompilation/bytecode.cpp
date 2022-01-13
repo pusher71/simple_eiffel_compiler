@@ -770,11 +770,17 @@ ByteCode ByteCode::compareExprByteCode(const EConstantTable& userClassConstants,
         result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
         result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
     }
+    if (expressionInfo.at(expression->expr_left).resultType.isType(dtype_character)) {
+        result._append(ByteCode::i2l());
+    }
 
     result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
     if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
         result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
         result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+    }
+    if (expressionInfo.at(expression->expr_right).resultType.isType(dtype_character)) {
+        result._append(ByteCode::i2l());
     }
 
     result._append(ByteCode::lcmp());

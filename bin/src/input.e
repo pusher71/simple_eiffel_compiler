@@ -9,22 +9,10 @@ feature
     make
     local
         nums : ARRAY[INTEGER]
-        value, index : INTEGER
+        chr : CHARACTER
     do
-        create nums.make_empty
-        nums.add_last(2)
-        nums.add_last(1)
-        nums.add_last(3)
-        nums.add_last(2)
-        nums.add_last(0)
-        nums.add_last(-1)
-        nums.add_last(100)
-        nums.add_last(-20)
-        nums.add_last(20)
-
-        print_nums(nums)
-        bubble_sort(nums)
-        print_nums(nums)
+        chr := 'A'
+        io.put_boolean(chr < 65)
     end
 
     bubble_sort(nums : ARRAY[INTEGER])
