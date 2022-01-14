@@ -62,27 +62,28 @@
      NOTEQUAL = 278,
      GREAT_EQUAL = 279,
      LESS_EQUAL = 280,
-     INTEGER_DIVISION = 281,
-     NOT = 282,
-     UMINUS = 283,
-     LITER_BOOLEAN = 284,
-     LITER_INTEGER = 285,
-     LITER_CHAR = 286,
-     LITER_STRING = 287,
-     LITER_VOID = 288,
-     INHERIT = 289,
-     RENAME = 290,
-     UNDEFINE = 291,
-     REDEFINE = 292,
-     SELECT = 293,
-     AS = 294,
-     CREATE = 295,
-     FEATURE = 296,
-     LOCAL = 297,
-     DO = 298,
-     CURRENT = 299,
-     RESULT = 300,
-     PRECURSOR = 301
+     MOD_DIVISION = 281,
+     INTEGER_DIVISION = 282,
+     NOT = 283,
+     UMINUS = 284,
+     LITER_BOOLEAN = 285,
+     LITER_INTEGER = 286,
+     LITER_CHAR = 287,
+     LITER_STRING = 288,
+     LITER_VOID = 289,
+     INHERIT = 290,
+     RENAME = 291,
+     UNDEFINE = 292,
+     REDEFINE = 293,
+     SELECT = 294,
+     AS = 295,
+     CREATE = 296,
+     FEATURE = 297,
+     LOCAL = 298,
+     DO = 299,
+     CURRENT = 300,
+     RESULT = 301,
+     PRECURSOR = 302
    };
 #endif
 /* Tokens.  */
@@ -109,27 +110,28 @@
 #define NOTEQUAL 278
 #define GREAT_EQUAL 279
 #define LESS_EQUAL 280
-#define INTEGER_DIVISION 281
-#define NOT 282
-#define UMINUS 283
-#define LITER_BOOLEAN 284
-#define LITER_INTEGER 285
-#define LITER_CHAR 286
-#define LITER_STRING 287
-#define LITER_VOID 288
-#define INHERIT 289
-#define RENAME 290
-#define UNDEFINE 291
-#define REDEFINE 292
-#define SELECT 293
-#define AS 294
-#define CREATE 295
-#define FEATURE 296
-#define LOCAL 297
-#define DO 298
-#define CURRENT 299
-#define RESULT 300
-#define PRECURSOR 301
+#define MOD_DIVISION 281
+#define INTEGER_DIVISION 282
+#define NOT 283
+#define UMINUS 284
+#define LITER_BOOLEAN 285
+#define LITER_INTEGER 286
+#define LITER_CHAR 287
+#define LITER_STRING 288
+#define LITER_VOID 289
+#define INHERIT 290
+#define RENAME 291
+#define UNDEFINE 292
+#define REDEFINE 293
+#define SELECT 294
+#define AS 295
+#define CREATE 296
+#define FEATURE 297
+#define LOCAL 298
+#define DO 299
+#define CURRENT 300
+#define RESULT 301
+#define PRECURSOR 302
 
 
 
@@ -179,7 +181,7 @@ typedef union YYSTYPE
     char*       id_field;
 }
 /* Line 1529 of yacc.c.  */
-#line 183 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
+#line 185 "/Users/alekseiyakimov/Documents/GitHub/simple_eiffel_compiler/src/flex/parser.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

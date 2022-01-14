@@ -88,7 +88,7 @@
 %left AND
 %left '<' '>' LESS_EQUAL GREAT_EQUAL '=' NOTEQUAL
 %left '+' '-'
-%left '*' INTEGER_DIVISION
+%left '*' INTEGER_DIVISION MOD_DIVISION
 %right UMINUS NOT
 %left '@'
 %left '.'
@@ -321,6 +321,7 @@ expr: LITER_BOOLEAN                             { $$ = create_expr_liter_bool(cu
     | expr '-' expr                             { $$ = create_expr_operation(curr_node_index++, expr_bminus, $1, $3); }
     | expr '*' expr                             { $$ = create_expr_operation(curr_node_index++, expr_mul, $1, $3); }
     | expr INTEGER_DIVISION expr                { $$ = create_expr_operation(curr_node_index++, expr_idiv, $1, $3); }
+    | expr MOD_DIVISION expr                    { $$ = create_expr_operation(curr_node_index++, expr_mod, $1, $3); }
     | '-' expr %prec UMINUS                     { $$ = create_expr_operation(curr_node_index++, expr_uminus, NULL, $2); }
 
     | expr '<' expr                             { $$ = create_expr_operation(curr_node_index++, expr_less, $1, $3); }

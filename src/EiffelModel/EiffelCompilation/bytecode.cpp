@@ -554,7 +554,8 @@ ByteCode::ByteCode(const EConstantTable& userClassConstants, const expr_strct* e
         case expr_plus:
         case expr_bminus:
         case expr_mul:
-        case expr_idiv:                 this->_append(ByteCode::binArithmExprByteCode(userClassConstants, expression, expressionInfo)); break;
+        case expr_idiv:
+        case expr_mod:                  this->_append(ByteCode::binArithmExprByteCode(userClassConstants, expression, expressionInfo)); break;
         case expr_uminus:               this->_append(ByteCode::unArithmExprByteCode(userClassConstants, expression, expressionInfo)); break;
 
         case expr_less:
@@ -734,11 +735,31 @@ ByteCode ByteCode::binArithmExprByteCode(const EConstantTable& userClassConstant
         result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
     }
 
+    if (expression->type == expr_mod) {
+        result._append(ByteCode(userClassConstants, expression->expr_left, expressionInfo));
+        if (expressionInfo.at(expression->expr_left).getterConstClass_constLink != 0) {
+            result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_left).getterConstClass_constLink));
+            result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_left).getterMethodRef_constLink, 0));
+        }
+
+        result._append(ByteCode(userClassConstants, expression->expr_right, expressionInfo));
+        if (expressionInfo.at(expression->expr_right).getterConstClass_constLink != 0) {
+            result._append(ByteCode::checkcast(expressionInfo.at(expression->expr_right).getterConstClass_constLink));
+            result._append(ByteCode::invokevirtual(expressionInfo.at(expression->expr_right).getterMethodRef_constLink, 0));
+        }
+    }
+
     switch (expression->type) {
         case expr_plus:     result._append(ByteCode::ladd()); break;
         case expr_bminus:   result._append(ByteCode::lsub()); break;
         case expr_mul:      result._append(ByteCode::lmul()); break;
         case expr_idiv:     result._append(ByteCode::ldiv()); break;
+
+        case expr_mod:
+            result._append(ByteCode::ldiv());
+            result._append(ByteCode::lmul());
+            result._append(ByteCode::lsub());
+            break;
 
         default: break;
     }

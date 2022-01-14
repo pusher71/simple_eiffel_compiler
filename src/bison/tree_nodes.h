@@ -184,6 +184,7 @@ enum expr_type {
     expr_bminus,
     expr_mul,
     expr_idiv,
+    expr_mod,
     expr_uminus,
 
     expr_less,

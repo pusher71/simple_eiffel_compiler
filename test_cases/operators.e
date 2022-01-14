@@ -14,14 +14,14 @@ feature
         what0, what1, what2, what3 : INTEGER
     do
         x := 5 * 20 - 35 // 3;
-        y := -2 * -x;;;
+        y := -2 * -x \\ 3;;;
         s := -(((x) + (y))) * ((((2))));
         r := x < y and y * s <= x
 
         what0 := - -3
         what1 := (2 + - (- ((- -3))) * 3)
         what2 := - -24 // - - (- -3) * 5
-        what3 := - -3 - - - 4
+        what3 := - -3 - - - 4 \\ 2
 
         io.put_integer(x)
         io.new_line

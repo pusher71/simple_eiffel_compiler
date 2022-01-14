@@ -581,6 +581,16 @@ void print_expr(FILE* dot_file, struct expr_strct* expr) {
             fprintf(dot_file, "%u -> %u[label=\"expr_right\"];\n", expr->_node_index, expr->expr_right->_node_index);
             break;
 
+        case expr_mod:
+            fprintf(dot_file, "%u[label=\"\\\\\"];\n", expr->_node_index);
+
+            print_expr(dot_file, expr->expr_left);
+            fprintf(dot_file, "%u -> %u[label=\"expr_left\"];\n", expr->_node_index, expr->expr_left->_node_index);
+
+            print_expr(dot_file, expr->expr_right);
+            fprintf(dot_file, "%u -> %u[label=\"expr_right\"];\n", expr->_node_index, expr->expr_right->_node_index);
+            break;
+
         case expr_uminus:
             fprintf(dot_file, "%u[label=\"-\"];\n", expr->_node_index);
 

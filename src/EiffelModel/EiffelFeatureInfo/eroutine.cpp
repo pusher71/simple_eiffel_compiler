@@ -622,7 +622,8 @@ void ERoutine::_resolveExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& us
         case expr_plus:
         case expr_bminus:
         case expr_mul:
-        case expr_idiv:     this->_resolveBinaryArithmExpr(selfMetaInfo, userClass, expr); break;
+        case expr_idiv:
+        case expr_mod:      this->_resolveBinaryArithmExpr(selfMetaInfo, userClass, expr); break;
         case expr_uminus:   this->_resolveUnaryArithmExpr(selfMetaInfo, userClass, expr); break;
 
         case expr_less:
