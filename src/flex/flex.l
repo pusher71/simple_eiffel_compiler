@@ -634,7 +634,6 @@ feature         { debug_moveCursorToNextCharacter(yyleng); return FEATURE; }
 inherit         { debug_moveCursorToNextCharacter(yyleng); return INHERIT; }
 rename          { debug_moveCursorToNextCharacter(yyleng); return RENAME; }
 as              { debug_moveCursorToNextCharacter(yyleng); return AS; }
-undefine        { debug_moveCursorToNextCharacter(yyleng); return UNDEFINE; }
 redefine        { debug_moveCursorToNextCharacter(yyleng); return REDEFINE; }
 select          { debug_moveCursorToNextCharacter(yyleng); return SELECT; }
 local           { debug_moveCursorToNextCharacter(yyleng); return LOCAL; }

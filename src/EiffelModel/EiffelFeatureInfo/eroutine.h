@@ -115,7 +115,12 @@ private:
     void _resolveCallPrecursorExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
     void _resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
     void _resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
-    bool _resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess);
+    bool _resolveCallArguments(const EFeatureMetaInfo&      selfMetaInfo,
+                               EUserClass&                  userClass,
+                               const EFeature*              featureInfo,
+                               const argument_seq_strct*    argumentSeq,
+                               bool                         isFieldAccess,
+                               EType                        arrayType = EType::noType());
 
     void _resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr);
 

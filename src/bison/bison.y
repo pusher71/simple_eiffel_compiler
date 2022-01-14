@@ -105,7 +105,6 @@
 // Inheritance block
 %token INHERIT
 %token RENAME
-%token UNDEFINE
 %token REDEFINE
 %token SELECT
 %token AS

@@ -384,7 +384,15 @@ void ERoutine::_resolveCreateInstruction(const EFeatureMetaInfo& selfMetaInfo, E
             EProgram::semanticErrors.push_back(SemanticError(INSTR_CREATE__UNKNOWN_CREATOR, errorMessage));
         }
         else {
-            bool isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, createInstruction->argument_seq, 0);
+            bool isValid;
+
+            if (fieldOrLocalReturnType.isType(dtype_array)) {
+                isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, createInstruction->argument_seq, 0, fieldOrLocalReturnType);
+            }
+            else {
+                isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, createInstruction->argument_seq, 0);
+            }
+
             if (!isValid) { return; }
 
             this->_instrInfo[createInstruction].creatorMethodRef_constLink = userClass._constants.appendMethodRef(fieldOrLocalOwnerClassInfo->fullName(), createInstruction->second_id_name, creatorInfo->second->descriptor());
@@ -818,13 +826,18 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
             }
             else {
                 this->_exprInfo[expr].isRTLcall = true;
-
                 this->_exprInfo[expr].fieldRef_constLink = userClass._constants.appendFieldRef(targetOwnerClassInfo->fullName(), attributeMetaInfo->finalName(), attributeMetaInfo->implementation()->descriptor());
             }
 
-            this->_exprInfo.at(expr).isValid = this->_resolveCallArguments(selfMetaInfo, userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
-
             this->_exprInfo[expr].resultType = EType(attributeMetaInfo->implementation()->returnType());
+
+            if (this->_exprInfo[expr->expr_left].resultType.isType(dtype_array)) {
+                this->_exprInfo.at(expr).isValid = this->_resolveCallArguments(selfMetaInfo, userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access, this->_exprInfo[expr->expr_left].resultType);
+            }
+            else {
+                this->_exprInfo.at(expr).isValid = this->_resolveCallArguments(selfMetaInfo, userClass, attributeMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+            }
+
             if (attributeMetaInfo->implementation()->returnType() != EType::noType()) {
                 EClass* checkcastClassInfo = EProgram::current->getClassBy(attributeMetaInfo->implementation()->returnType().firstElemClassName());
 
@@ -852,9 +865,15 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
                     this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(targetOwnerClassInfo->fullName(), routineMetaInfo->finalName(), routineMetaInfo->implementation()->descriptor());
                 }
 
-                this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
-
                 this->_exprInfo[expr].resultType = EType(routineMetaInfo->implementation()->returnType());
+
+                if (this->_exprInfo[expr->expr_left].resultType.isType(dtype_array)) {
+                    this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access, this->_exprInfo[expr->expr_left].resultType);
+                }
+                else {
+                    this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, routineMetaInfo->implementation(), expr->argument_seq, expr->is_field_access);
+                }
+
                 if (routineMetaInfo->implementation()->returnType() != EType::noType()) {
                     EClass* checkcastClassInfo = EProgram::current->getClassBy(routineMetaInfo->implementation()->returnType().firstElemClassName());
 
@@ -888,7 +907,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
         EType firstArgumentType = this->_exprInfo.at(expr->argument_seq->value).resultType;
 
         if (!firstArgumentType.canCastTo(this->_exprInfo.at(expr->expr_left).resultType.arraySubtype())) {
-            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\"\n";
+            std::string errorMessage = "feature \"" + this->_ownerClassName + "::" + this->_name + "\" - " + std::string(expr->method_id_name) + "\n";
             errorMessage += " - array element type: " + this->_exprInfo.at(expr->expr_left).resultType.arraySubtype().toString() + "\n";
             errorMessage += " - argument type:      " + firstArgumentType.toString();
 
@@ -929,7 +948,13 @@ void ERoutine::_resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCla
         const auto& creatorInfo = std::find_if(createClassInfo->_creators.begin(), createClassInfo->_creators.end(), [&](const auto& creatorInfo) { return (creatorInfo.first == expr->method_id_name); });
 
         if (creatorInfo != createClassInfo->_creators.end()) {
-            this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
+            if (this->_exprInfo[expr].resultType.isType(dtype_array)) {
+                this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access, this->_exprInfo[expr].resultType);
+            }
+            else {
+                this->_exprInfo[expr].isValid = this->_resolveCallArguments(selfMetaInfo, userClass, creatorInfo->second, expr->argument_seq, expr->is_field_access);
+            }
+
             this->_exprInfo[expr].methodRef_constLink = userClass._constants.appendMethodRef(createClassInfo->fullName(), expr->method_id_name, creatorInfo->second->descriptor());
 
             // Check if type of first argument in "MAKE_FILLED" creator can cast to type of array element
@@ -957,7 +982,15 @@ void ERoutine::_resolveCreateExpr(const EFeatureMetaInfo& selfMetaInfo, EUserCla
     }
 }
 
-bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, const EFeature* featureInfo, const argument_seq_strct* argumentSeq, bool isFieldAccess) {
+#include <iostream>
+
+bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo&      selfMetaInfo,
+                           EUserClass&                  userClass,
+                           const EFeature*              featureInfo,
+                           const argument_seq_strct*    argumentSeq,
+                           bool                         isFieldAccess,
+                           EType                        arrayType)
+{
     std::vector<expr_strct*> argumentsExpr;
     std::vector<std::pair<std::string, EType>> argumentsType;
     argument_seq_strct* argumentSeqElem = (argument_seq_strct*)argumentSeq;
@@ -1032,7 +1065,15 @@ bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
                     this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
                 }
                 else if (((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && !argumentsType.at(i).second.isClass()) {
-                    EClass* formalParamOwnerClassInfo = EProgram::current->getClassBy( ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().firstElemClassName() );
+                    std::cout << "ARRAY TYPE: " << arrayType.toString() << std::endl;
+
+                    EClass* formalParamOwnerClassInfo = nullptr;
+                    if (arrayType == EType::noType() || i != 0) {
+                        formalParamOwnerClassInfo = EProgram::current->getClassBy( ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().firstElemClassName() );
+                    }
+                    else if (i == 0) {
+                        formalParamOwnerClassInfo = EProgram::current->getClassBy( arrayType.arraySubtype().firstElemClassName() );
+                    }
 
                     this->_exprInfo.at(argumentsExpr.at(i)).methodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
                     this->_exprInfo.at(argumentsExpr.at(i)).setterConstClass_constLink = userClass.constants().appendConstClass(formalParamOwnerClassInfo->fullName());
