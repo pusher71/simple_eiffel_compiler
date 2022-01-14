@@ -177,6 +177,7 @@ std::string EType::descriptor(bool forceGettingPrimitiveType) const {
             case dtype_boolean:         result += "L" + EClassBOOLEAN::classRTLfullName() + ";"; break;
             case dtype_character:       result += "L" + EClassCHARACTER::classRTLfullName() + ";"; break;
             case dtype_integer:         result += "L" + EClassINTEGER::classRTLfullName() + ";"; break;
+            case dtype_natural:         result += "L" + EClassNATURAL::classRTLfullName() + ";"; break;
             case dtype_string:          result += "L" + EClassSTRING::classRTLfullName() + ";"; break;
             case dtype_array:           result += "L" + EClassARRAY::classRTLfullName() + ";"; break;
             case dtype_user_defined:    result += "L" + classInfo->fullName() + ";"; break;

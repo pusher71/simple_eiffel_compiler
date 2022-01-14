@@ -220,6 +220,8 @@ void EClass::_fillFeaturesTableUsingParent(const EClass* parent, const EParentIn
                         if (selfFeatureInfo.second.get()->isConformingTo(*result.implementation())) {
                             result.clearRedefinedFeatures();
                             result.setImplementation(selfFeatureInfo.second.get());
+
+                            result.setFeatureType(result.implementation()->featureType());
                         }
                         else {
                             std::string errorMessage = "class \"" + this->name() + "\" ";

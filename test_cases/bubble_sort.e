@@ -9,18 +9,23 @@ feature
     make
     local
         nums : ARRAY[INTEGER]
-        value, index : INTEGER
+        curr_value, value, index : INTEGER
     do
         create nums.make_empty
-        nums.add_last(2)
-        nums.add_last(1)
-        nums.add_last(3)
-        nums.add_last(2)
-        nums.add_last(0)
-        nums.add_last(-1)
-        nums.add_last(100)
-        nums.add_last(-20)
-        nums.add_last(20)
+
+        from
+            io.put_string("input natural value: ")
+            io.read_integer
+            curr_value := io.last_integer
+        until
+            curr_value < 0
+        loop
+            nums.add_last(curr_value)
+
+            io.put_string("input natural value: ")
+            io.read_integer
+            curr_value := io.last_integer
+        end
 
         print_nums(nums)
         bubble_sort(nums)

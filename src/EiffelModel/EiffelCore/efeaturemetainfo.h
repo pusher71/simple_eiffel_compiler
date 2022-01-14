@@ -59,6 +59,7 @@ public:
     void setFinalName(const std::string& finalName);
     void setFeatureMark(const std::string& className, const std::string& finalName);
     void setImplementation(EFeature* implementation);
+    void setFeatureType(EFeature::EFeatureType featureType);
     void setReturnType(EReturnType returnType);
 
     // Owner and parent info

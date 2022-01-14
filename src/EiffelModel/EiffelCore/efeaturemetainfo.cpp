@@ -21,6 +21,7 @@ EFeatureMetaInfo::EReturnType EFeatureMetaInfo::returnType() const { return this
 void EFeatureMetaInfo::setFinalName(const std::string& finalName) { this->_finalName = finalName; }
 void EFeatureMetaInfo::setFeatureMark(const std::string& className, const std::string& finalName) { this->_featureMark = {className, finalName}; }
 void EFeatureMetaInfo::setImplementation(EFeature* implementation) { this->_implementation = implementation; }
+void EFeatureMetaInfo::setFeatureType(EFeature::EFeatureType featureType) { this->_featureType = featureType; }
 void EFeatureMetaInfo::setReturnType(EFeatureMetaInfo::EReturnType returnType) { this->_returnType = returnType; }
 
 std::string EFeatureMetaInfo::currentOwnerClassName() const { return this->_currentOwnerClassName; }

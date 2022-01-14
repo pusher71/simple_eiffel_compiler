@@ -876,10 +876,13 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
         EProgram::semanticErrors.push_back(SemanticError(EXPR__METHOD_OR_VAR_CALL_WITH_UNKNOWN_ID, errorMessage));
         this->_exprInfo[expr].isValid = false;
     }
-    // Check if type of first argument in "SET" creator can cast to type of array element
+    // Check if type of first argument in setting or adding method of array can cast to type of array element
     else if (this->_exprInfo.at(expr).isValid &&
              this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_array) &&
-             std::string(expr->method_id_name) == "SET")
+             (std::string(expr->method_id_name) == "SET" ||
+              std::string(expr->method_id_name) == "ADD_FIRST" ||
+              std::string(expr->method_id_name) == "ADD_LAST" ||
+              std::string(expr->method_id_name) == "ADD"))
     {
         EType firstArgumentType = this->_exprInfo.at(expr->argument_seq->value).resultType;
 
@@ -888,7 +891,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
             errorMessage += " - array element type: " + this->_exprInfo.at(expr->expr_left).resultType.arraySubtype().toString() + "\n";
             errorMessage += " - argument type:      " + firstArgumentType.toString();
 
-            EProgram::semanticErrors.push_back(SemanticError(EXPR__CANT_CAST_TO_ARRAY_ELEMENT_TYPE_IN_ARRAY_SET_METHOD, errorMessage));
+            EProgram::semanticErrors.push_back(SemanticError(EXPR__CANT_CAST_TO_ARRAY_ELEMENT_TYPE_IN_ARRAY_METHOD, errorMessage));
         }
     }
 }
@@ -1028,11 +1031,11 @@ bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
                     this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
                 }
                 else if (((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && !argumentsType.at(i).second.isClass()) {
-                    EClass* argOwnerClassInfo = EProgram::current->getClassBy(argumentsType.at(i).second.firstElemClassName());
+                    EClass* formalParamOwnerClassInfo = EProgram::current->getClassBy( ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().firstElemClassName() );
 
-                    this->_exprInfo.at(argumentsExpr.at(i)).methodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
-                    this->_exprInfo.at(argumentsExpr.at(i)).setterConstClass_constLink = userClass.constants().appendConstClass(argOwnerClassInfo->fullName());
-                    this->_exprInfo.at(argumentsExpr.at(i)).setterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "SET", "(" + argumentsType.at(i).second.descriptor() + ")V");
+                    this->_exprInfo.at(argumentsExpr.at(i)).methodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), EProgram::javaDefaultConstructorName(), EProgram::javaDefaultConstructorDescriptor());
+                    this->_exprInfo.at(argumentsExpr.at(i)).setterConstClass_constLink = userClass.constants().appendConstClass(formalParamOwnerClassInfo->fullName());
+                    this->_exprInfo.at(argumentsExpr.at(i)).setterMethodRef_constLink = userClass.constants().appendMethodRef(formalParamOwnerClassInfo->fullName(), "SET", "(" + argumentsType.at(i).second.descriptor() + ")V");
                 }
             }
         }
@@ -1040,8 +1043,6 @@ bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo& selfMetaInfo, EUser
 
     return true;
 }
-
-#include <iostream>
 
 void ERoutine::_resolveArrElemExpr(const EFeatureMetaInfo& selfMetaInfo, EUserClass& userClass, expr_strct* expr) {
     this->_resolveExpr(selfMetaInfo, userClass, expr->expr_left);
