@@ -6,40 +6,120 @@ create
     make
 
 feature
-    x, y, s : INTEGER
-    r: BOOLEAN
-
     make
     local
-        what0, what1, what2, what3 : INTEGER
+        elems : ARRAY[A]
+        i : NATURAL
     do
-        x := 5 * 20 - 35 // 3;
-        y := -2 * -x \\ 3;;;
-        s := -(((x) + (y))) * ((((2))));
-        r := x < y and y * s <= x
+        create elems.make_empty
+        elems.add_last(create {A})
+        elems.add_last(create {B})
+        elems.add_last(create {C}.make(100))
 
-        what0 := - -3
-        what1 := (2 + - (- ((- -3))) * 3)
-        what2 := - -24 // - - (- -3) * 5
-        what3 := - -3 - - - 4 \\ 2
+        from
+            i := elems.lower
+        until
+            i > elems.upper
+        loop
+            io.put_integer( (elems @ i).elem.val )
+            io.new_line
 
-        io.put_integer(x)
-        io.new_line
-        io.put_integer(y)
-        io.new_line;;
-        io.put_integer(s)
-        io.new_line
-        io.put_boolean(r)
-        io.new_line;
-
-        io.put_integer(what0)
-        io.new_line
-        io.put_integer(what1)
-        io.new_line;;
-        io.put_integer(what2)
-        io.new_line
-        io.put_integer(what3)
-        io.new_line;
+            i := i + 1
+        end
     end
+end
+-- EOF
+
+-- a.e
+class
+    A
+
+feature
+    elem : BASE_VALUE
+    do
+        Result := create {BASE_VALUE}.make(1 + 2 * 3)
+    end
+end
+-- EOF
+
+-- b.e
+class
+    B
+
+inherit
+    A
+    redefine
+        elem
+    end
+
+feature
+    elem : MIDDLE_VALUE
+    do
+        Result := create {MIDDLE_VALUE}.make(14 // 3)
+    end
+end
+-- EOF
+
+-- c.e
+class
+    C
+
+inherit
+    B
+    redefine
+        elem
+    end
+
+create
+    make
+
+feature
+    elem : CHILD_VALUE
+
+    make(f_val : INTEGER)
+    do
+        elem := create {CHILD_VALUE}.make(f_val)
+    end
+end
+-- EOF
+
+-- base_value.e
+class
+    BASE_VALUE
+
+create
+    make
+
+feature
+    val : INTEGER
+
+    make(f_val : INTEGER)
+    do
+        val := f_val
+    end
+end
+-- EOF
+
+-- middle_value.e
+class
+    MIDDLE_VALUE
+
+inherit
+    BASE_VALUE
+
+create
+    make
+end
+-- EOF
+
+-- child_value.e
+class
+    CHILD_VALUE
+
+inherit
+    MIDDLE_VALUE
+
+create
+    make
 end
 -- EOF
