@@ -15,6 +15,7 @@ feature
         objE : E
     do
         -- A OBJECTS
+        io.put_string("== A OBJECTS ================%N")
         objA := create {A}
         objA.f
         objA := create {B}
@@ -29,6 +30,7 @@ feature
         io.new_line
 
         -- B OBJECTS
+        io.put_string("== B OBJECTS ================%N")
         objB := create {B}
         objB.f2
         objB := create {D}
@@ -39,6 +41,7 @@ feature
         io.new_line
 
         -- C OBJECTS
+        io.put_string("== C OBJECTS ================%N")
         objC := create {C}
         objC.f
         objC := create {D}
@@ -49,6 +52,7 @@ feature
         io.new_line
 
         -- D OBJECTS
+        io.put_string("== D OBJECTS ================%N")
         objD := create {D}
         objD.f
         objD.f2
@@ -59,6 +63,7 @@ feature
         io.new_line
 
         -- E OBJECTS
+        io.put_string("== E OBJECTS ================%N")
         objE := create {E}
         objE.f
         objE.f2
