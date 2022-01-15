@@ -167,6 +167,7 @@ inherit
 feature
     f3
     do
+        precursor{D}
         io.put_string("E::f3%N")
     end
 end
