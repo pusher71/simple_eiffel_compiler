@@ -157,7 +157,7 @@ void EProgram::runSemanticStage_3(const std::string& mainClassName) {
     }
 
     if (EProgram::mainClass == nullptr) {
-        std::string errorMessage = "Unknown class with name \"" + mainClassName + "\"";
+        std::string errorMessage = "No class with name \"" + mainClassName + "\"";
 
         EProgram::semanticErrors.push_back(SemanticError(PROGRAM__MAIN_CLASS_ISNT_SET, errorMessage));
     }
