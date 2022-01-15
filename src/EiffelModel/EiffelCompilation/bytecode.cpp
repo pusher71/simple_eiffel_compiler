@@ -215,6 +215,11 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
 
     ByteCode featureMetaInfoBodyCode;
 
+    int16_t runtimeExceptionConstClass_constLink = userClassConstants.searchClassConstBy( EProgram::runtimeExceptionClassFullName() );
+    int16_t runtimeExceptionClassInit_constLink = userClassConstants.searchMethodRefBy(EProgram::runtimeExceptionClassFullName(),
+                                                                                       EProgram::javaDefaultConstructorName(),
+                                                                                       EProgram::runtimeExceptionClassConstructorDescriptor());
+
     for (const auto& polymorphicFeatureInfo : featureMetaInfo.polyMethodImplementations()) {
         featureMetaInfoBodyCode._append(ByteCode::aload(0x0));
         featureMetaInfoBodyCode._append(ByteCode::instanceof(polymorphicFeatureInfo.first));
@@ -237,10 +242,10 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
             }
         }
         else {
-            ifBlock._append(ByteCode::new_(polymorphicFeatureInfo.second.exceptionClass_constLink()));
+            ifBlock._append(ByteCode::new_(runtimeExceptionConstClass_constLink));
             ifBlock._append(ByteCode::dup());
             ifBlock._append(ByteCode::ldc_w(polymorphicFeatureInfo.second.exceptionString_constLink()));
-            ifBlock._append(ByteCode::invokespecial(polymorphicFeatureInfo.second.exceptionMethodRef_constLink(), 0));
+            ifBlock._append(ByteCode::invokespecial(runtimeExceptionClassInit_constLink, 0));
             ifBlock._append(ByteCode::athrow());
             ifBlock._append(ByteCode::pop());
             ifBlock._append(ByteCode::_return());
@@ -249,6 +254,21 @@ ByteCode ByteCode::polyMethodByteCode(const EConstantTable& userClassConstants, 
         featureMetaInfoBodyCode._append(ByteCode::ifeq(0x03 + ifBlock._bytes.size()));
         featureMetaInfoBodyCode._append(ifBlock);
     }
+
+    // Check on NULL input value
+    featureMetaInfoBodyCode._append(ByteCode::aload(0x0));
+    featureMetaInfoBodyCode._append(ByteCode::const_null());
+
+    ByteCode ifBlock;
+    ifBlock._append(ByteCode::new_(runtimeExceptionConstClass_constLink));
+    ifBlock._append(ByteCode::dup());
+    ifBlock._append(ByteCode::ldc_w( userClassConstants.searchStringBy(EProgram::nullPointerExceptionMessage()) ));
+    ifBlock._append(ByteCode::invokespecial(runtimeExceptionClassInit_constLink, 0));
+    ifBlock._append(ByteCode::athrow());
+    ifBlock._append(ByteCode::pop());
+
+    featureMetaInfoBodyCode._append(ByteCode::if_acmpne(0x3 + ifBlock._bytes.size()));
+    featureMetaInfoBodyCode._append(ifBlock);
 
     switch (featureMetaInfo.returnType()) {
         case EFeatureMetaInfo::ereturntype_void:

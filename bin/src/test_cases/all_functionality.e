@@ -19,9 +19,9 @@ feature
         create l_a.make(3, 4, 5)
 
         x := 3
-        (l_a.map @ (x - 3 // 2) @ (45 \\ 4)).values.set(elem0.f, elem1.f)
+        (l_a.map @ (x - 3 // 2) @ (45 \\ 4)).values.put(elem0.f, elem1.f)
 
-        if ((l_a.map @ 2 @ 1).values @ 3 = 1 or print_logic)
+        if ( (((l_a.map @ 2 @ 1).values @ 3 = 1 ) and (l_a.map @ 2 @ 1).values @ 2 = 0 and (l_a.map @ 2 @ 2).values @ 3 = 0) or print_logic)
         then
             io.put_string("WIN!")
         end
@@ -49,25 +49,25 @@ feature
         i, j : INTEGER
         arr : ARRAY[B]
     do
-        create map.make_empty
+        create map.make_filled(create {ARRAY[B]}.make_empty, 1, rows)
 
         from
             i := map.lower
         until
-            i >= map.lower + rows
+            i >= map.upper
         loop
-            create arr.make_empty
+            create arr.make_filled(create {B}.make(0), 1, columns)
 
             from
                 j := arr.lower
             until
-                j >= arr.lower + columns
+                j >= arr.upper
             loop
-                arr.add_last(create {B}.make(depth))
+                arr.put(create {B}.make(depth), j)
                 j := j + 1
             end
 
-            map.add_last(arr)
+            map.put(arr, i)
             i := i + 1
         end
     end
@@ -88,14 +88,14 @@ feature
     local
         i : INTEGER
     do
-        create values.make_empty
+        create values.make_filled(0, 1, val_count)
 
         from
             i := values.lower
         until
-            i >= values.lower + val_count
+            i >= values.upper
         loop
-            values.add_last(0)
+            values.put(0, i)
             i := i + 1
         end
     end

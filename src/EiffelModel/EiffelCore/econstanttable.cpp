@@ -72,6 +72,17 @@ int16_t EConstantTable::searchUTF8By(const std::string& stringUTF8) const {
     return 0;
 }
 
+int16_t EConstantTable::searchStringBy(const std::string& stringValue) const {
+    for (const auto& constInfo : this->_constants) {
+        if (constInfo.second.type() == JvmConstant::jvm_string &&
+            this->_constants.at( constInfo.second.string_value() ).utf8_value() == stringValue) {
+            return constInfo.first;
+        }
+    }
+
+    return 0;
+}
+
 int16_t EConstantTable::searchClassConstBy(const std::string& classFullName) const {
     for (const auto& constInfo : this->_constants) {
         if (constInfo.second.type() == JvmConstant::jvm_class &&

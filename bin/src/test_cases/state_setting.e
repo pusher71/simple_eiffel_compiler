@@ -13,27 +13,27 @@ feature
         l_so : SUPER_OBJECT
     do
         create so.make(create {STATE})
-        current.self_print(current)
+        current.self_print_(current)
 
         l_so := create{OBJECT}.make(create {STATE_0})
-        l_so.print
+        l_so.print_
 
         so := create{OBJECT}.make(create {STATE_1})
-        current.self_print(current)
+        current.self_print_(current)
 
         create l_so.make_
-        l_so.print
+        l_so.print_
 
         create so.make_0
-        current.self_print(current)
+        current.self_print_(current)
 
         create l_so.make_1
-        l_so.print
+        l_so.print_
     end
 
-    self_print(m : MAIN)
+    self_print_(m : MAIN)
     do
-        m.so.print
+        m.so.print_
     end
 end
 -- EOF
@@ -45,17 +45,17 @@ class
 inherit
     SUPER_OBJECT
     redefine
-        print
+        print_
     end
 
 create
     make
 
 feature
-    print
+    print_
     do
-        io.put_string("OBJECT::print | ")
-        m_state.print
+        io.put_string("OBJECT::print_ | ")
+        m_state.print_
         io.new_line
     end
 
@@ -92,10 +92,10 @@ feature
         m_state := create {STATE_1}
     end
 
-    print
+    print_
     do
-        io.put_string("SUPER_OBJECT::print | ")
-        m_state.print
+        io.put_string("SUPER_OBJECT::print_ | ")
+        m_state.print_
         io.new_line
     end
 
@@ -117,7 +117,7 @@ inherit
     end
 
 feature
-    print
+    print_
     do
         Current.io_state.put_string("STATE")
     end
@@ -132,11 +132,11 @@ class
 inherit
     STATE
     redefine
-        print
+        print_
     end
 
 feature
-    print
+    print_
     do
         io_state.put_string("STATE_0")
     end
@@ -151,11 +151,11 @@ class
 inherit
     STATE
     redefine
-        print
+        print_
     end
 
 feature
-    print
+    print_
     do
         io_state.put_string("STATE_1")
     end

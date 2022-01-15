@@ -899,7 +899,7 @@ void ERoutine::_resolveCallSubcallExpr(const EFeatureMetaInfo& selfMetaInfo, EUs
     // Check if type of first argument in setting or adding method of array can cast to type of array element
     else if (this->_exprInfo.at(expr).isValid &&
              this->_exprInfo.at(expr->expr_left).resultType.isType(dtype_array) &&
-             (std::string(expr->method_id_name) == "SET" ||
+             (std::string(expr->method_id_name) == "PUT" ||
               std::string(expr->method_id_name) == "ADD_FIRST" ||
               std::string(expr->method_id_name) == "ADD_LAST" ||
               std::string(expr->method_id_name) == "ADD"))
@@ -1065,8 +1065,6 @@ bool ERoutine::_resolveCallArguments(const EFeatureMetaInfo&      selfMetaInfo,
                     this->_exprInfo.at(argumentsExpr.at(i)).getterMethodRef_constLink = userClass.constants().appendMethodRef(argOwnerClassInfo->fullName(), "GET", "()" + ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().descriptor());
                 }
                 else if (((ERoutine*)featureInfo)->getInnerVar(i+1)->type().isClass() && !argumentsType.at(i).second.isClass()) {
-                    std::cout << "ARRAY TYPE: " << arrayType.toString() << std::endl;
-
                     EClass* formalParamOwnerClassInfo = nullptr;
                     if (arrayType == EType::noType() || i != 0) {
                         formalParamOwnerClassInfo = EProgram::current->getClassBy( ((ERoutine*)featureInfo)->getInnerVar(i+1)->type().firstElemClassName() );

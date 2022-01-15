@@ -9,22 +9,25 @@ feature
     make
     local
         nums : ARRAY[INTEGER]
-        curr_value, value, index : INTEGER
+        i : INTEGER
+        elems_count : INTEGER
     do
-        create nums.make_empty
+        io.put_string("input integers count: ")
+        io.read_integer
+
+        create nums.make_filled(0, 1, io.last_integer)
 
         from
-            io.put_string("input natural value: ")
-            io.read_integer
-            curr_value := io.last_integer
+            i := nums.lower
         until
-            curr_value < 0
+            i > nums.upper
         loop
-            nums.add_last(curr_value)
-
             io.put_string("input natural value: ")
             io.read_integer
-            curr_value := io.last_integer
+
+            nums.put(io.last_integer, i)
+
+            i := i + 1
         end
 
         print_nums(nums)
@@ -82,8 +85,8 @@ feature
         buffer : INTEGER
     do
         buffer := nums @ index_1
-        nums.set(nums @ index_2, index_1)
-        nums.set(buffer, index_2)
+        nums.put(nums @ index_2, index_1)
+        nums.put(buffer, index_2)
     end
 end
 -- EOF

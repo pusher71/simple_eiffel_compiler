@@ -44,6 +44,12 @@ void EUserClass::_fillConstantTableWithSelf() {
     this->_constants.appendMethodRef(EClassSTRING::classRTLfullName(), "<init>", "()V");
     this->_constants.appendMethodRef(EClassARRAY::classRTLfullName(), "<init>", "()V");
     this->_constants.appendMethodRef(EClassANY::classRTLfullName(), "<init>", "()V");
+
+    this->_constants.appendConstClass(EProgram::runtimeExceptionClassFullName());
+    this->_constants.appendMethodRef(EProgram::runtimeExceptionClassFullName(),
+                                     EProgram::javaDefaultConstructorName(),
+                                     EProgram::runtimeExceptionClassConstructorDescriptor());
+    this->_constants.appendString(EProgram::nullPointerExceptionMessage());
 }
 
 void EUserClass::fillConstantTableWithSelfFeatures() {
@@ -222,8 +228,11 @@ void EUserClass::_addPolyMethodInfoFromMetaToConstantTable(EFeatureMetaInfo& fea
                 featureMetaInfo.addPolyMethodImplementation(this->_constants.appendConstClass(classInfo->fullName()), EPolymorphicImplementationInfo(featureMetaWithSameMark->featureType(), fieldOrMethodRef));
             }
             else {
-                short exceptionClass_constLink          = this->_constants.appendConstClass("java/lang/RuntimeException");
-                short exceptionMethodRef_constLink      = this->_constants.appendMethodRef("java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V");
+                short exceptionClass_constLink          = this->_constants.searchClassConstBy(EProgram::runtimeExceptionClassFullName());
+                short exceptionMethodRef_constLink      = this->_constants.searchMethodRefBy(EProgram::runtimeExceptionClassFullName(),
+                                                                                             EProgram::javaDefaultConstructorName(),
+                                                                                             EProgram::runtimeExceptionClassConstructorDescriptor());
+
                 short exceptionMessageString_constLink  = this->_constants.appendString("No attribute or routine \"" + featureMetaInfo.finalName() + "\" in class \"" + classInfo->fullName() + "\"");
 
                 featureMetaInfo.addPolyMethodImplementation(this->_constants.appendConstClass(classInfo->fullName()), EPolymorphicImplementationInfo(exceptionClass_constLink, exceptionMethodRef_constLink, exceptionMessageString_constLink));

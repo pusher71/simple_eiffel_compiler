@@ -11,12 +11,12 @@ feature
         objs : ARRAY[A]
         i : INTEGER
     do
-        create objs.make_empty
-        objs.add_last(create {A})
-        objs.add_last(create {B})
-        objs.add_last(create {C})
-        objs.add_last(create {D})
-        objs.add_last(create {E})
+        create objs.make_filled(create {A}, 1, 5)
+        objs.put(create {A}, 1)
+        objs.put(create {B}, 2)
+        objs.put(create {C}, 3)
+        objs.put(create {D}, 4)
+        objs.put(create {E}, 5)
 
         from
             i := objs.lower

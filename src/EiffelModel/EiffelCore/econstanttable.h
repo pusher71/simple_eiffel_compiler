@@ -32,6 +32,7 @@ public:
 
     JvmConstant getConstant(int constantIndex) const;
     int16_t searchUTF8By(const std::string& stringUTF8) const;
+    int16_t searchStringBy(const std::string& stringValue) const;
     int16_t searchClassConstBy(const std::string& classFullName) const;
     int16_t searchFieldRefBy(const std::string& classFullName, const std::string& fieldName, const std::string& fieldDescriptor) const;
     int16_t searchMethodRefBy(const std::string& classFullName, const std::string& methodName, const std::string& methodDescriptor) const;

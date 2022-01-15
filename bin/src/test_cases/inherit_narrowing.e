@@ -9,12 +9,12 @@ feature
     make
     local
         elems : ARRAY[A]
-        i : NATURAL
+        i : INTEGER
     do
-        create elems.make_empty
-        elems.add_last(create {A})
-        elems.add_last(create {B})
-        elems.add_last(create {C}.make(100))
+        create elems.make_filled(create {A}, 1, 3)
+        elems.put(create {A}, 1)
+        elems.put(create {B}, 2)
+        elems.put(create {C}.make(100), 3)
 
         from
             i := elems.lower

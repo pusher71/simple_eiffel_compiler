@@ -32,6 +32,4 @@ bool EPolymorphicImplementationInfo::isExceptionThrow() const { return (this->_f
 EFeature::EFeatureType EPolymorphicImplementationInfo::featureType() const { return this->_featureType; }
 short EPolymorphicImplementationInfo::fieldOrMethodRef_constLink() const { return this->_fieldOrMethodRef_constLink; }
 
-short EPolymorphicImplementationInfo::exceptionClass_constLink() const { return this->_exceptionClass_constLink; }
-short EPolymorphicImplementationInfo::exceptionMethodRef_constLink() const { return this->_exceptionMethodRef_constLink; }
 short EPolymorphicImplementationInfo::exceptionString_constLink() const { return this->_exceptionString_constLink; }

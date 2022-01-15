@@ -39,7 +39,7 @@ public class ARRAY extends ANY {
         int realIndex = (int)index - this._lower;
         return this._elements.get(realIndex);
     }
-    public void SET(Object elementValue, long index)  {
+    public void PUT(Object elementValue, long index)  {
         if ((int)index != index) { throw new RuntimeException("Invalid index when setting ARRAY element (must be signed 32-bit integer)."); }
 
         if (index < this._lower || index > this._upper) {

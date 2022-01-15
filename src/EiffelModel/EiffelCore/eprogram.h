@@ -24,6 +24,10 @@ public:
     static std::string javaDefaultConstructorName();
     static std::string javaDefaultConstructorDescriptor();
 
+    static std::string runtimeExceptionClassFullName();
+    static std::string runtimeExceptionClassConstructorDescriptor();
+    static std::string nullPointerExceptionMessage();
+
     // ============== ATTRIBUTES ==============
 private:
     std::map<std::string, std::shared_ptr<EClass>> _classes;

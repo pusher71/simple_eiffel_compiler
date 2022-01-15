@@ -28,6 +28,10 @@ std::string EProgram::javaMainFunctionDescriptor() { return "([Ljava/lang/String
 std::string EProgram::javaDefaultConstructorName() { return "<init>"; }
 std::string EProgram::javaDefaultConstructorDescriptor() { return "()V"; }
 
+std::string EProgram::runtimeExceptionClassFullName() { return "java/lang/RuntimeException"; }
+std::string EProgram::runtimeExceptionClassConstructorDescriptor() { return "(Ljava/lang/String;)V"; }
+std::string EProgram::nullPointerExceptionMessage() { return "Null pointer exception"; }
+
 EProgram::EProgram() {}
 
 EProgram::EProgram(const program_strct* programNode, const std::string& mainClassName) {

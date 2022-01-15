@@ -29,8 +29,6 @@ public:
     EFeature::EFeatureType featureType() const;
     short fieldOrMethodRef_constLink() const;
 
-    short exceptionClass_constLink() const;
-    short exceptionMethodRef_constLink() const;
     short exceptionString_constLink() const;
 };
 

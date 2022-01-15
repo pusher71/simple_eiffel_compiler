@@ -1,2 +1,2 @@
 MAIN_CLASS_NAME = main
-SOURCE_FILEPATH = src/input.e
+SOURCE_FILEPATH = src/test_cases/complex_inheritance_with_precursors.e

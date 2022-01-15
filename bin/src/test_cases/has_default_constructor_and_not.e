@@ -27,7 +27,7 @@ feature
 
     make
     do
-        create val
+        create val.make
     end
 end
 -- EOF

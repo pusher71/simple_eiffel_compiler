@@ -10,7 +10,7 @@ feature
 
     make
     do
-        field := create {OBJECT}.make;
+        field := create {OBJECT}.make
         (create {OBJECT}.make).make
     end
 end
